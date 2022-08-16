@@ -4,7 +4,7 @@
 #' de_test_single_hood
 #'
 #' Tests single hood for DE. Not intended to be used by itself (however possible), but rather as a part of `de_test_all_hoods`
-#' @param sce SingleCellExperiment object
+#' @param sce Milo object
 #' @param genes Subset of rownames(sce) for which we will perform DE testing. Default = rownames(sce)
 #' @param nhoods_sce Can be extracted from sce as nhoods(sce) prior to running the function. The reason the argument is passed by itself is to avoid calculating it every time.
 #' @param hood.id Character specifying for which hood we should perform testing. Should be in colnames(nhoods_sce)
@@ -17,7 +17,8 @@
 #'
 #' @return
 #' @export
-#' @importFrom SingleCellExperiment colData SingleCellExperiment counts assay
+#' @importFrom SingleCellExperiment colData SingleCellExperiment counts
+#' @importFrom SummarizedExperiment assay
 #' @import edgeR
 #' @importFrom tibble rownames_to_column
 #' @importFrom scuttle summarizeAssayByGroup
@@ -48,13 +49,36 @@ de_test_single_hood = function(sce , genes = rownames(sce) , nhoods_sce , hood.i
    summed = summarizeAssayByGroup(counts(current.sce), colData(current.sce)[,c("condition.id", "sample.id" , covariates)])
    summed = SingleCellExperiment(list(counts=assay(summed, "sum")), colData=colData(summed))
    y <- DGEList(counts(summed), samples=colData(summed), lib.size = colSums(counts(summed)))
+   # make sure covariates have contrasts; delete covariates that don't
+   meta_y = as.data.frame(y$samples)
+
+   if (!is.null(covariates)){
+     covariates_2_keep = sapply(covariates , function(covariate){
+       tab = table(meta_y[, covariate] , meta_y$condition.id)
+       if (nrow(tab) == 1 | ncol(tab) == 1 | max(rowMins(tab)) == 0){
+         return(F)
+       }
+       else {
+         return(T)
+       }
+     })
+     covariates_2_keep = names(covariates_2_keep)[covariates_2_keep]
+     if (length(covariates_2_keep) == 0){
+       covariates_2_keep = NULL
+     }
+   }
+   else {
+     covariates_2_keep = NULL
+   }
+
+
    if (gene_selection == "per_hood"){
-     keep <- filterByExpr(y, group=summed$condition.id , min.count = min.count , min.total.count = round(min.count * 1.5))
+     keep <- filterByExpr(y, group=summed$sample.id , min.count = min.count , min.total.count = round(min.count * 1.5))
      y <- y[keep,]
    }
    y <- calcNormFactors(y)
-   if (!is.null(covariates)){
-    design <- model.matrix(as.formula( paste("~ ", paste(covariates, collapse="+"),sep = "" , " + condition.id") ) , y$samples)
+   if (!is.null(covariates_2_keep)){
+    design <- model.matrix(as.formula( paste("~ ", paste(covariates_2_keep, collapse="+"),sep = "" , " + condition.id") ) , y$samples)
    }
    else {
      design <- model.matrix(~condition.id , y$samples)

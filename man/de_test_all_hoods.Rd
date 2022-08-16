@@ -16,7 +16,7 @@ de_test_all_hoods(
 )
 }
 \arguments{
-\item{sce}{SingleCellExperiment object}
+\item{sce}{Milo object}
 
 \item{genes}{Subset of rownames(sce) for which we will perform DE testing. Default = rownames(sce)}
 
