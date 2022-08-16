@@ -7,12 +7,13 @@
 de_test_all_hoods(
   sce,
   genes = rownames(sce),
-  sample.id,
+  sample.id = "sample",
   condition.id,
+  discard_not_perturbed_hoods = T,
   covariates = NULL,
   min_n_cells_per_sample = 2,
   gene_selection = "all",
-  min.count
+  min.count = 2
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ de_test_all_hoods(
 \item{sample.id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)}
 
 \item{condition.id}{Character specifying which variable should be used as a condition id. Should be in colData(sce)}
+
+\item{discard_not_perturbed_hoods}{Boolean specifying whether perform prior hood selection using Augur based classifier. Note for big datasets it might take a while so recommended if a large portion of hoods is expected to be unperturbed.}
 
 \item{covariates}{Vector specifying if additional covariates should be passed into experimental design. Default = NULL (no covariates)}
 
