@@ -22,7 +22,7 @@
 #' @examples
 assign_neighbourhoods = function(sce , k = 25, prop = 0.2, order = 2, filtering = T, reducedDim.name , k_init = 50, d = 30){
   sce_milo <- Milo(sce)
-  d <- min(30 , ncol(reducedDim(sce , reducedDim.name)))
+  d <- min(d , ncol(reducedDim(sce , reducedDim.name)))
 
   # build 1st order to sample vertices
   k_init <- min(k , k_init)
