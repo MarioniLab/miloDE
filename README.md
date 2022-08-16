@@ -23,7 +23,11 @@ Other essential parameters are: `reducedDim.name`, `cells_ref` - specifying coln
 
 ```
 library(miloDE)
-sce = add_embedding(sce , reduction_type = "MNN", reducedDim.name = "pca.corrected" , cells_ref = colnames(sce)[sce$type == "reference"])
+sce = add_embedding(sce , 
+                    reduction_type = "MNN", 
+                    reducedDim.name = "pca.corrected" , 
+                    cells_ref = colnames(sce)[sce$type == "reference"],
+                    cells_query = colnames(sce)[sce$type == "query"])
 
 ```
 
