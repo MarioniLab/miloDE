@@ -12,7 +12,6 @@
 #' @examples
 #'
 filter_neighbourhoods = function(sce_milo){
-  require(RcppGreedySetCover)
   nhoods_sce = nhoods(sce_milo)
   stat_hoods = lapply(1:ncol(nhoods_sce) , function(i){
     current.cells = which(nhoods_sce[,i] == 1)

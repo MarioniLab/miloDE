@@ -1,6 +1,20 @@
 
 
 
+#' filter_not_perturbed_hoods
+#'
+#' Pre-filtering hoods where we expect to have no DE (using classifier based method Augur that returns AUCs. AUC = 0.5)
+#' @param sce sce_milo A Milo object (SCE + assigned hoods)
+#' @param min_cells A positive integer specifying min number of cells in the hood for which we calculate AUC. Default = 3 (avoid changing this parameter).
+#' @param auc.thresh A positive numeric specifying an AUC threshold below each we assign hoods to be no DE. Default = 0.5 (avoid changing this parameter)
+#'
+#' @return
+#' @export
+#'
+#' @importFrom SingleCellExperiment colData
+#' @importFrom miloR buildNhoodGraph nhoodIndex nhoods
+#'
+#' @examples
 filter_not_perturbed_hoods <- function(sce , min_cells = 3 , auc.thresh = 0.5){
   # assign condition and sample ids
   coldata <- as.data.frame(colData(sce))
@@ -38,7 +52,8 @@ filter_not_perturbed_hoods <- function(sce , min_cells = 3 , auc.thresh = 0.5){
 }
 
 
-
+#' @importFrom SingleCellExperiment logcounts
+#' @importFrom Augur calculate_auc
 .get_auc_single_hood = function(sce , nhoods_sce , hood.id , min_cells = 3){
 
   # select cells
@@ -49,7 +64,10 @@ filter_not_perturbed_hoods <- function(sce , min_cells = 3 , auc.thresh = 0.5){
   current.sce$celltype.dummy = "dummy"
   meta = as.data.frame(colData(current.sce))
   if (ncol(current.sce) > 0){
-    auc = calculate_auc(logcounts(current.sce), meta, cell_type_col = "celltype.dummy", label_col = "condition.id" , n_subsamples = 0 , subsample_size = min_cells , min_cells = min_cells)
+    auc = calculate_auc(logcounts(current.sce), meta, cell_type_col = "celltype.dummy",
+                        label_col = "condition.id" , n_subsamples = 0 ,
+                        subsample_size = min_cells , min_cells = min_cells ,
+                        feature_perc = 1)
     out = as.data.frame(auc$AUC)
     return(out)
   }

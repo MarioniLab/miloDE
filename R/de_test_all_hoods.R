@@ -5,7 +5,7 @@
 #' de_test_all_hoods
 #'
 #' Tests all hoods for DE + performs spatialFDR correction after
-#' @param sce SingleCellExperiment object
+#' @param sce Milo object
 #' @param genes Subset of rownames(sce) for which we will perform DE testing. Default = rownames(sce)
 #' @param nhoods_sce Can be extracted from sce as nhoods(sce) prior to running the function. The reason the argument is passed by itself is to avoid calculating it every time.
 #' @param hood.id Character specifying for which hood we should perform testing. Should be in colnames(nhoods_sce)
@@ -19,7 +19,8 @@
 #'
 #' @return
 #' @export
-#' @importFrom SingleCellExperiment colData SingleCellExperiment counts assay
+#' @importFrom SingleCellExperiment colData SingleCellExperiment counts
+#' @importFrom SummarizedExperiment assay
 #' @import edgeR
 #' @importFrom tibble rownames_to_column
 #' @importFrom scuttle summarizeAssayByGroup
@@ -39,7 +40,7 @@ de_test_all_hoods = function(sce , genes = rownames(sce) , sample.id , condition
     summed = summarizeAssayByGroup(counts(sce), colData(sce)[,c("condition.id", "sample.id")])
     summed = SingleCellExperiment(list(counts=assay(summed, "sum")), colData=colData(summed))
     y <- DGEList(counts(summed), samples=colData(summed), lib.size = colSums(counts(summed)))
-    keep <- filterByExpr(y, group=summed$type , min.count = min.count , min.total.count = round(min.count * 1.5))
+    keep <- filterByExpr(y, group=summed$sample.id , min.count = min.count , min.total.count = round(min.count * 1.5))
     genes = names(keep)[keep]
     sce = sce[genes , ]
   }
@@ -64,7 +65,7 @@ de_test_all_hoods = function(sce , genes = rownames(sce) , sample.id , condition
   t.connect <- unname(rowSums(intersect_mat))
   weights<- 1/unlist(t.connect)
 
-  unq.genes = unique(de_stat_selected_hoods$gene)
+  unq.genes = unique(de_stat$gene)
 
   de_stat_w_correction = lapply(unq.genes , function(gene){
     current.stat = de_stat[de_stat$gene == gene , ]

@@ -1,7 +1,5 @@
 
 
-
-
 #' spatial_pval_adjustment
 #'
 #' Performs p-values multiple testing correction, with accounting for the overlap. This is achieved by using weighted version of BH correction.
@@ -20,11 +18,12 @@ spatial_pval_adjustment = function(weights = NULL , nhoods_sce , pvalues){
     weights<- 1/unlist(t.connect)
   }
 
-  # lets split not NaNs for now
-  idx = which(!is.na(pvalues))
-  n_nans = sum(is.na(pvalues))
-  pvalues = pvalues[idx]
-  weights = weights[idx]
+  n_comparisons = length(pvalues)
+  # lets take the not NaNs
+  idx_not_nan = which(!is.na(pvalues))
+  #n_nans = sum(is.na(pvalues))
+  pvalues = pvalues[idx_not_nan]
+  weights = weights[idx_not_nan]
 
   # calc correction
   o <- order(pvalues)
@@ -35,8 +34,9 @@ spatial_pval_adjustment = function(weights = NULL , nhoods_sce , pvalues){
   adjp <- pmin(adjp, 1)
 
   # add nans back
-  adjp = c(adjp , rep(NaN , 1, n_nans))
-  return(adjp)
+  adjp_total = rep(NaN, 1,n_comparisons)
+  adjp_total[idx_not_nan] = adjp
+  return(adjp_total)
 }
 
 
