@@ -20,6 +20,16 @@
 #' @import Matrix
 #' @importFrom igraph connect V neighborhood
 #' @examples
+#' require(SingleCellExperiment)
+#' n_row = 500
+#' n_col = 100
+#' n_latent = 5
+#' sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+#' rownames(sce) = as.factor(1:n_row)
+#' colnames(sce) = c(1:n_col)
+#' sce$cell = colnames(sce)
+#' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+#' out = assign_neighbourhoods(sce, reducedDim.name = "reduced_dim")
 assign_neighbourhoods = function(sce , k = 25, prop = 0.2, order = 2, filtering = T, reducedDim.name , k_init = 50, d = 30){
 
   if (!is(sce , "SingleCellExperiment") & !is(sce , "Milo")){
@@ -64,11 +74,11 @@ assign_neighbourhoods = function(sce , k = 25, prop = 0.2, order = 2, filtering 
 
     # filter
     if (!filtering){
-      message("Filtering redundant hoods.")
       sce = buildNhoodGraph(sce)
     }
     else {
-      sce = filter_neighbourhoods(sce)
+      message("Filtering redundant hoods.")
+      sce = suppressMessages(filter_neighbourhoods(sce))
     }
     message(paste0("Finished successfully. Number of hoods assigned: ", ncol(nhoods(sce)) , ", average hood size: ", mean(colSums(nhoods(sce)))))
     return(sce)
@@ -80,6 +90,7 @@ assign_neighbourhoods = function(sce , k = 25, prop = 0.2, order = 2, filtering 
 #'
 #' @importFrom igraph V set_vertex_attr induced_subgraph count_triangles neighborhood
 #' @importFrom miloR graph nhoodIndex nhoods<-
+#' @importFrom dplyr %>%
 .get_graph_refined_sampling <- function(graph, prop){
   random_vertices <- sample(V(graph), size=floor(prop*length(V(graph))))
   message("Running refined sampling with graph")

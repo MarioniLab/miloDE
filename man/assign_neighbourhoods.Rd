@@ -38,3 +38,15 @@ assign_neighbourhoods(
 \description{
 Assign hoods to SCE object
 }
+\examples{
+require(SingleCellExperiment)
+n_row = 500
+n_col = 100
+n_latent = 5
+sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+rownames(sce) = as.factor(1:n_row)
+colnames(sce) = c(1:n_col)
+sce$cell = colnames(sce)
+reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+out = assign_neighbourhoods(sce, reducedDim.name = "reduced_dim")
+}
