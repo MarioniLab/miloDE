@@ -55,7 +55,9 @@ assign_neighbourhoods = function(sce , k = 25, prop = 0.2, order = 2, filtering 
     sampled_vertices <- .get_graph_refined_sampling(graph(sce), prop)
 
     # rebuild to the actual graph, with parameters specified by user
-    sce <- buildGraph(sce, k = k, d = d, reduced.dim = reducedDim.name)
+    if (!k == k_init){
+      sce <- buildGraph(sce, k = k, d = d, reduced.dim = reducedDim.name)
+    }
     # if order > 1 -- reassign
     if (order > 1){
       graph(sce) = connect(graph(sce),order)
