@@ -57,5 +57,5 @@ sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
 rownames(sce) = as.factor(1:n_row)
 colnames(sce) = c(1:n_col)
 sce$cell = colnames(sce)
-out = add_embedding(sce, reduction_type = "MNN" , cells_ref = colnames(sce[, sce$type == "ref]) ,  cells_query = colnames(sce[, sce$type == "query]) , d = 5)
+out = add_embedding(sce, reduction_type = "MNN" , reducedDim.name = "MNN", cells_ref = colnames(sce[, sce$type == "ref"]) ,  cells_query = colnames(sce[, sce$type == "query"]) , d = 5)
 }
