@@ -1,0 +1,52 @@
+Package: miloDE
+Title: Sensitive DE testing using neighbourhoods instead of discrete clusters.
+Version: 0.0.0.9000
+Authors@R: 
+    person("Alsu", "Missarova", , "alsu@ebi.ac.uk", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: Sensitive DE testing using neighbourhoods instead of discrete clusters.
+License: MIT
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Imports: 
+    devtools,
+    batchelor,
+    BiocManager,
+    BiocNeighbors,
+    ggplot2,
+    ggpubr,
+    irlba,
+    Matrix,
+    paleotree,
+    Rfast,
+    scran,
+    scuttle,
+    SingleCellExperiment,
+    SummarizedExperiment,
+    Seurat,
+    SeuratObject,
+    stats,
+    tibble,
+    uwot,
+    viridis,
+    wesanderson, 
+    RcppGreedySetCover,
+    igraph,
+    miloR,
+    edgeR, 
+    MatrixGenerics, 
+    sparseMatrixStats, 
+    Augur
+Remotes:
+    github::MarioniLab/miloR,
+    github::neurorestore/Augur,
+    github::Bioconductor/MatrixGenerics,
+    github::const-ae/sparseMatrixStats
+Depends: 
+    R (>= 2.10)
+Suggests: 
+    rmarkdown,
+    knitr,
+    testthat (>= 3.0.0)
+VignetteBuilder: knitr
