@@ -51,11 +51,13 @@ assign_neighbourhoods = function(sce , k = 25, prop = 0.2, order = 2, filtering 
 
   # filter
   if (!filtering){
+    message("Filtering redundant hoods.")
     sce_milo = buildNhoodGraph(sce_milo)
   }
   else {
     sce_milo = filter_neighbourhoods(sce_milo)
   }
+  message(paste0("Finished successfully. Number of hoods assigned: ", ncol(nhoods(sce_milo)) , ", average hood size: ", mean(colSums(nhoods(sce_milo)))))
   return(sce_milo)
 }
 
