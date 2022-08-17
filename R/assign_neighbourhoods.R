@@ -21,44 +21,58 @@
 #' @importFrom igraph connect V neighborhood
 #' @examples
 assign_neighbourhoods = function(sce , k = 25, prop = 0.2, order = 2, filtering = T, reducedDim.name , k_init = 50, d = 30){
-  sce_milo <- Milo(sce)
-  d <- min(d , ncol(reducedDim(sce , reducedDim.name)))
 
-  # build 1st order to sample vertices
-  k_init <- min(k , k_init)
-  sce_milo <- buildGraph(sce_milo, k = k_init, d = d, reduced.dim = reducedDim.name)
+  if (!is(sce , "SingleCellExperiment") & !is(sce , "Milo")){
+    stop("SCE should be either SingleCellExperiment or Milo.")
+    return(F)
+  } else {
+    d <- min(d , ncol(reducedDim(sce , reducedDim.name)))
+    k_init <- min(k , k_init)
+    if (is(sce , "SingleCellExperiment")){
+      sce = Milo(sce)
+      # build 1st order to sample vertices
+      k_init <- min(k , k_init)
+      sce <- buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim.name)
+    }
+    else {
+      message("SCE is Milo object. Checking if graph is already constructed.")
+      if (isEmpty(miloR::graph(sce))){
+        message("Graph is not constructed yet. Building now.")
+        sce <- buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim.name)
+      }
+    }
+    # find anchor cells
+    sampled_vertices <- .get_graph_refined_sampling(graph(sce), prop)
 
-  # find anchor cells
-  sampled_vertices <- .get_graph_refined_sampling(graph(sce_milo), prop)
+    # rebuild to the actual graph, with parameters specified by user
+    sce <- buildGraph(sce, k = k, d = d, reduced.dim = reducedDim.name)
+    # if order > 1 -- reassign
+    if (order > 1){
+      graph(sce) = connect(graph(sce),order)
+    }
 
-  # rebuild to the actual graph, with parameters specified by user
-  sce_milo <- buildGraph(sce_milo, k = k, d = d, reduced.dim = reducedDim.name)
-  # if order > 1 -- reassign
-  if (order > 1){
-    graph(sce_milo) = connect(graph(sce_milo),order)
+    # create hoods
+    nh_mat <- Matrix(data = 0, nrow=ncol(sce), ncol=length(sampled_vertices), sparse = TRUE)
+    v.class <- V(graph(sce))$name
+    rownames(nh_mat) <- colnames(sce)
+    for (X in seq_len(length(sampled_vertices))){
+      nh_mat[unlist(neighborhood(graph(sce), order = 1, nodes = sampled_vertices[X])), X] <- 1
+    }
+    colnames(nh_mat) <- as.character(sampled_vertices)
+    nhoodIndex(sce) <- as(sampled_vertices, "list")
+    nhoods(sce) <- nh_mat
+
+    # filter
+    if (!filtering){
+      message("Filtering redundant hoods.")
+      sce = buildNhoodGraph(sce)
+    }
+    else {
+      sce = filter_neighbourhoods(sce)
+    }
+    message(paste0("Finished successfully. Number of hoods assigned: ", ncol(nhoods(sce)) , ", average hood size: ", mean(colSums(nhoods(sce)))))
+    return(sce)
   }
-
-  # create hoods
-  nh_mat <- Matrix(data = 0, nrow=ncol(sce_milo), ncol=length(sampled_vertices), sparse = TRUE)
-  v.class <- V(graph(sce_milo))$name
-  rownames(nh_mat) <- colnames(sce_milo)
-  for (X in seq_len(length(sampled_vertices))){
-    nh_mat[unlist(neighborhood(graph(sce_milo), order = 1, nodes = sampled_vertices[X])), X] <- 1
-  }
-  colnames(nh_mat) <- as.character(sampled_vertices)
-  nhoodIndex(sce_milo) <- as(sampled_vertices, "list")
-  nhoods(sce_milo) <- nh_mat
-
-  # filter
-  if (!filtering){
-    message("Filtering redundant hoods.")
-    sce_milo = buildNhoodGraph(sce_milo)
-  }
-  else {
-    sce_milo = filter_neighbourhoods(sce_milo)
-  }
-  message(paste0("Finished successfully. Number of hoods assigned: ", ncol(nhoods(sce_milo)) , ", average hood size: ", mean(colSums(nhoods(sce_milo)))))
-  return(sce_milo)
 }
 
 
