@@ -20,6 +20,16 @@
 #'
 #' @importFrom scran modelGeneVar getTopHVGs
 #' @examples
+#' require(SingleCellExperiment)
+#' n_row = 500
+#' n_col = 100
+#' sce = SingleCellExperiment(assays = list(logcounts = matrix(rnorm(n_row*n_col), ncol=n_col)))
+#' sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
+#' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
+#' rownames(sce) = as.factor(1:n_row)
+#' colnames(sce) = c(1:n_col)
+#' sce$cell = colnames(sce)
+#' out = add_embedding(sce, reduction_type = "MNN" , reducedDim.name = "MNN", cells_ref = colnames(sce[, sce$type == "ref"]) ,  cells_query = colnames(sce[, sce$type == "query"]) , d = 5)
 add_embedding = function(sce ,
                          genes = NULL,
                          n_hvgs = 3000,
@@ -47,8 +57,8 @@ add_embedding = function(sce ,
     colnames(sce) = sce$cell.id
   }
 
-  sce_ref = sce[ , colnames(sce) %in% cells_ref]
-  sce_query = sce[ , colnames(sce) %in% cells_query]
+  #sce_ref = sce[ , colnames(sce) %in% cells_ref]
+  #sce_query = sce[ , colnames(sce) %in% cells_query]
 
   if (reduction_type == "MNN"){
     sce = .add_mnn_based_embedding(sce , assay.type = assay.type , reducedDim.name = reducedDim.name, sample.id = sample.id, cells_ref = cells_ref, cells_query = cells_query, d = d)
@@ -62,7 +72,7 @@ add_embedding = function(sce ,
 
 
 
-#' @importFrom batchelor multiBatchPCA
+#' @importFrom batchelor multiBatchPCA reducedMNN
 #' @importFrom SingleCellExperiment reducedDim
 .add_mnn_based_embedding = function(sce , assay.type = "logcounts" , reducedDim.name , sample.id = "sample", cells_ref , cells_query , d = 30){
 
@@ -82,7 +92,7 @@ add_embedding = function(sce ,
   rownames(pca_joint) = c(colnames(sce_ref) , colnames(sce_query))
 
   # batch correct
-  pca_joint = reducedMNN(pca_joint , batch = factor(c(meta_ref[, sample.id]) , c(meta_query[, sample.id])) )
+  pca_joint = reducedMNN(pca_joint , batch = factor(c(meta_ref[, sample.id], meta_query[, sample.id])) )
   pca_joint = pca_joint$corrected
 
   # reorder to ensure that colnames of sce are aligned with rownames of the embedding

@@ -38,7 +38,8 @@ Imports:
     edgeR, 
     MatrixGenerics, 
     sparseMatrixStats, 
-    Augur
+    Augur,
+    dplyr
 Remotes:
     github::MarioniLab/miloR,
     github::neurorestore/Augur,

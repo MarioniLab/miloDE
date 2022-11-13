@@ -9,7 +9,7 @@ de_test_all_hoods(
   genes = rownames(sce),
   sample.id = "sample",
   condition.id,
-  discard_not_perturbed_hoods = T,
+  discard_not_perturbed_hoods = c(TRUE, FALSE),
   covariates = NULL,
   min_n_cells_per_sample = 2,
   gene_selection = "all",
@@ -35,14 +35,25 @@ de_test_all_hoods(
 If == "all", it will perform overall selection and then test each hood across same genes.}
 
 \item{min.count}{Positive integer, specifying min.count for gene selection. Default = 5}
-
-\item{nhoods_sce}{Can be extracted from sce as nhoods(sce) prior to running the function. The reason the argument is passed by itself is to avoid calculating it every time.}
-
-\item{hood.id}{Character specifying for which hood we should perform testing. Should be in colnames(nhoods_sce)}
 }
 \value{
 
 }
 \description{
 Tests all hoods for DE + performs spatialFDR correction after
+}
+\examples{
+require(SingleCellExperiment)
+n_row = 500
+n_col = 100
+n_latent = 5
+sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+rownames(sce) = as.factor(1:n_row)
+colnames(sce) = c(1:n_col)
+sce$cell = colnames(sce)
+sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
+sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
+reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+sce = assign_neighbourhoods(sce, reducedDim.name = "reduced_dim")
+de_stat = de_test_all_hoods(sce , condition.id = "type" , discard_not_perturbed_hoods = FALSE)
 }

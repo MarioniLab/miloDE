@@ -20,14 +20,29 @@ devtools::install_github("MarioniLab/miloDE")
 1. We need to define which latent space will be used for graph construction. It is either provided apriori (and should be a field in reducedDim(SCE)) or we can calculate one using `add-embedding`. For construction of latent space we can use either `Azimuth` or `MNN`(needs to be specified in `reduction_type`). 
 Other essential parameters are: `reducedDim.name`, `cells_ref` - specifying colnames that correspond to reference cells, `cells_query` - specifying colnames that correspond to query cells.
 
+For demo, we will download Tal1- chimera mouse embryo data. We will compare Tal1+ (reference, WT) against Tal1- cells.
+
+
 
 ```
+
+
+# lets download data
+
+library(SingleCellExperiment)
+library(MouseGastrulationData)
+
+sce = Tal1ChimeraData()
+## delete row for tomato
+sce = sce[!rownames(sce) == "tomato-td" , ]
+
+
 library(miloDE)
 sce = add_embedding(sce , 
                     reduction_type = "MNN", 
                     reducedDim.name = "pca.corrected" , 
-                    cells_ref = colnames(sce)[sce$type == "reference"],
-                    cells_query = colnames(sce)[sce$type == "query"])
+                    cells_ref = colnames(sce)[sce$tomato == F],
+                    cells_query = colnames(sce)[sce$tomato == T])
 
 ```
 
