@@ -9,9 +9,20 @@
 #' @return
 #' @export
 #' @importFrom miloR buildNhoodGraph nhoodIndex<- nhoods nhoods<-
-#' @importFrom igraph V induced_subgraph
+#' @importFrom igraph V V<- induced_subgraph
 #'
 #' @examples
+#' require(SingleCellExperiment)
+#' n_row = 500
+#' n_col = 100
+#' n_latent = 5
+#' sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+#' rownames(sce) = as.factor(1:n_row)
+#' colnames(sce) = c(1:n_col)
+#' sce$cell = colnames(sce)
+#' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+#' sce = assign_neighbourhoods(sce, reducedDim.name = "reduced_dim" , k = 10 , order = 1)
+#' sce = subset_milo(sce , colnames_2_retain = c("1", "2", "3"))
 subset_milo = function(sce_milo , colnames_2_retain){
   sce_milo_filtered = sce_milo[, colnames(sce_milo) %in% colnames_2_retain]
 
