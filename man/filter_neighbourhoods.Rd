@@ -25,6 +25,6 @@ rownames(sce) = as.factor(1:n_row)
 colnames(sce) = c(1:n_col)
 sce$cell = colnames(sce)
 reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-sce = assign_neighbourhoods(sce, reducedDim.name = "reduced_dim" , k = 10 , order = 1)
+sce = assign_hoods(sce, reducedDim.name = "reduced_dim" , k = 10 , order = 1)
 sce = filter_neighbourhoods(sce)
 }
