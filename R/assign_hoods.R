@@ -80,9 +80,9 @@ assign_hoods = function(sce , k = 25, prop = 0.2, order = 2, filtering = T, redu
     }
     else {
       message("Filtering redundant hoods.")
-      sce = suppressMessages(filter_neighbourhoods(sce))
+      sce = suppressMessages(filter_hoods(sce))
     }
-    message(paste0("Finished successfully. Number of hoods assigned: ", ncol(nhoods(sce)) , ", average hood size: ", mean(colSums(nhoods(sce)))))
+    message(paste0("Finished successfully. Number of hoods assigned: ", ncol(nhoods(sce)) , ", average hood size: ", round(mean(colSums(nhoods(sce))))))
     return(sce)
   }
 }
