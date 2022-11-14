@@ -36,7 +36,7 @@
 #' sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-#' sce = assign_neighbourhoods(sce, reducedDim.name = "reduced_dim")
+#' sce = assign_hoods(sce, reducedDim.name = "reduced_dim")
 #' de_stat = de_test_all_hoods(sce , condition.id = "type" , discard_not_perturbed_hoods = FALSE)
 de_test_all_hoods = function(sce ,
                              genes = rownames(sce) ,
@@ -142,7 +142,7 @@ de_test_all_hoods = function(sce ,
 #' sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-#' sce = assign_neighbourhoods(sce, reducedDim.name = "reduced_dim")
+#' sce = assign_hoods(sce, reducedDim.name = "reduced_dim")
 #' nhoods_sce = nhoods(sce)
 #' de_stat = de_test_single_hood(sce , nhoods_sce = nhoods_sce, hood.id = colnames(nhoods_sce)[1] , sample.id = "sample" , condition.id = "type")
 de_test_single_hood = function(sce , genes = rownames(sce) , nhoods_sce , hood.id , sample.id , condition.id , covariates = NULL,
