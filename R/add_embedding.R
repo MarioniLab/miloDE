@@ -23,7 +23,8 @@
 #' require(SingleCellExperiment)
 #' n_row = 500
 #' n_col = 100
-#' sce = SingleCellExperiment(assays = list(logcounts = matrix(rnorm(n_row*n_col), ncol=n_col)))
+#' sce = SingleCellExperiment(assays = list( counts = matrix(rnorm(n_row*n_col), ncol=n_col)))
+#' logcounts(sce) = matrix(rnorm(n_row*n_col), ncol=n_col)
 #' sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
 #' rownames(sce) = as.factor(1:n_row)
@@ -42,6 +43,10 @@ add_embedding = function(sce ,
                          cell.id = NULL ,
                          d = 30){
 
+  # check that arguments look alright
+  args = c(as.list(environment()))
+  out = .general_check_arguments(args) & .check_genes_in_sce(sce , genes) & .check_cell_id_in_sce(sce , cell.id) & .check_sample_in_coldata_sce(sce , sample.id)
+
   # select only relevant genes for the embedding: wither passed with argument genes or in case genes=NULL (default), we will calculate top `n_hvgs` genes
   if (!is.null(genes)){
     sce = sce[genes , ]
@@ -52,13 +57,19 @@ add_embedding = function(sce ,
     sce = sce[hvgs , ]
   }
 
-  # if sce doens thave colnames, assign
+  # if sce doenst have colnames, assign
   if (is.null(colnames)){
-    colnames(sce) = sce$cell.id
+    message("Assigning colnames based on provided 'cell.id'.")
+    meta = as.data.frame(colData(sce))
+    colnames(sce) = meta[, cell.id]
   }
+  # check that cells_ref and cells_query belong to colnames(sce) and do not overlap
+  out = .check_cells_ref_and_query(colnames(sce) , cells_ref , cells_query)
 
-  #sce_ref = sce[ , colnames(sce) %in% cells_ref]
-  #sce_query = sce[ , colnames(sce) %in% cells_query]
+  # if assay.type == "counts" and reduction_type == "MNN" -> warn the user
+  if (assay.type == "counts" & reduction_type == "MNN"){
+    warning("For reduction_type == 'MNN', we recommed to use normalised logcounts (either pre-compute and use logcounts or use reduction_type == 'Azimuth').")
+  }
 
   if (reduction_type == "MNN"){
     sce = .add_mnn_based_embedding(sce , assay.type = assay.type , reducedDim.name = reducedDim.name, sample.id = sample.id, cells_ref = cells_ref, cells_query = cells_query, d = d)
@@ -74,7 +85,9 @@ add_embedding = function(sce ,
 
 #' @importFrom batchelor multiBatchPCA reducedMNN
 #' @importFrom SingleCellExperiment reducedDim
+#' @importFrom SummarizedExperiment assays<- assays assay assay<-
 .add_mnn_based_embedding = function(sce , assay.type = "logcounts" , reducedDim.name , sample.id = "sample", cells_ref , cells_query , d = 30){
+  out = .check_assay_in_sce(sce , assay.type)
 
   sce_ref = sce[ , colnames(sce) %in% cells_ref]
   sce_query = sce[ , colnames(sce) %in% cells_query]

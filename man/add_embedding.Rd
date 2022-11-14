@@ -51,7 +51,8 @@ add_embedding
 require(SingleCellExperiment)
 n_row = 500
 n_col = 100
-sce = SingleCellExperiment(assays = list(logcounts = matrix(rnorm(n_row*n_col), ncol=n_col)))
+sce = SingleCellExperiment(assays = list( counts = matrix(rnorm(n_row*n_col), ncol=n_col)))
+logcounts(sce) = matrix(rnorm(n_row*n_col), ncol=n_col)
 sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
 rownames(sce) = as.factor(1:n_row)
