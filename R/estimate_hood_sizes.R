@@ -30,7 +30,7 @@
 estimate_hood_sizes = function(sce, k.grid = seq(10,100,10) , order = 2, prop = 0.1 , filtering = T,
                                reducedDim.name , k_init = 50 , d = 30 , quantile.vec = seq(0 , 1 , 0.25)){
   stat = lapply(k.grid , function(k){
-    sce_milo = assign_neighbourhoods(sce , k = k , prop = prop , order = order , filtering = filtering,
+    sce_milo = assign_hoods(sce , k = k , prop = prop , order = order , filtering = filtering,
                                      reducedDim.name = reducedDim.name , k_init = k_init , d = d)
     out = .get_stat_single_coverage(nhoods(sce_milo) , quantile.vec)
     return(out)
