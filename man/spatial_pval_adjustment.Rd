@@ -7,6 +7,8 @@
 spatial_pval_adjustment(weights = NULL, nhoods_sce, pvalues)
 }
 \arguments{
+\item{weights}{Vector (element per hood) of pre-computed weights (default = NULL meaning not computed). Relevant to be recycled if \code{spatial_pval_adjustment} needs to be run many times.}
+
 \item{nhoods_sce}{nhoods(sce)}
 
 \item{pvalues}{vector of pvalues}

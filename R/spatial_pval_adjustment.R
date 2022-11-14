@@ -3,6 +3,7 @@
 #' spatial_pval_adjustment
 #'
 #' Performs p-values multiple testing correction, with accounting for the overlap. This is achieved by using weighted version of BH correction.
+#' @param weights Vector (element per hood) of pre-computed weights (default = NULL meaning not computed). Relevant to be recycled if `spatial_pval_adjustment` needs to be run many times.
 #' @param nhoods_sce nhoods(sce)
 #' @param pvalues vector of pvalues
 #'
