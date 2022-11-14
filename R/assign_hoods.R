@@ -32,59 +32,61 @@
 #' out = assign_hoods(sce, reducedDim.name = "reduced_dim")
 assign_hoods = function(sce , k = 25, prop = 0.2, order = 2, filtering = T, reducedDim.name , k_init = 50, d = 30){
 
-  if (!is(sce , "SingleCellExperiment") & !is(sce , "Milo")){
-    stop("SCE should be either SingleCellExperiment or Milo.")
-    return(F)
-  } else {
-    d <- min(d , ncol(reducedDim(sce , reducedDim.name)))
+  args = c(as.list(environment()))
+  out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim.name)
+
+  d <- min(d , ncol(reducedDim(sce , reducedDim.name)))
+  k_init <- min(k , k_init)
+  if (is(sce , "SingleCellExperiment")){
+    sce = Milo(sce)
+    # build 1st order to sample vertices
     k_init <- min(k , k_init)
-    if (is(sce , "SingleCellExperiment")){
-      sce = Milo(sce)
-      # build 1st order to sample vertices
-      k_init <- min(k , k_init)
+    sce <- buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim.name)
+  }
+  else {
+    message("SCE is Milo object. Checking if graph is already constructed.")
+    if (isEmpty(miloR::graph(sce))){
+      message("Graph is not constructed yet. Building now.")
       sce <- buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim.name)
     }
-    else {
-      message("SCE is Milo object. Checking if graph is already constructed.")
-      if (isEmpty(miloR::graph(sce))){
-        message("Graph is not constructed yet. Building now.")
-        sce <- buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim.name)
-      }
-    }
-    # find anchor cells
-    sampled_vertices <- .get_graph_refined_sampling(graph(sce), prop)
-
-    # rebuild to the actual graph, with parameters specified by user
-    if (!k == k_init){
-      sce <- buildGraph(sce, k = k, d = d, reduced.dim = reducedDim.name)
-    }
-    # if order > 1 -- reassign
-    if (order > 1){
-      graph(sce) = connect(graph(sce),order)
-    }
-
-    # create hoods
-    nh_mat <- Matrix(data = 0, nrow=ncol(sce), ncol=length(sampled_vertices), sparse = TRUE)
-    v.class <- V(graph(sce))$name
-    rownames(nh_mat) <- colnames(sce)
-    for (X in seq_len(length(sampled_vertices))){
-      nh_mat[unlist(neighborhood(graph(sce), order = 1, nodes = sampled_vertices[X])), X] <- 1
-    }
-    colnames(nh_mat) <- as.character(sampled_vertices)
-    nhoodIndex(sce) <- as(sampled_vertices, "list")
-    nhoods(sce) <- nh_mat
-
-    # filter
-    if (!filtering){
-      sce = buildNhoodGraph(sce)
-    }
-    else {
-      message("Filtering redundant hoods.")
-      sce = suppressMessages(filter_hoods(sce))
-    }
-    message(paste0("Finished successfully. Number of hoods assigned: ", ncol(nhoods(sce)) , ", average hood size: ", round(mean(colSums(nhoods(sce))))))
-    return(sce)
   }
+  # find anchor cells
+  sampled_vertices <- .get_graph_refined_sampling(graph(sce), prop)
+
+  # rebuild to the actual graph, with parameters specified by user
+  if (!k == k_init){
+    sce <- buildGraph(sce, k = k, d = d, reduced.dim = reducedDim.name)
+  }
+  # if order == 2 -- reassign edges
+  if (order == 2){
+    graph(sce) = connect(graph(sce),order)
+  }
+
+  # create hoods
+  nh_mat <- Matrix(data = 0, nrow=ncol(sce), ncol=length(sampled_vertices), sparse = TRUE)
+  v.class <- V(graph(sce))$name
+  rownames(nh_mat) <- colnames(sce)
+  for (X in seq_len(length(sampled_vertices))){
+    nh_mat[unlist(neighborhood(graph(sce), order = 1, nodes = sampled_vertices[X])), X] <- 1
+  }
+  colnames(nh_mat) <- as.character(sampled_vertices)
+  nhoodIndex(sce) <- as(sampled_vertices, "list")
+  nhoods(sce) <- nh_mat
+
+  # filter
+  if (!filtering){
+    sce = buildNhoodGraph(sce)
+  }
+  else {
+    message("Filtering redundant hoods.")
+    sce = suppressMessages(filter_hoods(sce))
+  }
+
+  stat_print =.calc_quick_stat(sce , nhoods(sce))
+  message(paste0("Finished successfully.\nNumber of hoods assigned: ", stat_print$n_hoods ,
+                 ",\naverage hood size: ", stat_print$avg_hood_size ,
+                 ",\nnumber of unassigned cells: ", stat_print$n_cells_unocovered))
+  return(sce)
 }
 
 
@@ -113,6 +115,17 @@ assign_hoods = function(sce , k = 25, prop = 0.2, order = 2, filtering = T, redu
   return(refined_vertices)
 }
 
+
+#'
+.calc_quick_stat = function(sce , nhoods_sce){
+  n_hoods = ncol(nhoods_sce)
+  avg_hood_size = round(mean(colSums(nhoods_sce)))
+  n_cells_unocovered = ncol(sce) - sum(rowSums(nhoods_sce) > 0)
+  out = list(n_hoods = n_hoods ,
+             avg_hood_size = avg_hood_size ,
+             n_cells_unocovered = n_cells_unocovered)
+  return(out)
+}
 
 
 

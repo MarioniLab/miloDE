@@ -24,8 +24,9 @@
 # sce check: that is used in add_embedding
 #' @importFrom SingleCellExperiment reducedDimNames
 #' @importFrom SummarizedExperiment assays<- assays
+#' @importFrom miloR Milo
 .check_sce = function(sce){
-  if (!is(sce , "SingleCellExperiment")){
+  if (!is(sce , "SingleCellExperiment") & !is(sce , "Milo")){
     stop("sce should be a SingleCellExperiment object. If you are working with different format, please first convert to SingleCellExperiment object.")
     return(F)
   } else if (!("counts" %in% names(assays(sce)))){
@@ -137,6 +138,16 @@
 }
 
 
+#' @importFrom SingleCellExperiment reducedDimNames
+.check_reducedDim_in_sce = function(sce , reducedDim.name){
+  if (.check_sce(sce)){
+    if (!reducedDim.name %in% reducedDimNames(sce)){
+      stop("reducedDim.name should be in reducedDimNames(sce). If you do not have embedding precalculated, run first 'add_embedding'.")
+      return(F)
+    }
+  }
+}
+
 
 
 .check_cells_ref_and_query = function(cells_sce , cells_ref , cells_query){
@@ -180,7 +191,7 @@
 
 .general_check_arguments = function(dots){
   out = TRUE
-  out = .check_argument_correct(dots, "sce", .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)")
+  #out = .check_argument_correct(dots, "sce", .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)")
   out = .check_argument_correct(dots, "genes", .check_string_or_null, "Check genes - should be NULL or character vector")
   out = .check_argument_correct(dots, "n_hvgs", .check_positive_integer, "Check n_hvgs - should be positive integer")
   out = .check_argument_correct(dots, "assay.type", function(x) .check_arg_within_options(x, c("counts", "logcounts")),
@@ -191,8 +202,13 @@
   out = .check_argument_correct(dots, "sample.id", is.character, "Check sample.id - should be character vector")
   out = .check_argument_correct(dots, "condition.id", is.character, "Check sample.id - should be character vector")
   out = .check_argument_correct(dots, "cell.id", .check_string_or_null, "Check cell.id - should be NULL or string")
-  out = .check_argument_correct(dots, "d", .check_positive_integer, "d cell.id - should be positive integer")
-
+  out = .check_argument_correct(dots, "d", .check_positive_integer, "Check d - should be positive integer")
+  out = .check_argument_correct(dots, "order", function(x) .check_arg_within_options(x, c(1,2)),
+                                "Check order - should be either 1 (standard kNN-graph) or 2 (2nd-order kNN-graph)")
+  out = .check_argument_correct(dots, "k", .check_positive_integer, "Check k - should be positive integer")
+  out = .check_argument_correct(dots, "k_init", .check_positive_integer, "Check k_init - should be positive integer")
+  out = .check_argument_correct(dots, "prop", .check_prop, "Check prop - should be positive number between 0 and 1")
+  out = .check_argument_correct(dots, "filtering", .check_boolean, "Check filtering - should be either TRUE or FALSE")
   return(out)
 }
 
@@ -228,5 +244,24 @@
   return(out)
 }
 
+.check_prop = function(x){
+  out = TRUE
+  if (!is.numeric(x)){
+    out = FALSE
+  } else if (x <= 0 | x > 1){
+    out = FALSE
+  }
+  return(out)
+}
 
 
+.check_boolean = function(x){
+  out = TRUE
+  if (is.null(x)){
+    out = FALSE
+  }
+  else if (!x %in% c(TRUE, FALSE)){
+    out = FALSE
+  }
+  return(out)
+}
