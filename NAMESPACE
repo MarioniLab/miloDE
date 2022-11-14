@@ -2,7 +2,6 @@
 
 export(add_embedding)
 export(assign_hoods)
-export(assign_neighbourhoods)
 export(de_test_all_hoods)
 export(de_test_single_hood)
 export(estimate_hood_sizes)
