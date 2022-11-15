@@ -45,7 +45,7 @@ assign_hoods = function(sce , k = 25, prop = 0.2, order = 2, filtering = T, redu
   }
   else {
     message("SCE is Milo object. Checking if graph is already constructed.")
-    if (isEmpty(miloR::graph(sce))){
+    if (length(miloR::graph(sce)) == 0){
       message("Graph is not constructed yet. Building now.")
       sce <- buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim.name)
     }

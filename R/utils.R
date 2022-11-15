@@ -44,6 +44,28 @@
 }
 
 
+#' @importFrom miloR Milo buildGraph graph<- graph nhoods<- nhoodIndex<- buildNhoodGraph
+.check_sce_milo = function(sce_milo){
+  if (!is(sce_milo , "Milo")){
+    stop("sce_milo should be a Milo object. Run 'assign_hoods' first.")
+    return(F)
+  } else if (length(miloR::graph(sce_milo)) == 0){
+    stop("sce_milo should have calculated graph. Run 'assign_hoods' first.")
+    return(F)
+  } else if (sum(sum(nhoods(sce_milo))) == 0){
+    stop("sce_milo should have calculated nhoods. Run 'assign_hoods' first.")
+    return(F)
+  } else if (isEmpty(nhoodIndex(sce_milo))){
+    stop("sce_milo should have calculated nhoodIndex Run 'assign_hoods' first.")
+    return(F)
+  } else {
+    return(T)
+  }
+}
+
+
+
+
 #' @importFrom SummarizedExperiment assayNames
 .check_assay_in_sce = function(sce , assay.type){
   if (.check_sce(sce)){
@@ -191,7 +213,8 @@
 
 .general_check_arguments = function(dots){
   out = TRUE
-  #out = .check_argument_correct(dots, "sce", .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)")
+  out = .check_argument_correct(dots, "sce", .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)")
+  out = .check_argument_correct(dots, "sce_milo", .check_sce_milo, "Check sce_milo - something is wrong. Calculate 'assign_hoods' first.)")
   out = .check_argument_correct(dots, "genes", .check_string_or_null, "Check genes - should be NULL or character vector")
   out = .check_argument_correct(dots, "n_hvgs", .check_positive_integer, "Check n_hvgs - should be positive integer")
   out = .check_argument_correct(dots, "assay.type", function(x) .check_arg_within_options(x, c("counts", "logcounts")),

@@ -8,7 +8,7 @@
 #' @return
 #' @export
 #' @importFrom RcppGreedySetCover greedySetCover
-#' @importFrom miloR buildNhoodGraph nhoodIndex nhoods
+#' @importFrom miloR buildNhoodGraph nhoodIndex nhoods graph graph<-
 #' @examples
 #' require(SingleCellExperiment)
 #' n_row = 500
@@ -22,6 +22,11 @@
 #' sce = assign_hoods(sce, reducedDim.name = "reduced_dim" , k = 10 , order = 1)
 #' sce = filter_hoods(sce)
 filter_hoods = function(sce_milo){
+
+  args = c(as.list(environment()))
+  out = .general_check_arguments(args)
+
+
   nhoods_sce = nhoods(sce_milo)
   stat_hoods = lapply(1:ncol(nhoods_sce) , function(i){
     current.cells = which(nhoods_sce[,i] == 1)
