@@ -29,18 +29,42 @@
 #'
 estimate_hood_sizes = function(sce, k.grid = seq(10,100,10) , order = 2, prop = 0.1 , filtering = T,
                                reducedDim.name , k_init = 50 , d = 30 , quantile.vec = seq(0 , 1 , 0.25)){
-  stat = lapply(k.grid , function(k){
-    sce_milo = assign_hoods(sce , k = k , prop = prop , order = order , filtering = filtering,
-                                     reducedDim.name = reducedDim.name , k_init = k_init , d = d)
-    out = .get_stat_single_coverage(nhoods(sce_milo) , quantile.vec)
-    return(out)
-  })
-  stat = as.data.frame( do.call(rbind , stat) )
-  rownames(stat) = k.grid
-  stat = rownames_to_column(stat , var = "k")
-  message(paste0("Finished the estimation of hood sizes ~ k dependancy (order = " , order , ")."))
-  print(stat)
-  return(stat)
+
+  args = c(as.list(environment()))
+  out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim.name)
+
+  # check that k.grid reasonable -- at least 2 values, the the highest is smaller than 1000;
+  # otherwise warn
+  k.grid = sort(unique(k.grid[k.grid > 2]))
+  if (length(k.grid) == 0){
+    stop("No acceptable k values were entered. Input appropriate k.grid (should be positive integers)")
+    return(F)
+  }
+  else {
+    message("Accepted k values:\n" )
+    message(c( paste0( sapply(k.grid[1:length(k.grid) - 1] , function(x) paste0(x , ", "))) , k.grid[length(k.grid)]))
+
+    if (length(k.grid) == 1){
+      warning("You only selected one value for k. If it is intended, we recommend to run directly 'assign_hoods'")
+    }
+    if (max(k.grid) >= 1000){
+      warning("The highest selected value is > 1000. It is gonna cost computationally, and we generally do not recommend
+              such high k. Consider reducing.")
+    }
+    stat = lapply(k.grid , function(k){
+      sce_milo = assign_hoods(sce , k = k , prop = prop , order = order , filtering = filtering,
+                                       reducedDim.name = reducedDim.name , k_init = k_init , d = d)
+      out = .get_stat_single_coverage(nhoods(sce_milo) , quantile.vec)
+      return(out)
+    })
+
+    stat = as.data.frame( do.call(rbind , stat) )
+    rownames(stat) = k.grid
+    stat = rownames_to_column(stat , var = "k")
+    message(paste0("Finished the estimation of hood sizes ~ k dependancy (order = " , order , ")."))
+    print(stat)
+    return(stat)
+  }
 }
 
 

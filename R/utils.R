@@ -232,6 +232,7 @@
   out = .check_argument_correct(dots, "k_init", .check_positive_integer, "Check k_init - should be positive integer")
   out = .check_argument_correct(dots, "prop", .check_prop, "Check prop - should be positive number between 0 and 1")
   out = .check_argument_correct(dots, "filtering", .check_boolean, "Check filtering - should be either TRUE or FALSE")
+  out = .check_argument_correct(dots, "k.grid", is.numeric, "Check k.grid - should be numeric vector")
   return(out)
 }
 
