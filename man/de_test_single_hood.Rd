@@ -7,16 +7,16 @@
 de_test_single_hood(
   sce,
   nhoods_sce,
-  hood.id,
-  sample.id,
-  condition.id,
+  hood_id,
+  sample_id,
+  condition_id,
   covariates = NULL,
   min_n_cells_per_sample = 2,
   gene_selection = "all",
   genes = rownames(sce),
   genes_2_exclude = NULL,
-  min.count = 3,
-  run_separately = F
+  min_count = 3,
+  run_separately = FALSE
 )
 }
 \arguments{
@@ -24,11 +24,11 @@ de_test_single_hood(
 
 \item{nhoods_sce}{Can be extracted from sce as nhoods(sce) prior to running the function. The reason the argument is passed by itself is to avoid calculating it every time.}
 
-\item{hood.id}{Character specifying for which hood we should perform testing. Should be in colnames(nhoods_sce)}
+\item{hood_id}{Character specifying for which hood we should perform testing. Should be in colnames(nhoods_sce)}
 
-\item{sample.id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)}
+\item{sample_id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)}
 
-\item{condition.id}{Character specifying which variable should be used as a condition id. Should be in colData(sce)}
+\item{condition_id}{Character specifying which variable should be used as a condition id. Should be in colData(sce)}
 
 \item{covariates}{Vector specifying if additional covariates should be passed into experimental design. Default = NULL (no covariates)}
 
@@ -40,7 +40,7 @@ de_test_single_hood(
 
 \item{genes_2_exclude}{Character vector of genes which we exlude from the selection. Default = NULL (none). Note that it is upstream of gene selection (if applied).}
 
-\item{min.count}{Positive integer, specifying min.count for gene selection. Default = 5}
+\item{min_count}{Positive integer, specifying min.count for gene selection. Default = 5}
 
 \item{run_separately}{A boolean parameter specifying whether the function is to be run as a part of 'de_test_all_hoods'(F) or as a stand-alone run (T)}
 }
@@ -63,7 +63,7 @@ sce$cell = colnames(sce)
 sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
 reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-sce = assign_hoods(sce, reducedDim.name = "reduced_dim")
+sce = assign_hoods(sce, reducedDim_name = "reduced_dim")
 nhoods_sce = nhoods(sce)
-de_stat = de_test_single_hood(sce , nhoods_sce = nhoods_sce, hood.id = colnames(nhoods_sce)[1] , sample.id = "sample" , condition.id = "type")
+de_stat = de_test_single_hood(sce , nhoods_sce = nhoods_sce, hood_id = colnames(nhoods_sce)[1] , sample_id = "sample" , condition_id = "type")
 }

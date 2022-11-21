@@ -6,34 +6,34 @@
 \usage{
 estimate_hood_sizes(
   sce,
-  k.grid = seq(10, 100, 10),
+  k_grid = seq(10, 100, 10),
   order = 2,
   prop = 0.1,
-  filtering = T,
-  reducedDim.name,
+  filtering = TRUE,
+  reducedDim_name,
   k_init = 50,
   d = 30,
-  quantile.vec = seq(0, 1, 0.25)
+  quantile_vec = seq(0, 1, 0.25)
 )
 }
 \arguments{
 \item{sce}{SCE object}
 
-\item{k.grid}{Vector of positive integers, defines how many neighbours to use for the hood assignment}
+\item{k_grid}{Vector of positive integers, defines how many neighbours to use for the hood assignment}
 
 \item{order}{In {1,2}, defines which order of neighbours to use}
 
 \item{prop}{Numerical, between 0 and 1, defines fraction of cells from SCE to use for the hoods. Default = 0.1.}
 
-\item{filtering}{In {T,F}, defines whether to filter hoods (reduces computing time greatly). Default = TRUE}
+\item{filtering}{In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default = TRUE}
 
-\item{reducedDim.name}{defines the slot in reducedDim(sce) to use as embedding for graph construction}
+\item{reducedDim_name}{defines the slot in reducedDim(sce) to use as embedding for graph construction}
 
 \item{k_init}{Positive integer, defines how many neighbours to use for identifying anchor cells}
 
 \item{d}{Positive integer, defines how many dimensions from reducedDim(sce) to use}
 
-\item{quantile.vec}{Vector of distribution quantiles to be estimated. Default = seq(0,1,0.25)}
+\item{quantile_vec}{Vector of distribution quantiles to be estimated. Default = seq(0,1,0.25)}
 }
 \value{
 
@@ -51,6 +51,6 @@ rownames(sce) = as.factor(1:n_row)
 colnames(sce) = c(1:n_col)
 sce$cell = colnames(sce)
 reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-out = estimate_hood_sizes(sce, k.grid = c(5,10), reducedDim.name = "reduced_dim")
+out = estimate_hood_sizes(sce, k_grid = c(5,10), reducedDim_name = "reduced_dim")
 
 }
