@@ -50,22 +50,22 @@ add_embedding = function(sce ,
 
   # select only relevant genes for the embedding: wither passed with argument genes or in case genes=NULL (default), we will calculate top `n_hvgs` genes
   if (!is.null(genes)){
-    sce = sce[genes , ]
+    sce_w_embedding = sce[genes , ]
   }
   else {
     dec.sce = modelGeneVar(sce , assay.type = assay.type)
     hvgs = getTopHVGs(dec.sce, n = n_hvgs)
-    sce = sce[hvgs , ]
+    sce_w_embedding = sce[hvgs , ]
   }
 
   # if sce doenst have colnames, assign
   if (is.null(colnames)){
     message("Assigning colnames based on provided 'cell.id'.")
-    meta = as.data.frame(colData(sce))
-    colnames(sce) = meta[, cell.id]
+    meta = as.data.frame(colData(sce_w_embedding))
+    colnames(sce_w_embedding) = meta[, cell.id]
   }
   # check that cells_ref and cells_query belong to colnames(sce) and do not overlap
-  out = .check_cells_ref_and_query(colnames(sce) , cells_ref , cells_query)
+  out = .check_cells_ref_and_query(colnames(sce_w_embedding) , cells_ref , cells_query)
 
   # if assay.type == "counts" and reduction_type == "MNN" -> warn the user
   if (assay.type == "counts" & reduction_type == "MNN"){
@@ -73,10 +73,10 @@ add_embedding = function(sce ,
   }
 
   if (reduction_type == "MNN"){
-    sce_w_embedding = .add_mnn_based_embedding(sce , assay.type = assay.type , reducedDim.name = reducedDim.name, sample.id = sample.id, cells_ref = cells_ref, cells_query = cells_query, d = d)
+    sce_w_embedding = .add_mnn_based_embedding(sce_w_embedding , assay.type = assay.type , reducedDim.name = reducedDim.name, sample.id = sample.id, cells_ref = cells_ref, cells_query = cells_query, d = d)
   }
   else if (reduction_type == "Azimuth"){
-    sce_w_embedding = .add_azimuth_embedding(sce , reducedDim.name = reducedDim.name, sample.id = sample.id, cells_ref = cells_ref, cells_query = cells_query, d = d)
+    sce_w_embedding = .add_azimuth_embedding(sce_w_embedding , reducedDim.name = reducedDim.name, sample.id = sample.id, cells_ref = cells_ref, cells_query = cells_query, d = d)
   }
   sce = sce[ , order(colnames(sce))]
   sce_w_embedding = sce_w_embedding[ , order(colnames(sce_w_embedding)) ]

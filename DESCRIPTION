@@ -39,7 +39,9 @@ Imports:
     MatrixGenerics, 
     sparseMatrixStats, 
     Augur,
-    dplyr
+    dplyr,
+    S4Vectors,
+    matrixStats
 Remotes:
     github::MarioniLab/miloR,
     github::neurorestore/Augur,
@@ -52,3 +54,5 @@ Suggests:
     knitr,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
+LazyData: true
+Config/testthat/edition: 3
