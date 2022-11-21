@@ -72,11 +72,14 @@ add_embedding = function(sce ,
   }
 
   if (reduction_type == "MNN"){
-    sce = .add_mnn_based_embedding(sce , assay.type = assay.type , reducedDim.name = reducedDim.name, sample.id = sample.id, cells_ref = cells_ref, cells_query = cells_query, d = d)
+    sce_w_embedding = .add_mnn_based_embedding(sce , assay.type = assay.type , reducedDim.name = reducedDim.name, sample.id = sample.id, cells_ref = cells_ref, cells_query = cells_query, d = d)
   }
   else if (reduction_type == "Azimuth"){
-    sce = .add_azimuth_embedding(sce , reducedDim.name = reducedDim.name, sample.id = sample.id, cells_ref = cells_ref, cells_query = cells_query, d = d)
+    sce_w_embedding = .add_azimuth_embedding(sce , reducedDim.name = reducedDim.name, sample.id = sample.id, cells_ref = cells_ref, cells_query = cells_query, d = d)
   }
+  sce = sce[order(colnames(sce)) , ]
+  sce_w_embedding = sce_w_embedding[order(colnames(sce_w_embedding)) , ]
+  reducedDim(sce , reducedDim.name) = reducedDim(sce_w_embedding , reducedDim.name)
   return(sce)
 
 }
