@@ -6,15 +6,16 @@
 #'
 #' Tests all hoods for DE + performs spatialFDR correction after
 #' @param sce Milo object
-#' @param genes Subset of rownames(sce) for which we will perform DE testing. Default = rownames(sce)
 #' @param sample.id Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)
 #' @param condition.id Character specifying which variable should be used as a condition id. Should be in colData(sce)
 #' @param discard_not_perturbed_hoods Boolean specifying whether perform prior hood selection using Augur based classifier. Note for big datasets it might take a while so recommended if a large portion of hoods is expected to be unperturbed.
 #' @param covariates Vector specifying if additional covariates should be passed into experimental design. Default = NULL (no covariates)
 #' @param min_n_cells_per_sample positive integer specifying the minimun number of cells per replica to be included in testing. Default = 2
-#' @param gene_selection In {"all" , "per_hood"}. If == "per_hood", it will further discard genes not relevant for this particular hood.
-#' If == "all", it will perform overall selection and then test each hood across same genes.
-#' @param min.count Positive integer, specifying min.count for gene selection. Default = 5
+#' @param gene_selection In {"none", "all" , "per_hood"}. If == "per_hood", it will further discard genes not relevant for this particular hood.
+#' If == "all", it will perform overall selection and then test each hood across same genes (default). If "none" = no selection based on expression.
+#' @param genes Character vector of genes for which we will perform DE testing. Default = rownames(sce). Note that it is upstream of gene selection (if applied).
+#' @param genes_2_exclude Character vector of genes which we exlude from the selection. Default = NULL (none). Note that it is upstream of gene selection (if applied).
+#' @param min.count Positive integer, specifying min.count for gene selection. Default = 3.
 #'
 #' @return
 #' @export
@@ -37,43 +38,65 @@
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' sce = assign_hoods(sce, reducedDim.name = "reduced_dim")
-#' de_stat = de_test_all_hoods(sce , condition.id = "type" , discard_not_perturbed_hoods = FALSE)
+#' de_stat = de_test_all_hoods(sce , condition.id = "type" , gene_selection = "none", discard_not_perturbed_hoods = FALSE)
 de_test_all_hoods = function(sce ,
-                             genes = rownames(sce) ,
                              sample.id = "sample",
                              condition.id ,
                              discard_not_perturbed_hoods = c(TRUE,FALSE),
                              covariates = NULL ,
                              min_n_cells_per_sample = 2,
-                             gene_selection = "all" ,
-                             min.count = 2){
+                             gene_selection = c("all","none","per_hood") ,
+                             genes = rownames(sce) ,
+                             genes_2_exclude = NULL,
+                             min.count = 3){
 
-  sce = sce[genes , ]
-  # assign condition and sample ids
-  coldata <- as.data.frame(colData(sce))
-  sce$condition.id <- as.factor( coldata[, condition.id] )
-  sce$sample.id <- as.factor( coldata[, sample.id] )
-  if (discard_not_perturbed_hoods){
-    sce = .filter_not_perturbed_hoods(sce)
+  args = c(as.list(environment()))
+  out = .general_check_arguments(args) &
+    .check_sample_in_coldata_sce(sce , sample.id) & .check_condition_in_coldata_sce(sce , condition.id) &
+    .check_genes_in_sce(sce , genes) & .check_genes_in_sce(sce , genes_2_exclude) &
+    .check_covariates_in_coldata_sce(sce , covariates)
+
+  genes = setdiff(genes , genes_2_exclude)
+
+  if (length(genes) == 0){
+    stop("At least one gene has to be enetred for the testing.")
+    return(F)
   }
-  if (!isFALSE(sce)){
+  else {
+    sce = sce[genes , ]
+    # assign condition and sample ids
+    coldata <- as.data.frame(colData(sce))
+    sce$condition.id <- as.factor( coldata[, condition.id] )
+    sce$sample.id <- as.factor( coldata[, sample.id] )
+    if (discard_not_perturbed_hoods){
+      sce = .filter_not_perturbed_hoods(sce)
+    }
+
     nhoods_sce = nhoods(sce)
 
     if (gene_selection == "all"){
+
+      # select genes that pass filterByExpr threshold
       summed = summarizeAssayByGroup(counts(sce), colData(sce)[,c("condition.id", "sample.id")])
       summed = SingleCellExperiment(list(counts=assay(summed, "sum")), colData=colData(summed))
       y <- DGEList(counts(summed), samples=colData(summed), lib.size = colSums(counts(summed)))
       keep <- filterByExpr(y, group=summed$sample.id , min.count = min.count , min.total.count = round(min.count * 1.5))
-      genes = names(keep)[keep]
-      sce = sce[genes , ]
+      if (sum(keep) == 0){
+        stop("0 genes are selected for testing. Check that 'min.count' is of the appropriate value and possibly decrease it?")
+        return(NULL)
+      }
+      else {
+        genes = names(keep)[keep]
+        sce = sce[genes , ]
+      }
     }
 
-    # get de stat for all hoods
+    # get DE for each hood
     de_stat = lapply(colnames(nhoods_sce) , function(hood.id){
-      out = de_test_single_hood(sce , genes = genes , nhoods_sce = nhoods_sce, hood.id = hood.id,
+      out = de_test_single_hood(sce , nhoods_sce = nhoods_sce, hood.id = hood.id,
                           sample.id = sample.id, condition.id = condition.id, covariates = covariates,
                           min_n_cells_per_sample = min_n_cells_per_sample ,
-                          gene_selection = gene_selection , min.count = min.count)
+                          gene_selection = gene_selection , min.count = min.count , run_separately = F)
       return(out)
     })
     de_stat = do.call(rbind , de_stat)
@@ -100,10 +123,6 @@ de_test_all_hoods = function(sce ,
     de_stat_w_correction = do.call(rbind , de_stat_w_correction)
     return(de_stat_w_correction)
   }
-  else {
-    message("No hoods were tested.")
-    return(F)
-  }
 }
 
 
@@ -112,7 +131,6 @@ de_test_all_hoods = function(sce ,
 #'
 #' Tests single hood for DE. Not intended to be used by itself (however possible), but rather as a part of `de_test_all_hoods`
 #' @param sce Milo object
-#' @param genes Subset of rownames(sce) for which we will perform DE testing. Default = rownames(sce)
 #' @param nhoods_sce Can be extracted from sce as nhoods(sce) prior to running the function. The reason the argument is passed by itself is to avoid calculating it every time.
 #' @param hood.id Character specifying for which hood we should perform testing. Should be in colnames(nhoods_sce)
 #' @param sample.id Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)
@@ -120,7 +138,10 @@ de_test_all_hoods = function(sce ,
 #' @param covariates Vector specifying if additional covariates should be passed into experimental design. Default = NULL (no covariates)
 #' @param min_n_cells_per_sample positive integer specifying the minimun number of cells per replica to be included in testing. Default = 2
 #' @param gene_selection In {"all" , "per_hood"}. If = "per_hood", we will further discard genes not relevant for this particular hood.
+#' @param genes Character vector of genes for which we will perform DE testing. Default = rownames(sce). Note that it is upstream of gene selection (if applied).
+#' @param genes_2_exclude Character vector of genes which we exlude from the selection. Default = NULL (none). Note that it is upstream of gene selection (if applied).
 #' @param min.count Positive integer, specifying min.count for gene selection. Default = 5
+#' @param run_separately A boolean parameter specifying whether the function is to be run as a part of 'de_test_all_hoods'(F) or as a stand-alone run (T)
 #'
 #' @return
 #' @export
@@ -145,72 +166,103 @@ de_test_all_hoods = function(sce ,
 #' sce = assign_hoods(sce, reducedDim.name = "reduced_dim")
 #' nhoods_sce = nhoods(sce)
 #' de_stat = de_test_single_hood(sce , nhoods_sce = nhoods_sce, hood.id = colnames(nhoods_sce)[1] , sample.id = "sample" , condition.id = "type")
-de_test_single_hood = function(sce , genes = rownames(sce) , nhoods_sce , hood.id , sample.id , condition.id , covariates = NULL,
-                               min_n_cells_per_sample = 2 , gene_selection = "all" , min.count = 5){
-  sce = sce[genes , ]
-  coldata <- as.data.frame(colData(sce))
+de_test_single_hood = function(sce , nhoods_sce , hood.id , sample.id , condition.id , covariates = NULL,
+                               min_n_cells_per_sample = 2 , gene_selection = "all" , genes = rownames(sce) ,
+                               genes_2_exclude = NULL, min.count = 3 ,
+                               run_separately = F){
 
-  # assign condition and sample ids
-  sce$condition.id <- as.factor( coldata[, condition.id] )
-  sce$sample.id <- as.factor( coldata[, sample.id] )
+  # if 'de_test_single_hood' is a part of the the main run - these steps have already been carried out before
+  if (run_separately){
+    args = c(as.list(environment()))
+    out = .general_check_arguments(args)
 
-  # select cells
+    genes = setdiff(genes , genes_2_exclude)
+    sce = sce[genes , ]
+    coldata <- as.data.frame(colData(sce))
+
+    # assign condition and sample ids
+    sce$condition.id <- as.factor( coldata[, condition.id] )
+    sce$sample.id <- as.factor( coldata[, sample.id] )
+  }
+
+  # select cells in the hood
   current.cells = which(nhoods_sce[,hood.id] == 1)
   current.sce = sce[,current.cells]
   current.sce = .filter_samples_with_low_n_cells_in_hood(current.sce , min_n_cells_per_sample = min_n_cells_per_sample)
 
+  # assess sample composition
   tab = table(current.sce$sample.id , current.sce$condition.id)
 
   if (ncol(tab) < 2){
-    stat = .return_null_stat(genes)
+    stat = .return_null_stat(genes , sufficient_n_samples = F, design_matrix_suitable = F)
   }
   else if (sum(tab[,1] > 0) == 0 | sum(tab[,2] > 0) == 0 | sum(tab > 0) <= 3){
-    stat = .return_null_stat(genes)
+    stat = .return_null_stat(genes , sufficient_n_samples = F , design_matrix_suitable = F)
   }
   else {
     summed = summarizeAssayByGroup(counts(current.sce), colData(current.sce)[,c("condition.id", "sample.id" , covariates)])
     summed = SingleCellExperiment(list(counts=assay(summed, "sum")), colData=colData(summed))
     y <- DGEList(counts(summed), samples=colData(summed), lib.size = colSums(counts(summed)))
-    # make sure covariates have contrasts; delete covariates that don't
-    meta_y = as.data.frame(y$samples)
 
-    if (!is.null(covariates)){
-      covariates_2_keep = sapply(covariates , function(covariate){
-        tab = table(meta_y[, covariate] , meta_y$condition.id)
-        if (nrow(tab) == 1 | ncol(tab) == 1 | max(rowMins(tab)) == 0){
-          return(F)
-        }
-        else {
-          return(T)
-        }
-      })
-      covariates_2_keep = names(covariates_2_keep)[covariates_2_keep]
-      if (length(covariates_2_keep) == 0){
-        covariates_2_keep = NULL
-      }
-    }
-    else {
-      covariates_2_keep = NULL
-    }
+    # # make sure covariates have contrasts; delete covariates that don't
+    # meta_y = as.data.frame(y$samples)
+    #
+    # if (!is.null(covariates)){
+    #   covariates_2_keep = sapply(covariates , function(covariate){
+    #     tab = table(meta_y[, covariate] , meta_y$condition.id)
+    #     if (nrow(tab) == 1 | ncol(tab) == 1 | max(rowMins(tab)) == 0){
+    #       return(F)
+    #     }
+    #     else {
+    #       return(T)
+    #     }
+    #   })
+    #   covariates_2_keep = names(covariates_2_keep)[covariates_2_keep]
+    #   if (length(covariates_2_keep) == 0){
+    #     covariates_2_keep = NULL
+    #   }
+    # }
+    # else {
+    #   covariates_2_keep = NULL
+    # }
 
 
     if (gene_selection == "per_hood"){
       keep <- filterByExpr(y, group=summed$sample.id , min.count = min.count , min.total.count = round(min.count * 1.5))
-      y <- y[keep,]
+      if (sum(keep) == 0){
+        stop(paste0("For hood_id " , hood.id , " 0 genes are selected for testing. Check that 'min.count' is of the appropriate value and possibly decrease it?"))
+        return(NULL)
+      }
+      else {
+        y <- y[keep,]
+      }
     }
     y <- calcNormFactors(y)
-    if (!is.null(covariates_2_keep)){
-      design <- model.matrix(as.formula( paste("~ ", paste(covariates_2_keep, collapse="+"),sep = "" , " + condition.id") ) , y$samples)
-    }
-    else {
-      design <- model.matrix(~condition.id , y$samples)
-    }
-    y <- estimateDisp(y, design)
-    fit <- glmQLFit(y, design, robust=TRUE)
-    res <- glmQLFTest(fit, coef=ncol(design))
-    stat = as.data.frame(topTags(res, n = Inf ) )
-    stat = stat[order(rownames(stat)) , c("logFC" , "logCPM" , "PValue" , "FDR")]
-    stat = rownames_to_column(stat , var = "gene")
+
+    stat = tryCatch(
+      {
+        if (!is.null(covariates)){
+          design <- model.matrix(as.formula( paste("~ ", paste(covariates, collapse="+"),sep = "" , " + condition.id") ) , y$samples)
+        }
+        else {
+          design <- model.matrix(~condition.id , y$samples)
+        }
+        y <- estimateDisp(y, design)
+        fit <- glmQLFit(y, design, robust=TRUE)
+        res <- glmQLFTest(fit, coef=ncol(design))
+        out = as.data.frame(topTags(res, n = Inf ) )
+        out = out[order(rownames(out)) , c("logFC" , "logCPM" , "PValue" , "FDR")]
+        out = rownames_to_column(out , var = "gene")
+        out$sufficient_n_samples = T
+        out$design_matrix_suitable = T
+        out
+      },
+      error=function(dump){
+        warning(paste0("For hood_id " , hood.id , " test can not be performed with given design matrix. Reassess the covariates."))
+        out = .return_null_stat(genes , sufficient_n_samples = T , design_matrix_suitable = F)
+        return(out)
+      }
+    )
   }
   stat$Nhood_id = hood.id
   return(stat)
@@ -289,18 +341,20 @@ de_test_single_hood = function(sce , genes = rownames(sce) , nhoods_sce , hood.i
 #'
 .filter_samples_with_low_n_cells_in_hood = function(sce , min_n_cells_per_sample = 2){
   tab = table(sce$sample.id)
-  samples_2_keep = names(tab)[tab > min_n_cells_per_sample]
+  samples_2_keep = names(tab)[tab >= min_n_cells_per_sample]
   sce = sce[, sce$sample.id %in% samples_2_keep]
   return(sce)
 }
 
 #'
-.return_null_stat = function(genes){
+.return_null_stat = function(genes , sufficient_n_samples = c(T,F) , design_matrix_suitable = c(T,F)){
   genes = genes[order(genes)]
-  stat = data.frame(logFC = NaN, logCPM = NaN, PValue = NaN, FDR = NaN)
+  stat = data.frame(logFC = NaN, logCPM = NaN, PValue = NaN, FDR = NaN ,
+                    sufficient_n_samples = sufficient_n_samples,
+                    design_matrix_suitable = design_matrix_suitable)
   stat = stat[rep(seq_len(nrow(stat)), each = length(genes)), ]
   stat$gene = genes
-  stat = stat[, c("gene", "logFC" , "logCPM" , "PValue" , "FDR")]
+  stat = stat[, c("gene", "logFC" , "logCPM" , "PValue" , "FDR" , "sufficient_n_samples" , "design_matrix_suitable")]
   return(stat)
 }
 

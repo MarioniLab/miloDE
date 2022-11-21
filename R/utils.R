@@ -116,6 +116,30 @@
 }
 
 
+#' @importFrom SingleCellExperiment colData
+.check_covariates_in_coldata_sce = function(sce , covariates){
+  if (.check_sce(sce)){
+    coldata = colnames(colData(sce))
+    for (covariate in covariates){
+      if (!covariate %in% coldata){
+        stop(paste0(covariate , " covariate not in colnames(colData(sce)). Please ensure that all covariates are present."))
+        return(F)
+      }
+      else {
+        tab = table(colData(sce)[, covariate])
+        if (length(tab)){
+          stop(paste0("Covariate '" , covariate , "' has only 1 contrast. Please exclude it prior to testing."))
+          return(F)
+        }
+        else {
+          return(T)
+        }
+      }
+    }
+  }
+}
+
+
 .check_cell_id_in_sce = function(sce , cell.id){
   if (is.null(cell.id) & is.null(colnames(sce))){
     stop("If colnames(sce) are NULL, cell.id has to be specified in order to assgin unique cell identifiers.")
@@ -210,12 +234,54 @@
 }
 
 
+.check_quantile_vec = function(quantile.vec){
+  if (!is.numeric(quantile.vec)){
+    stop("Check quantile.vec - should be numeric vector")
+    return(F)
+  } else {
+    quantile.vec = sort(unique(quantile.vec))
+    if (min(quantile.vec) < 0 | max(quantile.vec) > 1){
+      stop("quantile.vec should have all its values between 0 and 1. Please enter valid quantile.vec.")
+      return(F)
+    }
+    else {
+      return(T)
+    }
+  }
+}
+
+.check_k_grid = function(k.grid){
+  if (!is.numeric(k.grid)){
+    stop("Check k.grid - should be numeric vector")
+    return(F)
+  } else {
+    k.grid = sort(unique(k.grid))
+    if (min(k.grid) < 0){
+      stop("Values of k.grid should be positive integers. Please enter valid quantile.vec.")
+      return(F)
+    }
+    else {
+      if (length(k.grid) == 1){
+        warning("You only selected one value for k. If it is intended, we recommend to run directly 'assign_hoods'")
+      }
+      if (max(k.grid) >= 1000){
+        warning("The highest selected value is > 1000. It is gonna cost computationally, and we generally do not recommend
+              such high k. Consider reducing.")
+      }
+      return(T)
+    }
+  }
+}
+
+
+
 
 .general_check_arguments = function(dots){
   out = TRUE
   out = .check_argument_correct(dots, "sce", .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)")
   out = .check_argument_correct(dots, "sce_milo", .check_sce_milo, "Check sce_milo - something is wrong. Calculate 'assign_hoods' first.)")
   out = .check_argument_correct(dots, "genes", .check_string_or_null, "Check genes - should be NULL or character vector")
+  out = .check_argument_correct(dots, "genes_2_exclude", .check_string_or_null, "Check genes_2_exclude - should be NULL or character vector")
   out = .check_argument_correct(dots, "n_hvgs", .check_positive_integer, "Check n_hvgs - should be positive integer")
   out = .check_argument_correct(dots, "assay.type", function(x) .check_arg_within_options(x, c("counts", "logcounts")),
                                 "Check assay.type - should be either 'counts' or 'logcounts'")
@@ -233,6 +299,14 @@
   out = .check_argument_correct(dots, "prop", .check_prop, "Check prop - should be positive number between 0 and 1")
   out = .check_argument_correct(dots, "filtering", .check_boolean, "Check filtering - should be either TRUE or FALSE")
   out = .check_argument_correct(dots, "k.grid", is.numeric, "Check k.grid - should be numeric vector")
+  out = .check_argument_correct(dots, "quantile.vec", is.numeric, "Check quantile.vec - should be numeric vector")
+  out = .check_argument_correct(dots, "discard_not_perturbed_hoods", .check_boolean, "Check discard_not_perturbed_hoods - should be either TRUE or FALSE")
+  out = .check_argument_correct(dots, "gene_selection", function(x) .check_arg_within_options(x, c("all", "none", "per_hood")),
+                                "Check gene_selection - should be either 'all', 'none' or 'per_hood'")
+  out = .check_argument_correct(dots, "min_n_cells_per_sample", .check_positive_integer, "Check min_n_cells_per_sample - should be positive integer")
+  out = .check_argument_correct(dots, "min.count", .check_positive_integer, "Check min.count - should be positive integer")
+  out = .check_argument_correct(dots, "run_separately", .check_boolean, "Check run_separately - should be either TRUE or FALSE")
+  out = .check_argument_correct(dots, "covariates", .check_string_or_null, "Check covariates - should be NULL or character vector")
   return(out)
 }
 

@@ -6,20 +6,19 @@
 \usage{
 de_test_all_hoods(
   sce,
-  genes = rownames(sce),
   sample.id = "sample",
   condition.id,
   discard_not_perturbed_hoods = c(TRUE, FALSE),
   covariates = NULL,
   min_n_cells_per_sample = 2,
-  gene_selection = "all",
-  min.count = 2
+  gene_selection = c("all", "none", "per_hood"),
+  genes = rownames(sce),
+  genes_2_exclude = NULL,
+  min.count = 3
 )
 }
 \arguments{
 \item{sce}{Milo object}
-
-\item{genes}{Subset of rownames(sce) for which we will perform DE testing. Default = rownames(sce)}
 
 \item{sample.id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)}
 
@@ -31,10 +30,14 @@ de_test_all_hoods(
 
 \item{min_n_cells_per_sample}{positive integer specifying the minimun number of cells per replica to be included in testing. Default = 2}
 
-\item{gene_selection}{In {"all" , "per_hood"}. If == "per_hood", it will further discard genes not relevant for this particular hood.
-If == "all", it will perform overall selection and then test each hood across same genes.}
+\item{gene_selection}{In {"none", "all" , "per_hood"}. If == "per_hood", it will further discard genes not relevant for this particular hood.
+If == "all", it will perform overall selection and then test each hood across same genes (default). If "none" = no selection based on expression.}
 
-\item{min.count}{Positive integer, specifying min.count for gene selection. Default = 5}
+\item{genes}{Character vector of genes for which we will perform DE testing. Default = rownames(sce). Note that it is upstream of gene selection (if applied).}
+
+\item{genes_2_exclude}{Character vector of genes which we exlude from the selection. Default = NULL (none). Note that it is upstream of gene selection (if applied).}
+
+\item{min.count}{Positive integer, specifying min.count for gene selection. Default = 3.}
 }
 \value{
 
@@ -55,5 +58,5 @@ sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
 reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 sce = assign_hoods(sce, reducedDim.name = "reduced_dim")
-de_stat = de_test_all_hoods(sce , condition.id = "type" , discard_not_perturbed_hoods = FALSE)
+de_stat = de_test_all_hoods(sce , condition.id = "type" , gene_selection = "none", discard_not_perturbed_hoods = FALSE)
 }

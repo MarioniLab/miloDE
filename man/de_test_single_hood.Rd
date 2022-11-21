@@ -6,7 +6,6 @@
 \usage{
 de_test_single_hood(
   sce,
-  genes = rownames(sce),
   nhoods_sce,
   hood.id,
   sample.id,
@@ -14,13 +13,14 @@ de_test_single_hood(
   covariates = NULL,
   min_n_cells_per_sample = 2,
   gene_selection = "all",
-  min.count = 5
+  genes = rownames(sce),
+  genes_2_exclude = NULL,
+  min.count = 3,
+  run_separately = F
 )
 }
 \arguments{
 \item{sce}{Milo object}
-
-\item{genes}{Subset of rownames(sce) for which we will perform DE testing. Default = rownames(sce)}
 
 \item{nhoods_sce}{Can be extracted from sce as nhoods(sce) prior to running the function. The reason the argument is passed by itself is to avoid calculating it every time.}
 
@@ -36,7 +36,13 @@ de_test_single_hood(
 
 \item{gene_selection}{In {"all" , "per_hood"}. If = "per_hood", we will further discard genes not relevant for this particular hood.}
 
+\item{genes}{Character vector of genes for which we will perform DE testing. Default = rownames(sce). Note that it is upstream of gene selection (if applied).}
+
+\item{genes_2_exclude}{Character vector of genes which we exlude from the selection. Default = NULL (none). Note that it is upstream of gene selection (if applied).}
+
 \item{min.count}{Positive integer, specifying min.count for gene selection. Default = 5}
+
+\item{run_separately}{A boolean parameter specifying whether the function is to be run as a part of 'de_test_all_hoods'(F) or as a stand-alone run (T)}
 }
 \value{
 
