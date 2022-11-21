@@ -19,6 +19,7 @@
 #' @export
 #'
 #' @importFrom scran modelGeneVar getTopHVGs
+#' @importFrom SingleCellExperiment reducedDim
 #' @examples
 #' require(SingleCellExperiment)
 #' n_row = 500
@@ -77,8 +78,8 @@ add_embedding = function(sce ,
   else if (reduction_type == "Azimuth"){
     sce_w_embedding = .add_azimuth_embedding(sce , reducedDim.name = reducedDim.name, sample.id = sample.id, cells_ref = cells_ref, cells_query = cells_query, d = d)
   }
-  sce = sce[order(colnames(sce)) , ]
-  sce_w_embedding = sce_w_embedding[order(colnames(sce_w_embedding)) , ]
+  sce = sce[ , order(colnames(sce))]
+  sce_w_embedding = sce_w_embedding[ , order(colnames(sce_w_embedding)) ]
   reducedDim(sce , reducedDim.name) = reducedDim(sce_w_embedding , reducedDim.name)
   return(sce)
 
