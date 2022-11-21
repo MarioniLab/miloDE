@@ -9,8 +9,8 @@ assign_hoods(
   k = 25,
   prop = 0.2,
   order = 2,
-  filtering = T,
-  reducedDim.name,
+  filtering = TRUE,
+  reducedDim_name,
   k_init = 50,
   d = 30
 )
@@ -24,9 +24,9 @@ assign_hoods(
 
 \item{order}{In {1,2}, defines which order of neighbours to use}
 
-\item{filtering}{In {T,F}, defines whether to filter hoods (reduces computing time greatly). Default = TRUE}
+\item{filtering}{In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default = TRUE}
 
-\item{reducedDim.name}{defines the slot in reducedDim(sce) to use as embedding for graph construction}
+\item{reducedDim_name}{defines the slot in reducedDim(sce) to use as embedding for graph construction}
 
 \item{k_init}{Positive integer, defines how many neighbours to use for identifying anchor cells}
 
@@ -48,5 +48,5 @@ rownames(sce) = as.factor(1:n_row)
 colnames(sce) = c(1:n_col)
 sce$cell = colnames(sce)
 reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-out = assign_hoods(sce, reducedDim.name = "reduced_dim")
+out = assign_hoods(sce, reducedDim_name = "reduced_dim")
 }

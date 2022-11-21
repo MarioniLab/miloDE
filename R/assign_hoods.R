@@ -7,8 +7,8 @@
 #' @param k Positive integer, defines how many neighbours to use for the hood assignment
 #' @param prop Numerical, between 0 and 1, defines fraction of cells from SCE to use for the hoods
 #' @param order In {1,2}, defines which order of neighbours to use
-#' @param filtering In {T,F}, defines whether to filter hoods (reduces computing time greatly). Default = TRUE
-#' @param reducedDim.name defines the slot in reducedDim(sce) to use as embedding for graph construction
+#' @param filtering In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default = TRUE
+#' @param reducedDim_name defines the slot in reducedDim(sce) to use as embedding for graph construction
 #' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells
 #' @param d Positive integer, defines how many dimensions from reducedDim(sce) to use
 #'
@@ -29,25 +29,25 @@
 #' colnames(sce) = c(1:n_col)
 #' sce$cell = colnames(sce)
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-#' out = assign_hoods(sce, reducedDim.name = "reduced_dim")
-assign_hoods = function(sce , k = 25, prop = 0.2, order = 2, filtering = T, reducedDim.name , k_init = 50, d = 30){
+#' out = assign_hoods(sce, reducedDim_name = "reduced_dim")
+assign_hoods = function(sce , k = 25, prop = 0.2, order = 2, filtering = TRUE, reducedDim_name , k_init = 50, d = 30){
 
   args = c(as.list(environment()))
-  out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim.name)
+  out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim_name)
 
-  d <- min(d , ncol(reducedDim(sce , reducedDim.name)))
+  d <- min(d , ncol(reducedDim(sce , reducedDim_name)))
   k_init <- min(k , k_init)
   if (is(sce , "SingleCellExperiment")){
     sce = Milo(sce)
     # build 1st order to sample vertices
     k_init <- min(k , k_init)
-    sce <- buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim.name)
+    sce <- buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim_name)
   }
   else {
     message("SCE is Milo object. Checking if graph is already constructed.")
     if (length(miloR::graph(sce)) == 0){
       message("Graph is not constructed yet. Building now.")
-      sce <- buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim.name)
+      sce <- buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim_name)
     }
   }
   # find anchor cells
@@ -55,7 +55,7 @@ assign_hoods = function(sce , k = 25, prop = 0.2, order = 2, filtering = T, redu
 
   # rebuild to the actual graph, with parameters specified by user
   if (!k == k_init){
-    sce <- buildGraph(sce, k = k, d = d, reduced.dim = reducedDim.name)
+    sce <- buildGraph(sce, k = k, d = d, reduced.dim = reducedDim_name)
   }
   # if order == 2 -- reassign edges
   if (order == 2){

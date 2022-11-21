@@ -8,13 +8,13 @@ add_embedding(
   sce,
   genes = NULL,
   n_hvgs = 3000,
-  assay.type = "logcounts",
+  assay_type = "logcounts",
   reduction_type = c("Azimuth", "MNN"),
-  reducedDim.name,
-  sample.id = "sample",
+  reducedDim_name,
+  sample_id = "sample",
   cells_ref,
   cells_query,
-  cell.id = NULL,
+  cell_id = NULL,
   d = 30
 )
 }
@@ -25,19 +25,19 @@ add_embedding(
 
 \item{n_hvgs}{number of HVGs to retain for the joint embedding estimation}
 
-\item{assay.type}{A string specifying the assay in SCE containing the expression values to be used (default = "logcounts")}
+\item{assay_type}{A string specifying the assay in SCE containing the expression values to be used (default = "logcounts")}
 
 \item{reduction_type}{Either "Azimuth" or "MNN" - specifying which method to use for the embedding estimation}
 
-\item{reducedDim.name}{String specifying the name under which to save the joint embedding}
+\item{reducedDim_name}{String specifying the name under which to save the joint embedding}
 
-\item{sample.id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)}
+\item{sample_id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)}
 
 \item{cells_ref}{IDs of cells from reference samples}
 
 \item{cells_query}{IDs of cells from query samples}
 
-\item{cell.id}{Character specifying which variable should be used as a cell id (if colnames(sce) are not specified).}
+\item{cell_id}{Character specifying which variable should be used as a cell id (if colnames(sce) are not specified).}
 
 \item{d}{Positive integer specifying number of dimensions in the joint embedding}
 }
@@ -58,5 +58,5 @@ sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
 rownames(sce) = as.factor(1:n_row)
 colnames(sce) = c(1:n_col)
 sce$cell = colnames(sce)
-out = add_embedding(sce, reduction_type = "MNN" , reducedDim.name = "MNN", cells_ref = colnames(sce[, sce$type == "ref"]) ,  cells_query = colnames(sce[, sce$type == "query"]) , d = 5)
+out = add_embedding(sce, reduction_type = "MNN" , reducedDim_name = "MNN", cells_ref = colnames(sce[, sce$type == "ref"]) ,  cells_query = colnames(sce[, sce$type == "query"]) , d = 5)
 }
