@@ -1,12 +1,12 @@
 
 
-#' de_test_all_hoods
+#' de_test_all_neighbourhoods
 #'
 #' Tests all hoods for DE + performs spatialFDR correction after
 #' @param sce Milo object
 #' @param sample_id Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)
 #' @param condition_id Character specifying which variable should be used as a condition id. Should be in colData(sce)
-#' @param discard_not_perturbed_hoods Boolean specifying whether perform prior hood selection using Augur based classifier. Note for big datasets it might take a while so recommended if a large portion of hoods is expected to be unperturbed.
+#' @param discard_not_perturbed_neighbourhoods Boolean specifying whether perform prior hood selection using Augur based classifier. Note for big datasets it might take a while so recommended if a large portion of hoods is expected to be unperturbed.
 #' @param covariates Vector specifying if additional covariates should be passed into experimental design. Default = NULL (no covariates)
 #' @param min_n_cells_per_sample positive integer specifying the minimun number of cells per replica to be included in testing. Default = 2
 #' @param gene_selection In {"none", "all" , "per_hood"}. If == "per_hood", it will further discard genes not relevant for this particular hood.
@@ -35,12 +35,12 @@
 #' sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-#' sce = assign_hoods(sce, reducedDim_name = "reduced_dim")
-#' de_stat = de_test_all_hoods(sce , condition_id = "type" , gene_selection = "none", discard_not_perturbed_hoods = FALSE)
-de_test_all_hoods = function(sce ,
+#' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
+#' de_stat = de_test_all_neighbourhoods(sce , condition_id = "type" , gene_selection = "none", discard_not_perturbed_neighbourhoods = FALSE)
+de_test_all_neighbourhoods = function(sce ,
                              sample_id = "sample",
                              condition_id ,
-                             discard_not_perturbed_hoods = c(TRUE,FALSE),
+                             discard_not_perturbed_neighbourhoods = c(TRUE,FALSE),
                              covariates = NULL ,
                              min_n_cells_per_sample = 2,
                              gene_selection = c("all","none","per_hood") ,
@@ -66,8 +66,8 @@ de_test_all_hoods = function(sce ,
     coldata <- as.data.frame(colData(sce))
     sce$condition.id <- as.factor( coldata[, condition_id] )
     sce$sample.id <- as.factor( coldata[, sample_id] )
-    if (discard_not_perturbed_hoods){
-      sce = .filter_not_perturbed_hoods(sce)
+    if (discard_not_perturbed_neighbourhoods){
+      sce = .filter_not_perturbed_neighbourhoods(sce)
     }
 
     nhoods_sce = nhoods(sce)
@@ -91,10 +91,10 @@ de_test_all_hoods = function(sce ,
 
     # get DE for each hood
     de_stat = lapply(colnames(nhoods_sce) , function(hood_id){
-      out = de_test_single_hood(sce , nhoods_sce = nhoods_sce, hood_id = hood_id,
+      out = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce, hood_id = hood_id,
                                 sample_id = sample_id, condition_id = condition_id, covariates = covariates,
-                          min_n_cells_per_sample = min_n_cells_per_sample ,
-                          gene_selection = gene_selection , min_count = min_count , run_separately = F)
+                                min_n_cells_per_sample = min_n_cells_per_sample ,
+                                gene_selection = gene_selection , min_count = min_count , run_separately = F)
       return(out)
     })
     de_stat = do.call(rbind , de_stat)
@@ -125,7 +125,7 @@ de_test_all_hoods = function(sce ,
 
 
 
-#' de_test_single_hood
+#' de_test_single_neighbourhood
 #'
 #' Tests single hood for DE. Not intended to be used by itself (however possible), but rather as a part of `de_test_all_hoods`
 #' @param sce Milo object
@@ -162,10 +162,10 @@ de_test_all_hoods = function(sce ,
 #' sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-#' sce = assign_hoods(sce, reducedDim_name = "reduced_dim")
+#' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
 #' nhoods_sce = nhoods(sce)
-#' de_stat = de_test_single_hood(sce , nhoods_sce = nhoods_sce, hood_id = colnames(nhoods_sce)[1] , sample_id = "sample" , condition_id = "type")
-de_test_single_hood = function(sce , nhoods_sce , hood_id , sample_id , condition_id , covariates = NULL,
+#' de_stat = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce, hood_id = colnames(nhoods_sce)[1] , sample_id = "sample" , condition_id = "type")
+de_test_single_neighbourhood = function(sce , nhoods_sce , hood_id , sample_id , condition_id , covariates = NULL,
                                min_n_cells_per_sample = 1 , gene_selection = "all" , genes = rownames(sce) ,
                                genes_2_exclude = NULL, min_count = 3 ,
                                run_separately = FALSE){
@@ -277,7 +277,7 @@ de_test_single_hood = function(sce , nhoods_sce , hood_id , sample_id , conditio
 #' @importFrom SingleCellExperiment colData
 #' @importFrom miloR buildNhoodGraph nhoodIndex nhoods
 #'
-.filter_not_perturbed_hoods <- function(sce){
+.filter_not_perturbed_neighbourhoods <- function(sce){
 
   # assign condition and sample ids
   coldata <- as.data.frame(colData(sce))
