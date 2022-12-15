@@ -3,7 +3,6 @@
 export(assign_neighbourhoods)
 export(de_test_all_hoods)
 export(de_test_single_hood)
-export(estimate_hood_sizes)
 export(estimate_neighbourhood_sizes)
 export(filter_neighbourhoods)
 export(spatial_pval_adjustment)
