@@ -1,4 +1,4 @@
-#' estimate_hood_sizes
+#' estimate_neighbourhood_sizes
 #'
 #' For a grid of k (order fixed), return hood size distribution; that will help a user to select appropriate k
 #' @param sce SCE object
@@ -25,9 +25,9 @@
 #' colnames(sce) = c(1:n_col)
 #' sce$cell = colnames(sce)
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-#' out = estimate_hood_sizes(sce, k_grid = c(5,10), reducedDim_name = "reduced_dim")
+#' out = estimate_neighbourhood_sizes(sce, k_grid = c(5,10), reducedDim_name = "reduced_dim")
 #'
-estimate_hood_sizes = function(sce, k_grid = seq(10,100,10) , order = 2, prop = 0.1 , filtering = TRUE,
+estimate_neighbourhood_sizes = function(sce, k_grid = seq(10,100,10) , order = 2, prop = 0.1 , filtering = TRUE,
                                reducedDim_name , k_init = 50 , d = 30 , quantile_vec = seq(0 , 1 , 0.25)){
 
   args = c(as.list(environment()))
@@ -43,7 +43,7 @@ estimate_hood_sizes = function(sce, k_grid = seq(10,100,10) , order = 2, prop = 
 
   stat = lapply(k_grid , function(k){
     sce_milo = assign_hoods(sce , k = k , prop = prop , order = order , filtering = filtering,
-                                       reducedDim_name = reducedDim_name , k_init = k_init , d = d)
+                            reducedDim_name = reducedDim_name , k_init = k_init , d = d)
     out = .get_stat_single_coverage(nhoods(sce_milo) , quantile_vec)
     return(out)
   })
@@ -51,7 +51,7 @@ estimate_hood_sizes = function(sce, k_grid = seq(10,100,10) , order = 2, prop = 
   stat = as.data.frame( do.call(rbind , stat) )
   rownames(stat) = k_grid
   stat = rownames_to_column(stat , var = "k")
-  message(paste0("Finished the estimation of hood sizes ~ k dependancy (order = " , order , ")."))
+  message(paste0("Finished the estimation of neighbourhood sizes ~ k dependancy (order = " , order , ")."))
   print(stat)
   return(stat)
 }
