@@ -11,7 +11,7 @@ de_test_single_hood(
   sample_id,
   condition_id,
   covariates = NULL,
-  min_n_cells_per_sample = 2,
+  min_n_cells_per_sample = 1,
   gene_selection = "all",
   genes = rownames(sce),
   genes_2_exclude = NULL,

@@ -1,6 +1,6 @@
 
 
-#' assign_hoods
+#' assign_neighbourhoods
 #'
 #' Assign hoods to SCE object
 #' @param sce SCE object
@@ -29,8 +29,8 @@
 #' colnames(sce) = c(1:n_col)
 #' sce$cell = colnames(sce)
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-#' out = assign_hoods(sce, reducedDim_name = "reduced_dim")
-assign_hoods = function(sce , k = 25, prop = 0.2, order = 2, filtering = TRUE, reducedDim_name , k_init = 50, d = 30){
+#' out = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
+assign_neighbourhoods = function(sce , k = 25, prop = 0.2, order = 2, filtering = TRUE, reducedDim_name , k_init = 50, d = 30){
 
   args = c(as.list(environment()))
   out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim_name)

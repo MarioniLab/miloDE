@@ -166,7 +166,7 @@ de_test_all_hoods = function(sce ,
 #' nhoods_sce = nhoods(sce)
 #' de_stat = de_test_single_hood(sce , nhoods_sce = nhoods_sce, hood_id = colnames(nhoods_sce)[1] , sample_id = "sample" , condition_id = "type")
 de_test_single_hood = function(sce , nhoods_sce , hood_id , sample_id , condition_id , covariates = NULL,
-                               min_n_cells_per_sample = 2 , gene_selection = "all" , genes = rownames(sce) ,
+                               min_n_cells_per_sample = 1 , gene_selection = "all" , genes = rownames(sce) ,
                                genes_2_exclude = NULL, min_count = 3 ,
                                run_separately = FALSE){
 
