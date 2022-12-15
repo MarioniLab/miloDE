@@ -1,6 +1,6 @@
 
 
-#' filter_hoods
+#' filter_neighbourhoods
 #'
 #' Filtering redundant hoods, using the greedy approach to set cover problem
 #' @param sce_milo A Milo object (SCE + assigned hoods)
@@ -20,8 +20,8 @@
 #' sce$cell = colnames(sce)
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' sce = assign_hoods(sce, reducedDim_name = "reduced_dim" , k = 10 , order = 1)
-#' sce = filter_hoods(sce)
-filter_hoods = function(sce_milo){
+#' sce = filter_neighbourhoods(sce)
+filter_neighbourhoods = function(sce_milo){
 
   args = c(as.list(environment()))
   out = .general_check_arguments(args)
