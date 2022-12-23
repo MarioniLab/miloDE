@@ -19,13 +19,13 @@
 #' colnames(sce) = c(1:n_col)
 #' sce$cell = colnames(sce)
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-#' sce = assign_hoods(sce, reducedDim_name = "reduced_dim" , k = 10 , order = 1)
+#' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim" , k = 10 , order = 1)
 #' sce = filter_neighbourhoods(sce)
 filter_neighbourhoods = function(sce_milo){
 
-  args = c(as.list(environment()))
-  out = .general_check_arguments(args)
-
+  #args = c(as.list(environment()))
+  #out = .general_check_arguments(args)
+  out = .check_argument_correct(sce_milo, .check_sce_milo, "Check sce_milo - something is wrong. Calculate 'assign_neighbourhoods' first.)")
 
   nhoods_sce = nhoods(sce_milo)
   stat_hoods = lapply(1:ncol(nhoods_sce) , function(i){

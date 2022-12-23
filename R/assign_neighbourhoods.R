@@ -32,8 +32,19 @@
 #' out = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
 assign_neighbourhoods = function(sce , k = 25, prop = 0.2, order = 2, filtering = TRUE, reducedDim_name , k_init = 50, d = 30){
 
-  args = c(as.list(environment()))
-  out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim_name)
+  #args = c(as.list(environment()))
+  #out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim_name)
+  out = .check_argument_correct(sce, .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)") &
+        .check_argument_correct(k, .check_positive_integer, "Check k - should be positive integer") &
+        .check_argument_correct(prop, .check_prop, "Check prop - should be positive number between 0 and 1") &
+        .check_argument_correct(order, function(x) .check_arg_within_options(x, c(1,2)),
+                                      "Check order - should be either 1 (standard kNN-graph) or 2 (2nd-order kNN-graph)") &
+        .check_argument_correct(filtering, .check_boolean, "Check filtering - should be either TRUE or FALSE") &
+        .check_argument_correct(reducedDim_name, is.character, "Check reducedDim_name - should be character vector") &
+        .check_argument_correct(k_init, .check_positive_integer, "Check k_init - should be positive integer") &
+        .check_argument_correct(d, .check_positive_integer, "Check d - should be positive integer") &
+        .check_reducedDim_in_sce(sce , reducedDim_name)
+
 
   d <- min(d , ncol(reducedDim(sce , reducedDim_name)))
   k_init <- min(k , k_init)
@@ -79,13 +90,13 @@ assign_neighbourhoods = function(sce , k = 25, prop = 0.2, order = 2, filtering 
   }
   else {
     message("Filtering redundant hoods.")
-    sce = suppressMessages(filter_hoods(sce))
+    sce = suppressMessages(filter_neighbourhoods(sce))
   }
 
   stat_print =.calc_quick_stat(sce , nhoods(sce))
   message(paste0("Finished successfully.\nNumber of hoods assigned: ", stat_print$n_hoods ,
-                 ",\naverage hood size: ", stat_print$avg_hood_size ,
-                 ",\nnumber of unassigned cells: ", stat_print$n_cells_unocovered))
+                 ";\naverage hood size: ", stat_print$avg_hood_size ,
+                 ";\nnumber of unassigned cells: ", stat_print$n_cells_unocovered))
   return(sce)
 }
 

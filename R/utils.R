@@ -5,16 +5,22 @@
 ### checks ###
 
 # sce-milo check: that is used in de_test_all_hoods, de_test_single_hood, filter_hoods, subset_milo
-#' @importFrom miloR nhoods graph graph<- nhoods<-
+#' @importFrom miloR Milo nhoods graph graph<- nhoods<- nhoodIndex<- buildNhoodGraph
 .check_sce_milo = function(sce){
   if (!is(sce , "Milo")){
     stop("SCE should be a Milo object. Please run `assign_neighbourhoods` first.")
     return(F)
-  } else if (isEmpty(graph(sce))){
+  } else if (length(miloR::graph(sce)) == 0){
     stop("SCE should contain non-trivial graph. Please run `assign_neighbourhoods` first.")
+    return(F)
+  } else if (sum(sum(nhoods(sce))) == 0){
+    stop("sce_milo should have calculated nhoods. Please run 'assign_neighbourhoods' first.")
     return(F)
   } else if ( nrow(nhoods(sce)) == 1 & ncol(nhoods(sce)) == 1 ){
     stop("SCE should contain non-trivial nhoods. Please run `assign_neighbourhoods` first.")
+    return(F)
+  } else if (isEmpty(nhoodIndex(sce))){
+    stop("sce_milo should have calculated nhoodIndex. Please run 'assign_neighbourhoods' first.")
     return(F)
   } else {
     return(T)
@@ -44,25 +50,30 @@
 }
 
 
-#' @importFrom miloR Milo buildGraph graph<- graph nhoods<- nhoodIndex<- buildNhoodGraph
-.check_sce_milo = function(sce_milo){
-  if (!is(sce_milo , "Milo")){
-    stop("sce_milo should be a Milo object. Run 'assign_hoods' first.")
-    return(F)
-  } else if (length(miloR::graph(sce_milo)) == 0){
-    stop("sce_milo should have calculated graph. Run 'assign_hoods' first.")
-    return(F)
-  } else if (sum(sum(nhoods(sce_milo))) == 0){
-    stop("sce_milo should have calculated nhoods. Run 'assign_hoods' first.")
-    return(F)
-  } else if (isEmpty(nhoodIndex(sce_milo))){
-    stop("sce_milo should have calculated nhoodIndex Run 'assign_hoods' first.")
-    return(F)
+
+
+
+#' @importFrom igraph is_igraph
+.valid_nhood <- function(milo){
+  # check for a valid nhood slot
+  n_neigh <- ncol(nhoods(milo))
+  is_not_empty <- n_neigh > 0
+  if (is_not_empty) {
+    TRUE
   } else {
-    return(T)
+    FALSE
   }
 }
 
+#' @importFrom igraph is_igraph
+.valid_graph <- function(x){
+  # check for a valid graph
+  if(isTRUE(is_igraph(x))){
+    TRUE
+  } else{
+    FALSE
+  }
+}
 
 
 
@@ -115,6 +126,51 @@
   }
 }
 
+#' @importFrom SingleCellExperiment colData
+.check_var_in_coldata_sce = function(sce , var  ){
+  if (.check_sce(sce)){
+    if (!(var %in% colnames(colData(sce)))){
+      stop(paste0(var, " should be in colData(sce)"))
+      return(FALSE)
+    }
+    else {
+      return(TRUE)
+    }
+  }
+}
+
+
+#' @importFrom miloR nhoods
+.check_nhood_stat = function(nhood_stat , sce){
+  if (!class(nhood_stat) == "data.frame"){
+    stop("'nhood_stat' should be a data.frame.")
+    return(FALSE)
+  }
+  else {
+    if (!"Nhood" %in% colnames(nhood_stat)){
+      stop("'nhood_stat' should contain column 'Nhood'.")
+      return(FALSE)
+    }
+    else {
+      if (!is.numeric(nhood_stat$Nhood)){
+        stop("'nhood_stat$Nhood' should be numeric.")
+        return(FALSE)
+      }
+      else {
+        nhoods_sce = nhoods(sce)
+        if (mean(nhood_stat$Nhood %in% c(1:ncol(nhoods_sce))) < 1){
+          stop("'nhood_stat$Nhood' should be within c(1:ncol(nhoods(sce))).")
+          return(FALSE)
+        }
+        else {
+          return(TRUE)
+        }
+      }
+    }
+  }
+
+}
+
 
 #' @importFrom SingleCellExperiment colData
 .check_covariates_in_coldata_sce = function(sce , covariates){
@@ -127,7 +183,7 @@
       }
       else {
         tab = table(colData(sce)[, covariate])
-        if (length(tab)){
+        if (length(tab) == 1){
           stop(paste0("Covariate '" , covariate , "' has only 1 contrast. Please exclude it prior to testing."))
           return(FALSE)
         }
@@ -197,7 +253,6 @@
 
 #' @importFrom S4Vectors isEmpty
 .check_cells_ref_and_query = function(cells_sce , cells_ref , cells_query){
-
   if (mean(cells_ref %in% cells_sce) < 1){
     stop("Some of cells_ref are not present.")
     return(FALSE)
@@ -210,23 +265,112 @@
   } else {
     return(TRUE)
   }
+}
 
+
+#' @importFrom SummarizedExperiment assayNames assayNames<-
+#' @importFrom SingleCellExperiment colData
+.check_de_stat_valid = function(de_stat){
+  if (!class(de_stat) %in% c("data.frame" , "SingleCellExperiment")){
+    stop("de_stat should be either data.frame or SingleCellExperiment object.\n
+         To get valid de_stat object, please run 'de_test_neighbourhoods.R'")
+    return(FALSE)
+  } else if (class(de_stat) == "data.frame"){
+    cols = colnames(de_stat)
+    cols_required = c("gene" , "Nhood" , "Nhood_id" , "logFC" , "pval" , "pval_corrected_across_genes" ,
+                      "pval_corrected_across_nhoods" , "sufficient_n_samples" , "design_matrix_suitable")
+    if (mean(cols_required %in% cols) < 1){
+      stop("de_stat missing some of the required columns: gene, Nhood, Nhood_id, logFC, pval, pval_corrected_across_genes, pval_corrected_across_nhoods, sufficient_n_samples, design_matrix_suitable.\n
+      To get valid de_stat object, please run 'de_test_neighbourhoods.R'")
+      return(FALSE)
+    } else if (!is.numeric(de_stat$Nhood)) {
+      stop("Nhood field should be numeric. To get valid de_stat object, please run 'de_test_neighbourhoods.R'")
+      return(FALSE)
+    }
+  } else if (class(de_stat) == "SingleCellExperiment"){
+    cols = assayNames(de_stat)
+    cols_required = c("logFC" , "pval" , "pval_corrected_across_genes" ,
+                      "pval_corrected_across_nhoods")
+    if (mean(cols_required %in% cols) < 1){
+      stop("de_stat missing some of the required assays: logFC, pval, pval_corrected_across_genes, pval_corrected_across_nhoods.\n
+      To get valid de_stat object, please run 'de_test_neighbourhoods.R'")
+      return(FALSE)
+    } else {
+      meta_nhoods = as.data.frame(colData(de_stat))
+      if (mean(c("Nhood" , "Nhood_id" , "sufficient_n_samples" , "design_matrix_suitable") %in% colnames(meta_nhoods)) < 1){
+        stop("de_stat missing some of the required colData: Nhood, Nhood_id, sufficient_n_samples, design_matrix_suitable.\n
+      To get valid de_stat object, please run 'de_test_neighbourhoods.R'")
+        return(FALSE)
+      } else if (!is.numeric(de_stat$Nhood)) {
+        stop("colData field Nhood should be numeric. To get valid de_stat object, please run 'de_test_neighbourhoods.R'")
+        return(FALSE)
+      }
+    }
+  } else {
+    return(TRUE)
+  }
+}
+
+
+#
+# .check_argument_correct = function(dots, arg_name , fun , message){
+#   if (arg_name %in% names(dots)){
+#     arg = dots[[which(names(dots) == arg_name)]]
+#     out = fun(arg)
+#     if (!out){
+#       stop(message)
+#     }
+#     return(out)
+#   }
+#   else {
+#     return(TRUE)
+#   }
+# }
+#
+
+.check_weights = function(weights){
+  if (!is.numeric(weights)){
+    stop("weights should be a numeric vector. To get valid weights, run 'get_weights.R'")
+    return(FALSE)
+  } else {
+    if (sum(is.na(weights)) > 0){
+      stop("weights can not contain NaNs. To get valid weights, run 'get_weights.R'")
+      return(FALSE)
+    }
+    if (sum(weights <= 0) > 0){
+      stop("weights should be positive. To get valid weights, run 'get_weights.R'")
+      return(FALSE)
+    }
+    else {
+      return(TRUE)
+    }
+  }
+}
+
+
+.check_weights_and_pvals = function(weights , pvalues , nhoods_sce){
+  if (!length(weights) == length(pvalues)){
+    stop("weights should be of the same size as pvalues.")
+    return(FALSE)
+  } else if (!length(weights) == ncol(nhoods_sce)){
+    stop("weights should be of the same size as number of columns in nhoods_sce.")
+    return(FALSE)
+  } else {
+    return(TRUE)
+  }
 }
 
 
 
-.check_argument_correct = function(dots, arg_name , fun , message){
-  if (arg_name %in% names(dots)){
-    arg = dots[[which(names(dots) == arg_name)]]
-    out = fun(arg)
-    if (!out){
-      stop(message)
-    }
-    return(out)
+
+.check_argument_correct = function(arg , fun , message){
+
+  out = fun(arg)
+  if (!out){
+    stop(message)
   }
-  else {
-    return(TRUE)
-  }
+  return(out)
+
 }
 
 
@@ -270,41 +414,88 @@
 }
 
 
-
-
-.general_check_arguments = function(dots){
-  out = TRUE
-  out = .check_argument_correct(dots, "sce", .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)")
-  out = .check_argument_correct(dots, "sce_milo", .check_sce_milo, "Check sce_milo - something is wrong. Calculate 'assign_hoods' first.)")
-  out = .check_argument_correct(dots, "genes", .check_string_or_null, "Check genes - should be NULL or character vector")
-  out = .check_argument_correct(dots, "genes_2_exclude", .check_string_or_null, "Check genes_2_exclude - should be NULL or character vector")
-  out = .check_argument_correct(dots, "n_hvgs", .check_positive_integer, "Check n_hvgs - should be positive integer")
-  out = .check_argument_correct(dots, "assay_type", function(x) .check_arg_within_options(x, c("counts", "logcounts")),
-                                "Check assay_type - should be either 'counts' or 'logcounts'")
-  out = .check_argument_correct(dots, "reduction_type", function(x) .check_arg_within_options(x, c("Azimuth", "MNN")),
-                                "Check reduction_type - should be either 'Azimuth' or 'MNN'")
-  out = .check_argument_correct(dots, "reducedDim_name", is.character, "Check reducedDim_name - should be character vector")
-  out = .check_argument_correct(dots, "sample_id", is.character, "Check sample_id - should be character vector")
-  out = .check_argument_correct(dots, "condition_id", is.character, "Check condition_id - should be character vector")
-  out = .check_argument_correct(dots, "cell_id", .check_string_or_null, "Check cell_id - should be NULL or string")
-  out = .check_argument_correct(dots, "d", .check_positive_integer, "Check d - should be positive integer")
-  out = .check_argument_correct(dots, "order", function(x) .check_arg_within_options(x, c(1,2)),
-                                "Check order - should be either 1 (standard kNN-graph) or 2 (2nd-order kNN-graph)")
-  out = .check_argument_correct(dots, "k", .check_positive_integer, "Check k - should be positive integer")
-  out = .check_argument_correct(dots, "k_init", .check_positive_integer, "Check k_init - should be positive integer")
-  out = .check_argument_correct(dots, "prop", .check_prop, "Check prop - should be positive number between 0 and 1")
-  out = .check_argument_correct(dots, "filtering", .check_boolean, "Check filtering - should be either TRUE or FALSE")
-  out = .check_argument_correct(dots, "k.grid", is.numeric, "Check k.grid - should be numeric vector")
-  out = .check_argument_correct(dots, "quantile_vec", is.numeric, "Check quantile_vec - should be numeric vector")
-  out = .check_argument_correct(dots, "discard_not_perturbed_hoods", .check_boolean, "Check discard_not_perturbed_hoods - should be either TRUE or FALSE")
-  out = .check_argument_correct(dots, "gene_selection", function(x) .check_arg_within_options(x, c("all", "none", "per_hood")),
-                                "Check gene_selection - should be either 'all', 'none' or 'per_hood'")
-  out = .check_argument_correct(dots, "min_n_cells_per_sample", .check_positive_integer, "Check min_n_cells_per_sample - should be positive integer")
-  out = .check_argument_correct(dots, "min_count", .check_positive_integer, "Check min_count - should be positive integer")
-  out = .check_argument_correct(dots, "run_separately", .check_boolean, "Check run_separately - should be either TRUE or FALSE")
-  out = .check_argument_correct(dots, "covariates", .check_string_or_null, "Check covariates - should be NULL or character vector")
-  return(out)
+.check_pval_thresh = function(pval.thresh){
+  if (!is.numeric(pval.thresh)){
+    stop("pval.thresh should be numeric")
+    return(FALSE)
+  }
+  else {
+    if (!length(pval.thresh) == 1){
+      stop("pval.thresh should be a single number")
+      return(FALSE)
+    }
+    else {
+      if (pval.thresh <= 0 | pval.thresh >=1){
+        stop("pval.thresh should be between 0 and 1")
+        return(FALSE)
+      }
+      else {
+        return(TRUE)
+      }
+    }
+  }
 }
+
+
+
+.check_z_thresh = function(z.thresh){
+  if (!is.numeric(z.thresh)){
+    stop("z.thresh should be numeric")
+    return(FALSE)
+  }
+  else {
+    if (!length(z.thresh) == 1){
+      stop("z.thresh should be a single number")
+      return(FALSE)
+    }
+    else {
+      if (z.thresh > 0){
+        stop("z.thresh should be not higher than 0")
+        return(FALSE)
+      }
+      else {
+        return(TRUE)
+      }
+    }
+  }
+}
+
+
+#
+# .general_check_arguments = function(dots){
+#   out = TRUE
+#   out = .check_argument_correct(dots, "sce", .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)")
+#   out = .check_argument_correct(dots, "sce_milo", .check_sce_milo, "Check sce_milo - something is wrong. Calculate 'assign_hoods' first.)")
+#   out = .check_argument_correct(dots, "genes", .check_string_or_null, "Check genes - should be NULL or character vector")
+#   out = .check_argument_correct(dots, "genes_2_exclude", .check_string_or_null, "Check genes_2_exclude - should be NULL or character vector")
+#   out = .check_argument_correct(dots, "n_hvgs", .check_positive_integer, "Check n_hvgs - should be positive integer")
+#   out = .check_argument_correct(dots, "assay_type", function(x) .check_arg_within_options(x, c("counts", "logcounts")),
+#                                 "Check assay_type - should be either 'counts' or 'logcounts'")
+#   out = .check_argument_correct(dots, "reduction_type", function(x) .check_arg_within_options(x, c("Azimuth", "MNN")),
+#                                 "Check reduction_type - should be either 'Azimuth' or 'MNN'")
+#   out = .check_argument_correct(dots, "reducedDim_name", is.character, "Check reducedDim_name - should be character vector")
+#   out = .check_argument_correct(dots, "sample_id", is.character, "Check sample_id - should be character vector")
+#   out = .check_argument_correct(dots, "condition_id", is.character, "Check condition_id - should be character vector")
+#   out = .check_argument_correct(dots, "cell_id", .check_string_or_null, "Check cell_id - should be NULL or string")
+#   out = .check_argument_correct(dots, "d", .check_positive_integer, "Check d - should be positive integer")
+#   out = .check_argument_correct(dots, "order", function(x) .check_arg_within_options(x, c(1,2)),
+#                                 "Check order - should be either 1 (standard kNN-graph) or 2 (2nd-order kNN-graph)")
+#   out = .check_argument_correct(dots, "k", .check_positive_integer, "Check k - should be positive integer")
+#   out = .check_argument_correct(dots, "k_init", .check_positive_integer, "Check k_init - should be positive integer")
+#   out = .check_argument_correct(dots, "prop", .check_prop, "Check prop - should be positive number between 0 and 1")
+#   out = .check_argument_correct(dots, "filtering", .check_boolean, "Check filtering - should be either TRUE or FALSE")
+#   out = .check_argument_correct(dots, "k.grid", is.numeric, "Check k.grid - should be numeric vector")
+#   out = .check_argument_correct(dots, "quantile_vec", is.numeric, "Check quantile_vec - should be numeric vector")
+#   out = .check_argument_correct(dots, "discard_not_perturbed_hoods", .check_boolean, "Check discard_not_perturbed_hoods - should be either TRUE or FALSE")
+#   out = .check_argument_correct(dots, "gene_selection", function(x) .check_arg_within_options(x, c("all", "none", "per_hood")),
+#                                 "Check gene_selection - should be either 'all', 'none' or 'per_hood'")
+#   out = .check_argument_correct(dots, "min_n_cells_per_sample", .check_positive_integer, "Check min_n_cells_per_sample - should be positive integer")
+#   out = .check_argument_correct(dots, "min_count", .check_positive_integer, "Check min_count - should be positive integer")
+#   out = .check_argument_correct(dots, "run_separately", .check_boolean, "Check run_separately - should be either TRUE or FALSE")
+#   out = .check_argument_correct(dots, "covariates", .check_string_or_null, "Check covariates - should be NULL or character vector")
+#   out = .check_argument_correct(dots, "seed", .check_number_or_null, "Check seed - should be NULL or number")
+#   return(out)
+# }
 
 
 .check_positive_integer = function(x){
@@ -316,6 +507,17 @@
   }
   return(out)
 }
+
+.check_number_or_null = function(x){
+  out = TRUE
+  if (!is.null(x)){
+    if (!is.numeric(x)){
+      out = FALSE
+    }
+  }
+  return(out)
+}
+
 
 .check_arg_within_options = function(x , options){
   out = TRUE
@@ -359,3 +561,43 @@
   }
   return(out)
 }
+
+
+
+.check_nhoods_matrix = function(nhoods_sce){
+  unq_elements = unique(as.numeric(nhoods_sce))
+  if (mean(unq_elements %in% c(0,1)) < 1){
+    stop("All elements of nhoods matrix should be either 0 or 1. To get valid matrix, run nhoods(sce).")
+    return(FALSE)
+  }
+  else {
+    return(TRUE)
+  }
+}
+
+
+.check_subset_nhoods = function(subset_nhoods, nhoods_sce){
+  if (!is.numeric(subset_nhoods) & !is.logical(subset_nhoods)){
+    stop("'subset_nhoods' should be either numeric or logical.")
+    return(FALSE)
+  }
+  else if (is.numeric(subset_nhoods)){
+    if (mean(subset_nhoods %in% c(1:ncol(nhoods_sce))) < 1){
+      stop("If 'subset_nhoods' is numeric vector, it should lie within c(1:ncol(nhoods(sce))).")
+      return(FALSE)
+    }
+    else {
+        return(TRUE)
+    }
+  }
+  else {
+    if (!length(subset_nhoods) == ncol(nhoods_sce)){
+      stop("If 'subset_nhoods' is logical vector, it should be the same size as ncol(nhoods(sce)).")
+      return(FALSE)
+    }
+    else {
+      return(TRUE)
+    }
+  }
+}
+

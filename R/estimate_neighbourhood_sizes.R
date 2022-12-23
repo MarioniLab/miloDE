@@ -30,9 +30,21 @@
 estimate_neighbourhood_sizes = function(sce, k_grid = seq(10,100,10) , order = 2, prop = 0.1 , filtering = TRUE,
                                reducedDim_name , k_init = 50 , d = 30 , quantile_vec = seq(0 , 1 , 0.25)){
 
-  args = c(as.list(environment()))
-  out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim_name) &
-    .check_quantile_vec(quantile_vec) & .check_k_grid(k_grid)
+  #args = c(as.list(environment()))
+  #out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim_name) &
+  #  .check_quantile_vec(quantile_vec) & .check_k_grid(k_grid)
+
+  out = .check_argument_correct(sce, .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)") &
+    .check_argument_correct(k_grid, is.numeric, "Check k_grid - should be numeric vector") &
+    .check_argument_correct(prop, .check_prop, "Check prop - should be positive number between 0 and 1") &
+    .check_argument_correct(order, function(x) .check_arg_within_options(x, c(1,2)),
+                            "Check order - should be either 1 (standard kNN-graph) or 2 (2nd-order kNN-graph)") &
+    .check_argument_correct(filtering, .check_boolean, "Check filtering - should be either TRUE or FALSE") &
+    .check_argument_correct(reducedDim_name, is.character, "Check reducedDim_name - should be character vector") &
+    .check_argument_correct(k_init, .check_positive_integer, "Check k_init - should be positive integer") &
+    .check_argument_correct(d, .check_positive_integer, "Check d - should be positive integer") &
+    .check_argument_correct(quantile_vec, is.numeric, "Check quantile_vec - should be numeric vector") &
+    .check_reducedDim_in_sce(sce , reducedDim_name) & .check_quantile_vec(quantile_vec) & .check_k_grid(k_grid)
 
   # check that k_grid reasonable -- at least 2 values, the the highest is smaller than 1000;
   # otherwise warn
@@ -42,7 +54,7 @@ estimate_neighbourhood_sizes = function(sce, k_grid = seq(10,100,10) , order = 2
 
 
   stat = lapply(k_grid , function(k){
-    sce_milo = assign_hoods(sce , k = k , prop = prop , order = order , filtering = filtering,
+    sce_milo = assign_neighbourhoods(sce , k = k , prop = prop , order = order , filtering = filtering,
                             reducedDim_name = reducedDim_name , k_init = k_init , d = d)
     out = .get_stat_single_coverage(nhoods(sce_milo) , quantile_vec)
     return(out)

@@ -41,7 +41,14 @@ Imports:
     Augur,
     dplyr,
     S4Vectors,
-    matrixStats
+    matrixStats,
+    reshape2,
+    ggraph,
+    grDevices,
+    ggplot2, 
+    BiocParallel,
+    ggpubr,
+    RColorBrewer
 Remotes:
     github::MarioniLab/miloR,
     github::neurorestore/Augur,

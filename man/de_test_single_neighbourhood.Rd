@@ -13,8 +13,7 @@ de_test_single_neighbourhood(
   covariates = NULL,
   min_n_cells_per_sample = 1,
   gene_selection = "all",
-  genes = rownames(sce),
-  genes_2_exclude = NULL,
+  genes_2_test = rownames(sce),
   min_count = 3,
   run_separately = FALSE
 )
@@ -34,11 +33,9 @@ de_test_single_neighbourhood(
 
 \item{min_n_cells_per_sample}{positive integer specifying the minimun number of cells per replica to be included in testing. Default = 2}
 
-\item{gene_selection}{In {"all" , "per_hood"}. If = "per_hood", we will further discard genes not relevant for this particular hood.}
+\item{gene_selection}{In {"all" , "per_hood" , "none"}. If = "per_hood", we will further discard genes not relevant for this particular hood.}
 
-\item{genes}{Character vector of genes for which we will perform DE testing. Default = rownames(sce). Note that it is upstream of gene selection (if applied).}
-
-\item{genes_2_exclude}{Character vector of genes which we exlude from the selection. Default = NULL (none). Note that it is upstream of gene selection (if applied).}
+\item{genes_2_test}{Character vector of genes for which we will perform DE testing. Default = rownames(sce). Only applicable if gene_selection = "none"}
 
 \item{min_count}{Positive integer, specifying min.count for gene selection. Default = 5}
 
@@ -66,4 +63,5 @@ reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
 nhoods_sce = nhoods(sce)
 de_stat = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce, hood_id = colnames(nhoods_sce)[1] , sample_id = "sample" , condition_id = "type")
+
 }
