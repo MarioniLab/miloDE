@@ -19,6 +19,7 @@
 #' @importFrom SummarizedExperiment assay
 #' @import Matrix
 #' @importFrom igraph connect V neighborhood
+#' @importFrom methods as
 #' @examples
 #' require(SingleCellExperiment)
 #' n_row = 500
@@ -94,8 +95,8 @@ assign_neighbourhoods = function(sce , k = 25, prop = 0.2, order = 2, filtering 
   }
 
   stat_print =.calc_quick_stat(sce , nhoods(sce))
-  message(paste0("Finished successfully.\nNumber of hoods assigned: ", stat_print$n_hoods ,
-                 ";\naverage hood size: ", stat_print$avg_hood_size ,
+  message(paste0("Finished successfully.\nNumber of neighbourhoods assigned: ", stat_print$n_hoods ,
+                 ";\naverage neighbourhood size: ", stat_print$avg_hood_size ,
                  ";\nnumber of unassigned cells: ", stat_print$n_cells_unocovered))
   return(sce)
 }

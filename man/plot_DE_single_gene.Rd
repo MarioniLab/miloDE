@@ -28,14 +28,6 @@ plot_DE_single_gene(
 \item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted}
 
 \item{...}{Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc))}
-
-\item{size_range}{A numeric vector indicating the range (min and max) of node sizes to use for plotting (to avoid overplotting in the graph)}
-
-\item{node_stroke}{A numeric indicating the desired thickness of the border around each node}
-
-\item{edge_width}{A numeric vector indicating the range (min and max) of edge widths to use for plotting}
-
-\item{edge_weight.thresh}{A numeric (or NULL) specifying a threshold for minimum cells in common (between neighbourhoods) required for an edge to be plotted}
 }
 \value{
 
@@ -56,7 +48,7 @@ sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
 reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-de_stat = de_test_all_neighbourhoods(sce , condition_id = "type" , gene_selection = "none")
+de_stat = de_test_neighbourhoods(sce , condition_id = "type" , gene_selection = "none")
 umaps = as.data.frame(matrix(rnorm(n_col*2), ncol=2))
 colnames(umaps) = c("V1" , "V2")
 reducedDim(sce , "UMAP") = umaps

@@ -69,7 +69,7 @@ sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
 reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-de_stat = de_test_all_neighbourhoods(sce , condition_id = "type" , gene_selection = "none")
+de_stat = de_test_neighbourhoods(sce , condition_id = "type" , gene_selection = "none")
 de_stat = de_stat[de_stat$gene == "1", ]
 umaps = as.data.frame(matrix(rnorm(n_col*2), ncol=2))
 colnames(umaps) = c("V1" , "V2")

@@ -21,7 +21,7 @@ Ranks neighbourhoods by the magnitude of DE: number of DE genes and number of 's
 }
 \examples{
 de_stat = expand.grid(gene = paste0("gene" , c(1:5)) , Nhood = c(1:10))
-de_stat$Nhood_id = paste0("nhood_" , de_stat$Nhood)
+de_stat$Nhood_center = paste0("nhood_" , de_stat$Nhood)
 de_stat$logFC = sample(seq(-2,2,1) , nrow(de_stat) , 1)
 de_stat$pval = sample(c(0,1),nrow(de_stat),1)
 de_stat$pval_corrected_across_genes = sample(c(0,1),nrow(de_stat),1)

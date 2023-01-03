@@ -10,10 +10,11 @@
 #'
 #' @return
 #' @export
-#' @importFrom SingleCellExperiment colData
+#' @importFrom SummarizedExperiment colData
+#' @importFrom stats sd
 #' @examples
 #' de_stat = expand.grid(gene = paste0("gene" , c(1:5)) , Nhood = c(1:10))
-#' de_stat$Nhood_id = paste0("nhood_" , de_stat$Nhood)
+#' de_stat$Nhood_center = paste0("nhood_" , de_stat$Nhood)
 #' de_stat$logFC = sample(seq(-2,2,1) , nrow(de_stat) , 1)
 #' de_stat$pval = sample(c(0,1),nrow(de_stat),1)
 #' de_stat$pval_corrected_across_genes = sample(c(0,1),nrow(de_stat),1)
@@ -24,10 +25,14 @@
 #'
 rank_neighbourhoods_by_DE_magnitude = function(de_stat, pval.thresh = 0.1, z.thresh = -3 ){
 
-  out = .check_de_stat_valid(de_stat) & .check_pval_thresh(pval.thresh) & .check_z_thresh(z.thresh)
+  out = .check_de_stat_valid(de_stat , assay_names = c("logFC" , "pval" , "pval_corrected_across_nhoods" , "pval_corrected_across_genes") , coldata_names = c("Nhood" , "Nhood_center")) &
+    .check_pval_thresh(pval.thresh) & .check_z_thresh(z.thresh)
 
   if (class(de_stat) == "data.frame"){
-    de_stat = convert_de_stat(de_stat)
+    de_stat = convert_de_stat(de_stat ,
+                              assay_names = c("logFC" , "pval" , "pval_corrected_across_nhoods" , "pval_corrected_across_genes") ,
+                              coldata_names = c("Nhood" , "Nhood_center"))
+    de_stat = de_stat[ , order(de_stat$Nhood)]
   }
 
   # calculate number of DE genes

@@ -4,11 +4,9 @@
 \alias{spatial_pval_adjustment}
 \title{spatial_pval_adjustment}
 \usage{
-spatial_pval_adjustment(weights = NULL, nhoods_sce, pvalues)
+spatial_pval_adjustment(nhoods_sce, pvalues)
 }
 \arguments{
-\item{weights}{Optional vector (element per hood) of pre-computed weights (default = NULL if not computed). Relevant to be recycled if \code{spatial_pval_adjustment} needs to be run many times.}
-
 \item{nhoods_sce}{nhoods(sce)}
 
 \item{pvalues}{vector of pvalues}
@@ -33,5 +31,5 @@ reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim" , k = 10 , order = 1)
 nhoods_sce = nhoods(sce)
 pvalues = runif(n = ncol(nhoods_sce) , min = 0 , max = 1)
-out = spatial_pval_adjustment(weights = NULL , nhoods_sce = nhoods_sce, pvalues = pvalues)
+out = spatial_pval_adjustment(nhoods_sce = nhoods_sce, pvalues = pvalues)
 }

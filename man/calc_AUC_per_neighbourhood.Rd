@@ -6,14 +6,18 @@
 \usage{
 calc_AUC_per_neighbourhood(
   sce,
+  genes = rownames(sce),
   sample_id = "sample",
   condition_id,
   min_n_cells_per_sample = 1,
-  n_threads = 2
+  n_threads = 2,
+  BPPARAM = NULL
 )
 }
 \arguments{
 \item{sce}{Milo object}
+
+\item{genes}{Character vector specifying genes to be passed for the testing}
 
 \item{sample_id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(sce).}
 
@@ -21,7 +25,9 @@ calc_AUC_per_neighbourhood(
 
 \item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replica to be included in testing. Default = 2}
 
-\item{n_threads}{Positive integer specifying the number of cores to be used to calculate AUC. Higher number results in faster calculation, but its feasibility depends on the specs of your machine.}
+\item{n_threads}{Positive integer specifying the number of cores to be used to calculate AUC. Higher number results in faster calculation, but its feasibility depends on the specs of your machine. Only relevant if BPPARAM = NULL.}
+
+\item{BPPARAM}{NULL or MulticoreParam object}
 }
 \value{
 

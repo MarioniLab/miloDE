@@ -4,12 +4,14 @@
 #'
 #' Converts output of milo-DE between \code{\link[base]{data.frame}} and \code{\linkS4class{SingleCellExperiment}} formats
 #' @param de_stat Output of milo-DE (from \code{de_test_neighbourhoods}), either in \code{data.frame} or \code{SingleCellExperiment}
+#' @param assay_names Character string specifying which fields are treated as assays
+#' @param coldata_names Character string specifying which fields are treated as Nhood metadata. Please note that they have to be an attribute of Nhood and not Nhood-gene (i.e. same across different genes for the same neighbourhood).
 #'
 #' @return
 #' @export
 #' @examples
 #' de_stat = expand.grid(gene = paste0("gene" , c(1:5)) , Nhood = c(1:10))
-#' de_stat$Nhood_id = paste0("nhood_" , de_stat$Nhood)
+#' de_stat$Nhood_center = paste0("nhood_" , de_stat$Nhood)
 #' de_stat$logFC = sample(seq(-2,2,1) , nrow(de_stat) , 1)
 #' de_stat$pval = sample(c(0,1),nrow(de_stat),1)
 #' de_stat$pval_corrected_across_genes = sample(c(0,1),nrow(de_stat),1)
@@ -19,39 +21,43 @@
 #' de_stat = convert_de_stat(de_stat)
 #' de_stat = convert_de_stat(de_stat)
 #'
-convert_de_stat = function(de_stat){
+convert_de_stat = function(de_stat ,
+                           assay_names = NULL,
+                           coldata_names = NULL){
 
-  out = .check_de_stat_valid(de_stat)
+  assay_names = unique( c("logFC" , "pval" , "pval_corrected_across_genes" , "pval_corrected_across_nhoods", assay_names))
+  coldata_names = unique( c("Nhood" , "Nhood_center" , "sufficient_n_samples" , "design_matrix_suitable" , coldata_names))
+  out = .check_de_stat_valid(de_stat , assay_names , coldata_names)
 
   if (class(de_stat) == "SingleCellExperiment"){
-    message("Converting to 'data.frame' format")
-    de_stat = .convert_from_sce(de_stat)
+    message("Converting de_stat to 'data.frame' format")
+    de_stat = .convert_from_sce(de_stat , assay_names = assay_names , coldata_names = coldata_names)
   } else if (class(de_stat) == "data.frame"){
-    message("Converting to 'SingleCellExperiment' format")
-    de_stat = .convert_from_df(de_stat)
+    message("Converting de_stat to 'SingleCellExperiment' format")
+    de_stat = .convert_from_df(de_stat , assay_names = assay_names , coldata_names = coldata_names)
   }
-
   return(de_stat)
-
 }
 
 
 #' @importFrom SingleCellExperiment SingleCellExperiment
 #' @importFrom S4Vectors DataFrame
-.convert_from_df = function(de_stat){
+.convert_from_df = function(de_stat , assay_names , coldata_names){
 
-  df_logFC = .convert_from_df_one_var(de_stat , "logFC")
-  df_pval = .convert_from_df_one_var(de_stat , "pval")
-  df_pval_corrected_across_genes = .convert_from_df_one_var(de_stat , "pval_corrected_across_genes")
-  df_pval_corrected_across_nhoods = .convert_from_df_one_var(de_stat , "pval_corrected_across_nhoods")
+  de_stat = de_stat[order(de_stat$Nhood) , ]
+  #  convert assays
+  de_assays = lapply(assay_names , function(assay_name){
+    return(.convert_from_df_one_var(de_stat , assay_name))
+  })
+  names(de_assays) = assay_names
 
-  meta_nhoods = unique(de_stat[, c("Nhood" , "Nhood_id" , "sufficient_n_samples" , "design_matrix_suitable")])
+  # convert coldata
+  meta_nhoods = unique(de_stat[, coldata_names])
   meta_nhoods = meta_nhoods[order(meta_nhoods$Nhood) , ]
-  de_stat = SingleCellExperiment(list(logFC = df_logFC ,
-                                      pval = df_pval ,
-                                      pval_corrected_across_genes = df_pval_corrected_across_genes ,
-                                      pval_corrected_across_nhoods = df_pval_corrected_across_nhoods ) ,
-                                 colData = DataFrame(meta_nhoods))
+
+  # combine
+  de_stat = SingleCellExperiment(de_assays, colData = DataFrame(meta_nhoods))
+
   colnames(de_stat) = meta_nhoods$Nhood
   return(de_stat)
 }
@@ -72,24 +78,33 @@ convert_de_stat = function(de_stat){
 }
 
 
-#' @importFrom SingleCellExperiment SingleCellExperiment colData
-.convert_from_sce = function(de_stat){
+#' @importFrom SingleCellExperiment SingleCellExperiment
+#' @importFrom SummarizedExperiment colData
+.convert_from_sce = function(de_stat , assay_names , coldata_names){
 
-  df_logFC = .convert_from_sce_one_var(de_stat , "logFC")
-  df_pval = .convert_from_sce_one_var(de_stat , "pval")
-  df_pval_corrected_across_genes = .convert_from_sce_one_var(de_stat , "pval_corrected_across_genes")
-  df_pval_corrected_across_nhoods = .convert_from_sce_one_var(de_stat , "pval_corrected_across_nhoods")
+  de_stat = de_stat[ , order(de_stat$Nhood)]
+
+  # combine assays
+  de_assays = lapply(assay_names , function(assay_name){
+    return(.convert_from_sce_one_var(de_stat , assay_name))
+  })
+  de_assays = as.data.frame( do.call(cbind , de_assays) )
+  colnames(de_assays) = assay_names
+
+  # add gene and Nhood
+  df = as.data.frame( assay(de_stat , assay_names[1]) )
+  df = rownames_to_column(df , var = "gene")
+  df = melt(df , id = "gene")
+  colnames(df) = c("gene" , "Nhood" , "var")
+  df$Nhood = as.numeric(as.character(df$Nhood))
+  df = df[order(df$Nhood) , ]
+  df = df[, c("gene" , "Nhood")]
+
+  de_assays = cbind(df , de_assays)
   meta_nhoods = as.data.frame(colData(de_stat))
+  de_assays = merge(de_assays , meta_nhoods , by = c("Nhood") , all.x = TRUE)
 
-  df = cbind(df_logFC , df_pval[, "pval"] , df_pval_corrected_across_genes[, "pval_corrected_across_genes"] ,
-             df_pval_corrected_across_nhoods[, "pval_corrected_across_nhoods"] ,
-             meta_nhoods[,c("Nhood_id" , "sufficient_n_samples" , "design_matrix_suitable")])
-
-  colnames(df) = c("gene" , "Nhood" , "logFC", "pval" , "pval_corrected_across_genes" ,
-                   "pval_corrected_across_nhoods" , "Nhood_id" , "sufficient_n_samples" , "design_matrix_suitable")
-  df = df[, c("gene" , "Nhood", "Nhood_id" , "logFC" , "pval" , "pval_corrected_across_genes" , "pval_corrected_across_nhoods" ,
-                                                       "sufficient_n_samples" , "design_matrix_suitable")]
-  return(df)
+  return(de_assays)
 }
 
 
@@ -100,9 +115,10 @@ convert_de_stat = function(de_stat){
   df = as.data.frame( assay(de_stat , var) )
   df = rownames_to_column(df , var = "gene")
   df = melt(df , id = "gene")
-  colnames(df) = c("gene" , "Nhood" , var)
+  colnames(df) = c("gene" , "Nhood" , "var")
+  df$Nhood = as.numeric(as.character(df$Nhood))
   df = df[order(df$Nhood) , ]
-  return(df)
+  return(df$var)
 }
 
 

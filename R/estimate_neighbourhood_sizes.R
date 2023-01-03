@@ -9,12 +9,14 @@
 #' @param reducedDim_name defines the slot in reducedDim(sce) to use as embedding for graph construction
 #' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells
 #' @param d Positive integer, defines how many dimensions from reducedDim(sce) to use
-#' @param quantile_vec Vector of distribution quantiles to be estimated. Default = seq(0,1,0.25)
+#' @param plot_stat Boolean specifying whether to plot the stat
 #'
 #' @return
 #' @export
 #' @importFrom miloR Milo buildGraph graph<- graph nhoods<- nhoodIndex<- buildNhoodGraph
 #' @importFrom tibble rownames_to_column
+#' @import ggplot2
+#' @importFrom grDevices colorRampPalette
 #' @examples
 #' require(SingleCellExperiment)
 #' n_row = 500
@@ -28,8 +30,9 @@
 #' out = estimate_neighbourhood_sizes(sce, k_grid = c(5,10), reducedDim_name = "reduced_dim")
 #'
 estimate_neighbourhood_sizes = function(sce, k_grid = seq(10,100,10) , order = 2, prop = 0.1 , filtering = TRUE,
-                               reducedDim_name , k_init = 50 , d = 30 , quantile_vec = seq(0 , 1 , 0.25)){
+                               reducedDim_name , k_init = 50 , d = 30 , plot_stat = TRUE){
 
+  quantile_vec = seq(0,1,0.25)
   #args = c(as.list(environment()))
   #out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim_name) &
   #  .check_quantile_vec(quantile_vec) & .check_k_grid(k_grid)
@@ -43,8 +46,7 @@ estimate_neighbourhood_sizes = function(sce, k_grid = seq(10,100,10) , order = 2
     .check_argument_correct(reducedDim_name, is.character, "Check reducedDim_name - should be character vector") &
     .check_argument_correct(k_init, .check_positive_integer, "Check k_init - should be positive integer") &
     .check_argument_correct(d, .check_positive_integer, "Check d - should be positive integer") &
-    .check_argument_correct(quantile_vec, is.numeric, "Check quantile_vec - should be numeric vector") &
-    .check_reducedDim_in_sce(sce , reducedDim_name) & .check_quantile_vec(quantile_vec) & .check_k_grid(k_grid)
+    .check_reducedDim_in_sce(sce , reducedDim_name) & .check_k_grid(k_grid)
 
   # check that k_grid reasonable -- at least 2 values, the the highest is smaller than 1000;
   # otherwise warn
@@ -65,6 +67,16 @@ estimate_neighbourhood_sizes = function(sce, k_grid = seq(10,100,10) , order = 2
   stat = rownames_to_column(stat , var = "k")
   message(paste0("Finished the estimation of neighbourhood sizes ~ k dependancy (order = " , order , ")."))
   print(stat)
+  if (plot_stat){
+    colnames(stat) = c("k" , "ymin" , "y25" , "y50" , "y75" , "y100")
+    stat$k = factor(stat$k)
+    p = ggplot(stat, aes(k)) +
+      geom_boxplot( aes(ymin = ymin, lower = y25, middle = y50, upper = y75, ymax = y100 , fill = k), stat = "identity") +
+      theme_bw() +
+      scale_fill_manual(values = colorRampPalette(brewer.pal(11, "Spectral"))(length(k_grid))) +
+      labs( y = "Neighbourhood size")
+    print(p)
+  }
   return(stat)
 }
 

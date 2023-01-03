@@ -3,7 +3,6 @@
 #' spatial_pval_adjustment
 #'
 #' Performs p-values multiple testing correction, with accounting for the overlap. This is achieved by using weighted version of BH correction.
-#' @param weights Optional vector (element per hood) of pre-computed weights (default = NULL if not computed). Relevant to be recycled if `spatial_pval_adjustment` needs to be run many times.
 #' @param nhoods_sce nhoods(sce)
 #' @param pvalues vector of pvalues
 #'
@@ -24,22 +23,19 @@
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim" , k = 10 , order = 1)
 #' nhoods_sce = nhoods(sce)
 #' pvalues = runif(n = ncol(nhoods_sce) , min = 0 , max = 1)
-#' out = spatial_pval_adjustment(weights = NULL , nhoods_sce = nhoods_sce, pvalues = pvalues)
-spatial_pval_adjustment = function(weights = NULL , nhoods_sce , pvalues){
+#' out = spatial_pval_adjustment(nhoods_sce = nhoods_sce, pvalues = pvalues)
+spatial_pval_adjustment = function(nhoods_sce , pvalues){
 
-  # get weights
-  if (is.null(weights)){
-    weights = get_weights(nhoods_sce)
-  }
+  # we will only calculate weights for neighbourhoods in which we are testing
+  idx_not_nan = which(!is.na(pvalues))
+  weights = .get_weights(nhoods_sce[,idx_not_nan])
 
-  out = .check_weights(weights) & .check_weights_and_pvals(weights , pvalues , nhoods_sce) & .check_nhoods_matrix(nhoods_sce)
+  out = .check_weights_and_pvals(weights , pvalues[idx_not_nan] , nhoods_sce[,idx_not_nan]) & .check_nhoods_matrix(nhoods_sce)
+
 
   n_comparisons = length(pvalues)
-  # lets take the not NaNs
-  idx_not_nan = which(!is.na(pvalues))
   #n_nans = sum(is.na(pvalues))
   pvalues = pvalues[idx_not_nan]
-  weights = weights[idx_not_nan]
 
   # calc correction
   o <- order(pvalues)
@@ -57,31 +53,7 @@ spatial_pval_adjustment = function(weights = NULL , nhoods_sce , pvalues){
 
 
 
-
-#' get_weights
-#'
-#' Calculate weights for spatial (across neighbourhoods) p-value adjustment.
-#'
-#' @param nhoods_sce nhoods(sce)
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#' require(SingleCellExperiment)
-#' require(miloR)
-#' n_row = 500
-#' n_col = 100
-#' n_latent = 5
-#' sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
-#' rownames(sce) = as.factor(1:n_row)
-#' colnames(sce) = c(1:n_col)
-#' sce$cell = colnames(sce)
-#' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-#' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim" , k = 10 , order = 1)
-#' nhoods_sce = nhoods(sce)
-#' out = get_weights(nhoods_sce)
-get_weights = function(nhoods_sce){
+.get_weights = function(nhoods_sce){
 
   out = .check_nhoods_matrix(nhoods_sce)
 

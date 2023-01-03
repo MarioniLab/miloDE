@@ -4,10 +4,14 @@
 \alias{convert_de_stat}
 \title{convert_de_stat}
 \usage{
-convert_de_stat(de_stat)
+convert_de_stat(de_stat, assay_names = NULL, coldata_names = NULL)
 }
 \arguments{
-\item{de_stat}{Output of milo-DE (from \code{de_test_all_neighbourhoods}), either in \code{data.frame} or \code{SingleCellExperiment}}
+\item{de_stat}{Output of milo-DE (from \code{de_test_neighbourhoods}), either in \code{data.frame} or \code{SingleCellExperiment}}
+
+\item{assay_names}{Character string specifying which fields are treated as assays}
+
+\item{coldata_names}{Character string specifying which fields are treated as Nhood metadata. Please note that they have to be an attribute of Nhood and not Nhood-gene (i.e. same across different genes for the same neighbourhood).}
 }
 \value{
 
@@ -17,7 +21,7 @@ Converts output of milo-DE between \code{\link[base]{data.frame}} and \code{\lin
 }
 \examples{
 de_stat = expand.grid(gene = paste0("gene" , c(1:5)) , Nhood = c(1:10))
-de_stat$Nhood_id = paste0("nhood_" , de_stat$Nhood)
+de_stat$Nhood_center = paste0("nhood_" , de_stat$Nhood)
 de_stat$logFC = sample(seq(-2,2,1) , nrow(de_stat) , 1)
 de_stat$pval = sample(c(0,1),nrow(de_stat),1)
 de_stat$pval_corrected_across_genes = sample(c(0,1),nrow(de_stat),1)

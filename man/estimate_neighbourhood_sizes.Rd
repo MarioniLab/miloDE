@@ -13,7 +13,7 @@ estimate_neighbourhood_sizes(
   reducedDim_name,
   k_init = 50,
   d = 30,
-  quantile_vec = seq(0, 1, 0.25)
+  plot_stat = TRUE
 )
 }
 \arguments{
@@ -33,7 +33,7 @@ estimate_neighbourhood_sizes(
 
 \item{d}{Positive integer, defines how many dimensions from reducedDim(sce) to use}
 
-\item{quantile_vec}{Vector of distribution quantiles to be estimated. Default = seq(0,1,0.25)}
+\item{plot_stat}{Boolean specifying whether to plot the stat}
 }
 \value{
 

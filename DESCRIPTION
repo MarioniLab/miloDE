@@ -48,7 +48,9 @@ Imports:
     ggplot2, 
     BiocParallel,
     ggpubr,
-    RColorBrewer
+    RColorBrewer,
+    methods,
+    ggbeeswarm
 Remotes:
     github::MarioniLab/miloR,
     github::neurorestore/Augur,
