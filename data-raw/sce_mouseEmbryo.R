@@ -9,7 +9,7 @@ library(MouseGastrulationData)
 library(geneBasisR)
 
 # subset of 3 cell types
-cts = c("Endothelium" , "PGC", "Neural crest")
+cts = c("Endothelium" , "Blood progenitors 1", "Blood progenitors 2", "Neural crest")
 
 # load chimera Tal1
 sce = Tal1ChimeraData()
@@ -29,11 +29,7 @@ sce$toy_cov_1 = sample(1:5 , ncol(sce),1)
 
 # select only 1000 genes
 sce = retain_informative_genes(sce , n = 500)
-sce_mouseEmbryo = SingleCellExperiment(list(counts = counts(sce)),
-                                       colData = colData(sce),
-                                       rowData = rowData(sce)
-                                       )
-reducedDim(sce_mouseEmbryo , "pca.corrected") = reducedDim(sce , "pca.corrected")
+sce_mouseEmbryo = sce
 usethis::use_data(sce_mouseEmbryo , overwrite = TRUE , compress = "xz")
 
 
