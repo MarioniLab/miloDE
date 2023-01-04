@@ -18,8 +18,6 @@ library(miloDE)
 
 ## If you plan to use parallelisation (desired for big datasets), please install BiocParallel:
 BiocManager::install("BiocParallel")
-
-
 ```
 
 
@@ -38,21 +36,20 @@ You can explore toy data here:
 ```
 data("sce_mouseEmbryo", package = "miloDE")
 print(sce_mouseEmbryo)
-# `pca.corrected` in reducedDim(sce) - batch corrected PCs that we will use for graph construction
+# `pca.corrected` in reducedDim(sce) - PCs that we will use for graph construction
 
 head(colData(sce_mouseEmbryo))
 # `tomato` corresponds to condition id  
 # `sample` corresponds to individual replicates. There are 2 samples per each condition:
 table(sce_mouseEmbryo$sample , sce_mouseEmbryo$sample$tomato)
-
-
 ```
 
 2. *Neighbourhood assignment*: First step is to assign neighbourhoods using graph representation of scRNA-seq data'
 
 ```
 
-sce_mouseEmbryo = assign_neighbourhoods(sce_mouseEmbryo, k = 25, order = 2, filtering = TRUE, reducedDim_name = "pca.corrected")
+sce_mouseEmbryo = assign_neighbourhoods(sce_mouseEmbryo, k = 25, order = 2, 
+filtering = TRUE, reducedDim_name = "pca.corrected")
 
 ```
 
@@ -67,8 +64,9 @@ In other words, `sufficient_n_samples` reflects whether testing can be carried o
 
 ```
 
-de_stat = de_test_neighbourhoods = function(sce_mouseEmbryo , sample_id = "sample", condition_id = "tomato",
-                                  gene_selection = "none", output_type = "data.frame" )
+de_stat = de_test_neighbourhoods = function(sce_mouseEmbryo , 
+                                            sample_id = "sample", condition_id = "tomato",
+                                            gene_selection = "none", output_type = "data.frame")
 
 
 ```
