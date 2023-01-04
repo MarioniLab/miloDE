@@ -66,16 +66,25 @@ estimate_neighbourhood_sizes = function(sce, k_grid = seq(10,100,10) , order = 2
   rownames(stat) = k_grid
   stat = rownames_to_column(stat , var = "k")
   message(paste0("Finished the estimation of neighbourhood sizes ~ k dependancy (order = " , order , ")."))
-  print(stat)
+  colnames(stat) = c("k" , "min" , "q25" , "med" , "q75" , "max")
+  stat$k = factor(stat$k , levels = k_grid)
+
   if (plot_stat){
-    colnames(stat) = c("k" , "ymin" , "y25" , "y50" , "y75" , "y100")
-    stat$k = factor(stat$k)
-    p = ggplot(stat, aes(k)) +
-      geom_boxplot( aes(ymin = ymin, lower = y25, middle = y50, upper = y75, ymax = y100 , fill = k), stat = "identity") +
-      theme_bw() +
-      scale_fill_manual(values = colorRampPalette(brewer.pal(11, "Spectral"))(length(k_grid))) +
-      labs( y = "Neighbourhood size")
-    print(p)
+    p_stat = tryCatch(
+      {
+        p = ggplot(stat, aes(k)) +
+          geom_boxplot( aes(ymin = min, lower = q25, middle = med, upper = q75, ymax = max , fill = k), stat = "identity") +
+          theme_bw() +
+          scale_fill_manual(values = colorRampPalette(brewer.pal(11, "Spectral"))(length(k_grid))) +
+          labs( y = "Neighbourhood size")
+        p
+      },
+      error=function(err){
+        warning("Can not return plot")
+        return(NULL)
+      }
+    )
+    print(p_stat)
   }
   return(stat)
 }

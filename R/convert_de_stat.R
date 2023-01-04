@@ -97,6 +97,7 @@ convert_de_stat = function(de_stat ,
   df = melt(df , id = "gene")
   colnames(df) = c("gene" , "Nhood" , "var")
   df$Nhood = as.numeric(as.character(df$Nhood))
+  df$Nhood = as.integer(df$Nhood)
   df = df[order(df$Nhood) , ]
   df = df[, c("gene" , "Nhood")]
 
@@ -117,6 +118,7 @@ convert_de_stat = function(de_stat ,
   df = melt(df , id = "gene")
   colnames(df) = c("gene" , "Nhood" , "var")
   df$Nhood = as.numeric(as.character(df$Nhood))
+  df$Nhood = as.integer(df$Nhood)
   df = df[order(df$Nhood) , ]
   return(df$var)
 }

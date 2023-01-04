@@ -98,101 +98,93 @@ plot_milo_by_single_metric = function(sce, nhood_stat, colour_by = "logFC" , sig
     }
   }
 
-  # update nhood_stat
-  if (sum(nhood_stat$design_matrix_suitable) > 0){
-    nhood_stat = nhood_stat[nhood_stat$design_matrix_suitable , ]
 
-    nhood_stat = nhood_stat[order(nhood_stat$Nhood) , ]
-    # for hoods that exceed alpha for significance_by -- set colour_by to 0
-    if (!is.null(significance_by)){
-      nhood_stat[nhood_stat[, significance_by] > alpha, colour_by] <- 0
-    }
+  nhood_stat = nhood_stat[order(nhood_stat$Nhood) , ]
+  # for hoods that exceed alpha for significance_by -- set colour_by to 0
+  if (!is.null(significance_by)){
+    nhood_stat[nhood_stat[, significance_by] > alpha, colour_by] <- 0
+  }
 
-    # assign colour_by to sce
-    colData(sce)[colour_by] <- NA
-    colData(sce)[unlist(nhoodIndex(sce)[nhood_stat$Nhood]),colour_by] <- nhood_stat[,colour_by]
+  # assign colour_by to sce
+  colData(sce)[colour_by] <- NA
+  colData(sce)[unlist(nhoodIndex(sce)[nhood_stat$Nhood]),colour_by] <- nhood_stat[,colour_by]
 
-    # pull the graph from sce
-    nh_graph <- nhoodGraph(sce)
+  # pull the graph from sce
+  nh_graph <- nhoodGraph(sce)
 
-    ## subset for hoods we will plot
-    if (!is.null(subset_nhoods)) {
-      nh_graph <- induced_subgraph(nh_graph, vids = which(as.numeric(V(nh_graph)$name) %in% unlist(nhoodIndex(sce)[subset_nhoods])))
-    }
+  ## subset for hoods we will plot
+  if (!is.null(subset_nhoods)) {
+    nh_graph <- induced_subgraph(nh_graph, vids = which(as.numeric(V(nh_graph)$name) %in% unlist(nhoodIndex(sce)[subset_nhoods])))
+  }
 
-
-    if (!is.null(size_by)){
-      vertex_attr(nh_graph)$size = rep(0 , 1 , length(vertex_attr(nh_graph)$name) )
-      vertex_attr(nh_graph)$size[nhood_stat$Nhood] = nhood_stat[,size_by]
-    }
+  if (!is.null(size_by)){
+    vertex_attr(nh_graph)$size = rep(0 , 1 , length(vertex_attr(nh_graph)$name) )
+    vertex_attr(nh_graph)$size[nhood_stat$Nhood] = nhood_stat[,size_by]
+  }
 
 
-    # assign attributes to vertices
-    #vertex_attr(nh_graph)[, significance_by] = nhood_stat[, significance_by]
-    if (!is.null(order_by)){
-      vertex_attr(nh_graph)$order_by = rep(NA , 1 , length(vertex_attr(nh_graph)$name) )
-      vertex_attr(nh_graph)$order_by[nhood_stat$Nhood] = nhood_stat[,order_by]
-      vertex_attr(nh_graph)$order_by_rearrange = order(vertex_attr(nh_graph)$order_by , decreasing = order_direction, na.last = FALSE)
-    }
-    else {
-      vertex_attr(nh_graph)$order_by_rearrange = order(vertex_attr(nh_graph)$size , decreasing = FALSE , na.last = FALSE)
-    }
-    nh_graph <- permute(nh_graph, match( 1:length(vertex_attr(nh_graph)$order_by_rearrange) ,
+  # assign attributes to vertices
+  #vertex_attr(nh_graph)[, significance_by] = nhood_stat[, significance_by]
+  if (!is.null(order_by)){
+    vertex_attr(nh_graph)$order_by = rep(NA , 1 , length(vertex_attr(nh_graph)$name) )
+    vertex_attr(nh_graph)$order_by[nhood_stat$Nhood] = nhood_stat[,order_by]
+    vertex_attr(nh_graph)$order_by_rearrange = order(vertex_attr(nh_graph)$order_by , decreasing = order_direction, na.last = FALSE)
+  }
+  else {
+    vertex_attr(nh_graph)$order_by_rearrange = order(vertex_attr(nh_graph)$size , decreasing = FALSE , na.last = FALSE)
+  }
+  nh_graph <- permute(nh_graph, match( 1:length(vertex_attr(nh_graph)$order_by_rearrange) ,
                                                  vertex_attr(nh_graph)$order_by_rearrange))
 
 
-    # assign edges lower than some thresh to 0
-    if (!is.null(edge_weight.thresh)){
-      nh_graph <- delete.edges(nh_graph, which(E(nh_graph)$weight <= edge_weight.thresh)-1)
-    }
-
-    ## define layout
-    if (is.character(layout)) {
-      redDim <- layout
-      layout <- reducedDim(sce, redDim)[as.numeric(vertex_attr(nh_graph)$name),]
-      # make sure this is a matrix!
-      if(!any(class(layout) %in% c("matrix"))){
-        warning("Coercing layout to matrix format")
-        layout <- as(layout, "matrix")
-      }
-    }
-
-
-    ## Define node color
-    if (colour_by %in% colnames(colData(sce))) {
-
-      col_vals <- colData(sce)[as.numeric(vertex_attr(nh_graph)$name), colour_by]
-      if (!is.numeric(col_vals)) {
-        col_vals <- as.character(col_vals)
-      }
-      V(nh_graph)$colour_by <- col_vals
-    } else {
-      stop(colour_by, "is not a column in colData(x)")
-    }
-
-
-
-    pl <- ggraph(simplify(nh_graph), layout = layout) +
-      geom_edge_link0(aes(width = weight), edge_colour = "grey66", edge_alpha=0.2) +
-      geom_node_point(aes(fill = colour_by, size = size), shape=21, stroke=node_stroke) +
-      scale_size(range = size_range, name="Nhood size") +
-      scale_edge_width(range = c(0.2,3), name="overlap size") +
-      theme_classic(base_size=14) +
-      theme(axis.line = element_blank(), axis.text = element_blank(),
-            axis.ticks = element_blank(), axis.title = element_blank()) +
-      guides(width="none" ,edge_width="none")
-
-    if (is.numeric(V(nh_graph)$colour_by)) {
-      pl <- pl + scale_fill_gradient2(name=colour_by)
-    } else {
-      mycolors <- colorRampPalette(brewer.pal(11, "Spectral"))(length(unique(V(nh_graph)$colour_by)))
-      pl <- pl + scale_fill_manual(values=mycolors, name=colour_by, na.value="white")
-    }
-    return(pl)
+  # assign edges lower than some thresh to 0
+  if (!is.null(edge_weight.thresh)){
+    nh_graph <- delete.edges(nh_graph, which(E(nh_graph)$weight <= edge_weight.thresh)-1)
   }
-  else {
-    stop("Novalid values in any othe the neighbourhoods")
+
+  ## define layout
+  if (is.character(layout)) {
+    redDim <- layout
+    layout <- reducedDim(sce, redDim)[as.numeric(vertex_attr(nh_graph)$name),]
+    # make sure this is a matrix!
+    if(!any(class(layout) %in% c("matrix"))){
+      warning("Coercing layout to matrix format")
+      layout <- as(layout, "matrix")
+    }
   }
+
+
+  ## Define node color
+  if (colour_by %in% colnames(colData(sce))) {
+
+    col_vals <- colData(sce)[as.numeric(vertex_attr(nh_graph)$name), colour_by]
+    if (!is.numeric(col_vals)) {
+      col_vals <- as.character(col_vals)
+    }
+    V(nh_graph)$colour_by <- col_vals
+  } else {
+    stop(colour_by, "is not a column in colData(x)")
+  }
+
+
+
+  pl <- ggraph(simplify(nh_graph), layout = layout) +
+    geom_edge_link0(aes(width = weight), edge_colour = "grey66", edge_alpha=0.2) +
+    geom_node_point(aes(fill = colour_by, size = size), shape=21, stroke=node_stroke) +
+    scale_size(range = size_range, name="Nhood size") +
+    scale_edge_width(range = c(0.2,3), name="overlap size") +
+    theme_classic(base_size=14) +
+    theme(axis.line = element_blank(), axis.text = element_blank(),
+          axis.ticks = element_blank(), axis.title = element_blank()) +
+    guides(width="none" ,edge_width="none")
+
+  if (is.numeric(V(nh_graph)$colour_by)) {
+    pl <- pl + scale_fill_gradient2(name=colour_by)
+  } else {
+    mycolors <- colorRampPalette(brewer.pal(11, "Spectral"))(length(unique(V(nh_graph)$colour_by)))
+    pl <- pl + scale_fill_manual(values=mycolors, name=colour_by, na.value="white")
+  }
+  return(pl)
 }
 
 
@@ -245,10 +237,10 @@ plot_DE_single_gene = function(sce, de_stat , gene , alpha = 0.1, layout = "UMAP
   if (class(de_stat) == "SingleCellExperiment"){
     de_stat = de_stat[gene , ]
     de_stat = convert_de_stat(de_stat, assay_names = c("logFC" , "pval" , "pval_corrected_across_nhoods" , "pval_corrected_across_genes") ,
-                              coldata_names = c("Nhood" , "Nhood_center"))
+                              coldata_names = c("Nhood" , "Nhood_center" , "sufficient_n_samples" , "design_matrix_suitable"))
   }
 
-  nhood_stat = de_stat[de_stat$gene == gene , ]
+  nhood_stat = de_stat[de_stat$gene == gene & de_stat$design_matrix_suitable == TRUE, ]
 
   p = plot_milo_by_single_metric(sce, nhood_stat = nhood_stat, colour_by = "logFC" , significance_by = "pval_corrected_across_nhoods" ,
                              order_by = "pval_corrected_across_nhoods" , order_direction = TRUE, size_by = NULL,

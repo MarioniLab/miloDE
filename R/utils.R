@@ -9,19 +9,19 @@
 #' @importFrom methods is
 .check_sce_milo = function(sce){
   if (!is(sce , "Milo")){
-    stop("SCE should be a Milo object. Please run `assign_neighbourhoods` first.")
+    stop("sce should be a Milo object. Please run `assign_neighbourhoods` first.")
     return(FALSE)
   } else if (length(miloR::graph(sce)) == 0){
-    stop("SCE should contain non-trivial graph. Please run `assign_neighbourhoods` first.")
+    stop("sce should contain non-trivial graph. Please run `assign_neighbourhoods` first.")
     return(FALSE)
   } else if (sum(sum(nhoods(sce))) == 0){
-    stop("sce_milo should have calculated nhoods. Please run 'assign_neighbourhoods' first.")
+    stop("sce should have calculated nhoods. Please run 'assign_neighbourhoods' first.")
     return(FALSE)
   } else if ( nrow(nhoods(sce)) == 1 & ncol(nhoods(sce)) == 1 ){
-    stop("SCE should contain non-trivial nhoods. Please run `assign_neighbourhoods` first.")
+    stop("sce should contain non-trivial nhoods. Please run `assign_neighbourhoods` first.")
     return(FALSE)
   } else if (isEmpty(nhoodIndex(sce))){
-    stop("sce_milo should have calculated nhoodIndex. Please run 'assign_neighbourhoods' first.")
+    stop("sce should have calculated nhoodIndex. Please run 'assign_neighbourhoods' first.")
     return(FALSE)
   } else {
     return(TRUE)
@@ -100,7 +100,7 @@
 .check_condition_in_coldata_sce = function(sce , condition_id){
   if (.check_sce(sce)){
     if (!(condition_id %in% colnames(colData(sce)))){
-      stop("condition_id should be in colData(sce)")
+      stop("'condition_id' should be in colData(sce)")
       return(FALSE)
     }
     else {
@@ -274,7 +274,7 @@
 .check_reducedDim_in_sce = function(sce , reducedDim_name){
   if (.check_sce(sce)){
     if (!reducedDim_name %in% reducedDimNames(sce)){
-      stop("reducedDim_name should be in reducedDimNames(sce). If you do not have embedding precalculated, run first 'add_embedding'.")
+      stop("reducedDim_name should be in reducedDimNames(sce).")
       return(FALSE)
     }
   }
@@ -428,11 +428,10 @@
     }
     else {
       if (length(k_grid) == 1){
-        warning("You only selected one value for k. If it is intended, we recommend to run directly 'assign_neighbourhoods'")
+        warning("You only selected one value for k. If it is intended, we recommend to run directly 'assign_neighbourhoods'.")
       }
       if (max(k_grid) >= 1000){
-        warning("The highest selected value is > 1000. It is gonna cost computationally, and we generally do not recommend
-                such high k. Consider reducing.")
+        warning("The highest selected value is > 1000. It is gonna cost computationally, and we generally do not recommend such high k. Consider reducing.")
       }
       return(TRUE)
     }

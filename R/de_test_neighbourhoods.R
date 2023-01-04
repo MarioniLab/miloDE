@@ -100,10 +100,16 @@ de_test_neighbourhoods = function(sce ,
     if ("sample_id" %in% covariates){
       warning("Discarding 'sample_id' from covariates since 'sample_id' can not be a covariate name. If in fact you wish to pass a covariate 'sample_id', please rename it first.")
       covariates = setdiff(covariates , "sample_id")
+      if (length(covariates) == 0){
+        covariates = NULL
+      }
     }
     if ("condition_id" %in% covariates){
       warning("Discarding 'condition_id' from covariates since 'condition_id' can not be a covariate name. If in fact you wish to pass a covariate 'condition_id', please rename it first.")
       covariates = setdiff(covariates , "condition_id")
+      if (length(covariates) == 0){
+        covariates = NULL
+      }
     }
   }
 

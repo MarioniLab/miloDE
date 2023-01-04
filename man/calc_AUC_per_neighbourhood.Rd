@@ -23,7 +23,7 @@ calc_AUC_per_neighbourhood(
 
 \item{condition_id}{Character specifying which variable should be used as a condition id. Should be in colData(sce).}
 
-\item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replica to be included in testing. Default = 2}
+\item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replica to be included in testing. Default = 2.}
 
 \item{n_threads}{Positive integer specifying the number of cores to be used to calculate AUC. Higher number results in faster calculation, but its feasibility depends on the specs of your machine. Only relevant if BPPARAM = NULL.}
 
