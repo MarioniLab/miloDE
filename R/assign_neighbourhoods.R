@@ -90,7 +90,7 @@ assign_neighbourhoods = function(sce , k = 25, prop = 0.2, order = 2, filtering 
     sce = buildNhoodGraph(sce)
   }
   else {
-    message("Filtering redundant hoods.")
+    message("Filtering redundant neighbourhoods.")
     sce = suppressMessages(filter_neighbourhoods(sce))
   }
 
