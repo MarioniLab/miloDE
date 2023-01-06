@@ -19,8 +19,7 @@
 #' de_stat$pval = sample(c(0,1),nrow(de_stat),1)
 #' de_stat$pval_corrected_across_genes = sample(c(0,1),nrow(de_stat),1)
 #' de_stat$pval_corrected_across_nhoods = sample(c(0,1),nrow(de_stat),1)
-#' de_stat$sufficient_n_samples = TRUE
-#' de_stat$design_matrix_suitable = TRUE
+#' de_stat$test_performed = TRUE
 #' out = rank_neighbourhoods_by_DE_magnitude(de_stat)
 #'
 rank_neighbourhoods_by_DE_magnitude = function(de_stat, pval.thresh = 0.1, z.thresh = -3 ){
@@ -31,7 +30,7 @@ rank_neighbourhoods_by_DE_magnitude = function(de_stat, pval.thresh = 0.1, z.thr
   if (class(de_stat) == "data.frame"){
     de_stat = convert_de_stat(de_stat ,
                               assay_names = c("logFC" , "pval" , "pval_corrected_across_nhoods" , "pval_corrected_across_genes") ,
-                              coldata_names = c("Nhood" , "Nhood_center" , "sufficient_n_samples" , "design_matrix_suitable"))
+                              coldata_names = c("Nhood" , "Nhood_center" , "test_performed"))
     de_stat = de_stat[ , order(de_stat$Nhood)]
   }
   #de_stat = de_stat[, de_stat$design_matrix_suitable]

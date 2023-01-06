@@ -1,0 +1,490 @@
+---
+title: "miloDE__mouse_embryo"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{miloDE__mouse_embryo}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(knitr)
+
+```
+
+# Load libraries
+
+```{r setup}
+
+library(miloDE)
+
+# library containing toy data
+suppressMessages(library(MouseGastrulationData))
+
+# analysis libraries
+library(scuttle)
+suppressMessages(library(miloR))
+suppressMessages(library(uwot))
+library(scran)
+suppressMessages(library(dplyr))
+library(reshape2)
+
+# packages for gene cluster analaysis
+library(scWGCNA)
+suppressMessages(library(Seurat))
+
+# plotting libraries
+library(ggplot2)
+library(wesanderson)
+library(viridis)
+library(ggpubr)
+
+```
+
+We will also show how we can parallel `de_test_neighbourhoods`. For this we need to load `BiocParallel` and enable multicore parallel evaluation.   
+
+```{r setup-parallel}
+
+library(BiocParallel)
+ncores = 4
+mcparam = MulticoreParam(workers = ncores)
+register(mcparam)
+
+```
+
+
+# Load data
+
+We will use data from mouse gastrulation scRNA-seq atlas [Pijuan-Sala et al., 2019](https://pubmed.ncbi.nlm.nih.gov/30787436/). As a part of this project, using chimera mouse embryos, authors characterised the impact of Tal1 knock out on the mouse development. The most prominent phenotype was a loss of blood cells in Tal1- cells. 
+
+In this vignette, we will apply miloDE on cells contributing to blood lineage (endothelia and haematoendothelial progenitors (haem. prog-s.)) and assess whether we can detect and characterise more subtle phenotypes (i.e. DE).
+
+Tal1-/+ chimer data are processed and directly available within `MouseGastrulationData` package. As condition ID, we will use slot `tomato` which indicates whether cells carry Tal1 KO.
+
+
+```{r load-data, fig.width=8 , fig.cap="UMAPs, coloured by cell types"}
+
+
+# load chimera Tal1
+sce = suppressMessages(Tal1ChimeraData())
+
+# downsample to few selected cell types
+cts = c("Spinal cord" , "Haematoendothelial progenitors", "Endothelium" , "Blood progenitors 1" , "Blood progenitors 2")
+sce = sce[, sce$celltype.mapped %in% cts]
+# let's rename Haematoendothelial progenitors
+sce$celltype.mapped[sce$celltype.mapped == "Haematoendothelial progenitors"] = "Haem. prog-s."
+
+# delete row for tomato
+sce = sce[!rownames(sce) == "tomato-td" , ]
+
+# add logcounts
+sce = scuttle::logNormCounts(sce)
+
+# update tomato field to be more interpretable 
+sce$tomato = sapply(sce$tomato , function(x) ifelse(isTRUE(x) , "Tal1-" , "Tal1+"))
+
+# for this exercise, we focus on 3000 highly variable genes (for computational efficiency)
+dec.sce = modelGeneVar(sce)
+hvg.genes = getTopHVGs(dec.sce, n = 3000)
+sce = sce[hvg.genes , ]
+# change rownames to symbol names
+rowdata = as.data.frame(rowData(sce))
+rownames(sce) = rowdata$SYMBOL
+
+# add UMAPs
+set.seed(32)
+umaps = as.data.frame(uwot::umap(reducedDim(sce , "pca.corrected")))
+# let's store UMAPs - we will use them for visualisation
+reducedDim(sce , "UMAP") = umaps
+
+# plot UMAPs, colored by cell types
+umaps = cbind(as.data.frame(colData(sce)) , reducedDim(sce , "UMAP"))
+names(EmbryoCelltypeColours)[names(EmbryoCelltypeColours) == "Haematoendothelial progenitors"] = "Haem. prog-s."
+cols_ct = EmbryoCelltypeColours[names(EmbryoCelltypeColours) %in% unique(umaps$celltype.mapped)]
+
+p = ggplot(umaps , aes(x = V1 , y = V2 , col = celltype.mapped)) +
+  geom_point() + 
+  scale_color_manual(values = cols_ct) +
+  facet_wrap(~tomato) +
+  theme_bw() + 
+  labs(x = "UMAP-1", y = "UMAP-2")
+p
+
+
+```
+
+
+# Assign neighbourhoods
+
+## Estimate k -> neighbourhood size 
+
+`estimate_neighbourhood_sizes` allows to gauge how neighbourhood size distribution changes as a function of (order,k). It might be useful to run it first in order to determine optimal range that will return desired neighbourhood sizes.
+
+```{r estimate-k, fig.width=6, fig.cap="Neighbourhood size distribution ~ k"}
+
+
+stat_k = estimate_neighbourhood_sizes(sce, k_grid = seq(10,40,5) , 
+                                      order = 2, prop = 0.1 , filtering = TRUE,
+                                      reducedDim_name = "pca.corrected" , plot_stat = TRUE)
+
+knitr::kable(stat_k , caption = "Neighbourhood size distribution ~ k")
+
+```
+
+We will use k=20, order=2 --> that returns an average neighbourhood size ~400 cells.
+
+## Assign neighbourhoods
+
+To assign neighbourhoods, use `assign_neighbourhoods`. Note that under the hood, there is a probabilistic sampling of index cells --> if you want to ensure the same neighbourhood assignment, please set seed prior to running this function.
+
+Note that we set `filtering = TRUE` to achieve a refined assignment in which redundant neighbourhoods are discarded. Alternatively this can be done post hoc, using `filter_neighbourhoods`. 
+
+```{r assign-nhoods}
+
+
+set.seed(32)
+sce_milo = assign_neighbourhoods(sce , k = 20 , order = 2, 
+                                 filtering = TRUE , reducedDim_name = "pca.corrected")
+
+
+```
+
+In total we get 42 nhoods. A neighbourhood assignment can be visualised using Milo plots, in which each circle corresponds to a neighbourhood, and edges between them represent shared cells. The center of each neighbourhood are coordinated in 2D latent space (e.g. UMAP) for the center cell of the neighbourhood. We can also colour each neighbourhood by provided metric. In this plot, we will annotate each neighbourhood with its enriched cell type, and colour neighbourhoods by assigned cell types.
+
+
+```{r plot-nhoods-by-cts , fig.width=5, fig.cap="Neighbourhood plot, coloured by cell types"}
+
+
+nhoods_sce = nhoods(sce_milo)
+# assign cell types for nhoods 
+nhood_stat_ct = data.frame(Nhood = 1:ncol(nhoods_sce) , Nhood_center = colnames(nhoods_sce))
+nhood_stat_ct = miloR::annotateNhoods(sce_milo , nhood_stat_ct , coldata_col = "celltype.mapped")
+p = plot_milo_by_single_metric(sce_milo, nhood_stat_ct, colour_by = "celltype.mapped" , 
+                                      layout = "UMAP" , size_range = c(1.5,3) , edge_width = c(0.2,0.5)) + 
+  scale_fill_manual(values = cols_ct , name = "Cell type")
+p
+
+
+```
+
+# DE testing
+
+## Calculate AUC per neighbourhood
+
+Prior to DE testing, an optional step is to assess which neighbourhoods do not show any signs of perturbation and discard them prior to DE testing in order to facilitate the burden from multiple testing correction (by using `calc_AUC_per_neighbourhood`). To do so we build on [Augur](https://pubmed.ncbi.nlm.nih.gov/32690972/) that employs RF classifiers to separate cells between the conditions. As an output of `calc_AUC_per_neighbourhood`, we return data frame containing AUC of the per neighbourhood classifiers. 
+We suggest that AUC <= 0.5 corresponds to neighbourhoods that can be safely discarded from DE testing (however, you may use your own threshold if desired). In addition, if classifier can not be built due to very low number of cells in at least one of the conditions, AUC will be set to NaN.
+
+Note that this part is rather computationally costly, and we recommend it to run if a substantial transcriptional regions are anticipated to be unperturbed.
+
+```{r calc-auc-per-nhood, fig.width=5, fig.cap="Neighbourhood plot, coloured by AUC"}
+
+
+stat_auc = suppressWarnings(calc_AUC_per_neighbourhood(sce_milo , sample_id = "sample" , condition_id = "tomato", min_n_cells_per_sample = 1, BPPARAM = mcparam))
+
+p = plot_milo_by_single_metric(sce_milo, stat_auc, colour_by = "auc" , 
+                                      layout = "UMAP" , size_range = c(1.5,3) , edge_width = c(0.2,0.5)) + 
+  scale_fill_viridis(name = "AUC")
+p
+
+
+```
+
+We observe that AUCs in the neighbourhoods containing mostly Blood progenitors is NaN which is consistent with absense of these cells in Tal1- cells. 
+In addition, we observe higher AUCs in endothelial subregions, likely reflecting that these cells are more affected by Tal1 KO.
+
+## DE testing
+
+Let's proceed with DE testing within each neighbourhood. We will test neighbourhoods in which AUC is not NaN (i.e. neighbourhoods in which there are enough cells from both conditions).
+
+```{r de-testing, fig.width=5 , fig.cap="Neighbourhood plot, coloured by whether DE testing is performed"}
+
+de_stat = de_test_neighbourhoods(sce_milo ,
+                             sample_id = "sample",
+                             design = ~tomato,
+                             covariates = c("tomato"),
+                             subset_nhoods = stat_auc$Nhood[!is.na(stat_auc$auc)],
+                             output_type = "SCE",
+                             plot_summary_stat = TRUE,
+                             layout = "UMAP",
+                             BPPARAM = mcparam)
+
+```
+
+# Analysis of miloDE results 
+
+## Get neighbourhood ranking by the extent of DE
+
+```{r rank-nhoods-by-DE-magnitude, fig.width=10 , fig.cap = "Neighbourhood plot, coloured by # of DE genes" , fig.height=5}
+
+stat_de_magnitude = rank_neighbourhoods_by_DE_magnitude(de_stat)
+
+p1 = plot_milo_by_single_metric(sce_milo, stat_de_magnitude, colour_by = "n_DE_genes" , 
+                                      layout = "UMAP" , size_range = c(1.5,3) , edge_width = c(0.2,0.5)) + 
+  scale_fill_viridis(name = "# DE genes")
+p2 = plot_milo_by_single_metric(sce_milo, stat_de_magnitude, colour_by = "n_specific_DE_genes" , 
+                                      layout = "UMAP" , size_range = c(1.5,3) , edge_width = c(0.2,0.5)) + 
+  scale_fill_viridis(name = "# specific\nDE genes" , option = "inferno")
+p = ggarrange(p1,p2)
+p
+
+```
+
+Reassuringly, we observe that same regions show both higher AUC and number of DE expressed genes.
+
+# Co-regulated programs
+
+The fine neighbourhood resolution allows to cluster genes based on logFC vectors (across the neighbourhoods). One way is to employ WGCNA approach, originally designed to finding co-expressed genes. Instead of gene counts we will use corrected logFC (logFC set to 0 in the neighbourhoods in which it is not DE).
+
+Below we outline a custom script to detect gene modules using WGCNA approach.
+
+Note that WGCNA algorithm is exclusive and sensitive to input parameters - nevertheless, we suggest it is useful to explore what DE patterns exist in your data.
+
+## Gene modules using WGCNA
+
+```{r sc-wgcna}
+
+
+get_wgcna_modules = function(de_stat , subset_hoods = NULL , 
+                             n_hoods_sig.thresh = 2 ,
+                             npcs = 5 ,
+                             pval.thresh = 0.1 ){
+  require(scWGCNA)
+  require(Seurat)
+  require(dplyr)
+  require(reshape2)
+  
+  set.seed(32)
+  # subset hoods
+  if (!is.null(subset_hoods)){
+    de_stat = de_stat[de_stat$Nhood %in% subset_hoods , ]
+  }
+  
+  # focus on genes that DE in at least 2 nhoods
+  de_stat_per_gene = as.data.frame(de_stat %>% group_by(gene) %>% dplyr::summarise(n_hoods_sig = sum(pval_corrected_across_nhoods < pval.thresh , na.rm = TRUE)))
+  genes_sig = de_stat_per_gene$gene[de_stat_per_gene$n_hoods_sig >= n_hoods_sig.thresh]
+  
+  de_stat = de_stat[de_stat$gene %in% genes_sig, ]
+  de_stat = de_stat[order(de_stat$Nhood) , ]
+  
+  # discard neighbourhoods in which testing was not performed
+  de_stat = de_stat[de_stat$test_performed , ]
+  
+  # for this analysis, set logFC to 0 and pvals to 1 if they are NaN
+  de_stat$logFC[is.na(de_stat$logFC)] = 0
+  de_stat$pval[is.na(de_stat$pval)] = 1
+  de_stat$pval_corrected_across_genes[is.na(de_stat$pval_corrected_across_genes)] = 1
+  de_stat$pval_corrected_across_nhoods[is.na(de_stat$pval_corrected_across_nhoods)] = 1
+  
+  # set logFC to 0 if pval_corrected_across_nhoods > pval.thresh
+  de_stat$logFC[de_stat$pval_corrected_across_nhoods >= pval.thresh] = 0
+  
+  # move the object to Seurat
+  de_stat = reshape2::dcast(data = de_stat, formula = gene~Nhood, value.var = "logFC")
+  rownames(de_stat) = de_stat$gene
+  de_stat = de_stat[,2:ncol(de_stat)]
+  
+  obj.seurat <- CreateSeuratObject(counts = de_stat)
+  DefaultAssay(obj.seurat) <- "RNA"
+  obj.seurat = FindVariableFeatures(obj.seurat)
+  # scale
+  obj.seurat[["RNA"]]@scale.data = as.matrix(obj.seurat[["RNA"]]@data)
+  obj.seurat = Seurat::RunPCA(obj.seurat , npcs = npcs)
+  
+  # run scwgcna
+  clusters_scwgcna = run.scWGCNA(p.cells = obj.seurat, 
+                                 s.cells = obj.seurat, 
+                                 is.pseudocell = F, 
+                                 features = rownames(obj.seurat),
+                                 less = TRUE , merging = TRUE)
+  # compile stat
+  clusters = lapply(1:length(clusters_scwgcna$module.genes) , function(i){
+    out = data.frame(cluster = i , gene = clusters_scwgcna$module.genes[[i]] , n_genes = length(clusters_scwgcna$module.genes[[i]]))
+    return(out)
+  })
+  clusters = do.call(rbind , clusters)
+  # add colors
+  genes_w_colors = clusters_scwgcna$dynamicCols
+  genes_w_colors = data.frame(gene = names(genes_w_colors) , cluster_color = genes_w_colors)
+  clusters = merge(clusters , genes_w_colors)
+  
+  return(clusters)
+}
+
+
+# for this vignette, for simplicity we will focus on genes that are DE in at least 4 neighbourhoods
+modules_wgcna = suppressMessages(get_wgcna_modules(convert_de_stat(de_stat) , n_hoods_sig.thresh = 4))
+
+
+
+
+```
+
+
+## Gene module plots
+
+We can visualise for which transcriptional regions different gene modules are relevant.
+
+For each gene module, we can plot neighbourhood plot, in which neighbourhood colour corresponds to average logFC (across genes from the module) and neighbourhood size corresponds to fraction of genes from the module, that are DE in this neighbourhood.
+
+```{r sc-wgcna-plot-modules, fig.cap = "Co-reulated modules", fig.width=10, fig.height=8}
+
+
+plots = lapply(sort(unique(modules_wgcna$cluster)) , function(cluster){
+  p = plot_DE_gene_set(sce_milo, de_stat , genes = modules_wgcna$gene[modules_wgcna$cluster == cluster],
+                            layout = "UMAP" , size_range = c(0.5,3) ,
+                            node_stroke = 0.3, edge_width = c(0.2,0.5)) +
+    ggtitle(paste0("Module ", cluster, ", ", length(modules_wgcna$gene[modules_wgcna$cluster == cluster]) , " genes"))
+  return(p)
+})
+p = ggarrange(plotlist = plots)
+p
+
+
+```
+
+## Break down by cell types
+
+We can also quantify the relevance of each module for different cell types.
+
+```{r sc-wgcna-plot-modules-beeswarm, fig.width=10,fig.height=8 , fig.cap = "Co-regulated modules, break down by cell types."}
+
+# we first need to assign cell type label to each neighbourhood - we have calculated it previously
+# we will use data.frame format for de-stat; the conversion between SingleCellExperiment and data.frame formats can be done using `convert_de_stat`
+
+de_stat_df = convert_de_stat(de_stat)
+de_stat_df = merge(de_stat_df , nhood_stat_ct , by = c("Nhood" , "Nhood_center"))
+
+
+plots = lapply(sort(unique(modules_wgcna$cluster)) , function(cluster){
+  p = plot_beeswarm_gene_set(de_stat_df, 
+                             genes = modules_wgcna$gene[modules_wgcna$cluster == cluster], 
+                             nhoodGroup = "celltype.mapped") + 
+    ggtitle(paste0("Module ", cluster))
+  return(p)
+})
+p = ggarrange(plotlist = plots)
+p
+
+
+```
+
+
+## Visualising individual genes
+
+We can also visualise DE results for individual genes, in which each neighbourhood is coloured by its logFC if significant. 
+
+Below we show couple examples of DE patterns of genes from modules 2 and 4.
+
+## Module 2
+
+```{r de-single-genes-mod-2 , fig.width=10,fig.height=15 , fig.cap = "Genes from module 2."}
+
+
+set.seed(1020)
+module = 2
+n_genes = 6
+genes = sample(modules_wgcna$gene[modules_wgcna$cluster == module] , n_genes)
+
+
+plots = lapply(genes , function(gene){
+  p = plot_DE_single_gene(sce_milo, de_stat , gene = gene , layout = "UMAP" , set_na_to_0 = TRUE) + 
+    ggtitle(gene)
+  return(p)
+})
+p = ggarrange(plotlist = plots , ncol = 2, nrow = 3)
+p
+
+
+
+```
+
+## Module 4
+
+```{r de-single-genes-mod-4 , fig.width=10,fig.height=15 , fig.cap = "Genes from module 4."}
+
+
+set.seed(1020)
+module = 4
+n_genes = 6
+genes = sample(modules_wgcna$gene[modules_wgcna$cluster == module] , n_genes)
+
+
+plots = lapply(genes , function(gene){
+  p = plot_DE_single_gene(sce_milo, de_stat , gene = gene , layout = "UMAP" , set_na_to_0 = TRUE) + 
+    ggtitle(gene)
+  return(p)
+})
+p = ggarrange(plotlist = plots, ncol=2, nrow=3)
+p
+
+
+
+```
+
+
+
+
+
+
+<!-- ## Get GO -->
+
+<!-- ```{r get-go} -->
+
+
+
+<!-- get_go_terms = function(genes , module , pval.thresh = 0.1){ -->
+
+<!--   require(enrichR) -->
+<!--   require(stringr) -->
+<!--   gos <- as.data.frame( enrichr(genes, 'GO_Biological_Process_2021')[[1]] ) -->
+<!--   gos$n_tested_genes = length(genes) -->
+<!--   gos$n_detected_genes_in_go = NaN -->
+<!--   gos$n_total_genes_in_go = NaN   -->
+
+<!--   gos$Term_id = NaN -->
+<!--   for (i in 1:nrow(gos)){ -->
+<!--     current.overlap = gos$Overlap[i] -->
+<!--     current.overlap = str_split(current.overlap, "/") -->
+<!--     gos$n_detected_genes_in_go[i] = as.numeric(current.overlap[[1]][1]) -->
+<!--     gos$n_total_genes_in_go[i] = as.numeric(current.overlap[[1]][2]) -->
+
+<!--     current.go = gos$Term[i] -->
+<!--     current.go = str_split(current.go, "GO:") -->
+<!--     gos$Term[i] = substring(current.go[[1]][1], 1, nchar(current.go[[1]][1])-2) -->
+<!--     gos$Term_id[i] = substring(current.go[[1]][2], 1, nchar(current.go[[1]][2])-1) -->
+<!--   } -->
+
+<!--   gos = gos[gos$Adjusted.P.value < pval.thresh, ] -->
+
+<!--   if(nrow(gos) > 0){ -->
+<!--     gos = gos[order(gos$Adjusted.P.value) , ] -->
+<!--     p = plotEnrich(gos , numChar = 120) + ggtitle(module) +  -->
+<!--       theme(legend.position = "right") -->
+
+<!--     return(p) -->
+<!--   } -->
+<!--   else { -->
+<!--     return(NULL) -->
+<!--   } -->
+<!-- } -->
+
+
+<!-- plots = lapply(sort(unique(modules_wgcna_all$cluster)) , function(cluster){ -->
+<!--   p = get_go_terms(genes = modules_wgcna_all$SYMBOL[modules_wgcna_all$cluster == cluster], module = cluster)  -->
+<!--   print(p) -->
+<!-- }) -->
+
+
+
+<!-- ``` -->
+
+
+# Session Info
+
+```{r sessinf}
+sessionInfo()
+```

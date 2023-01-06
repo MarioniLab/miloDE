@@ -1,8 +1,9 @@
+
 # milo_DE
 Framework for sensitive DE testing (using neighbourhoods).
 
 miloDE builds on existing framework for DA testing called [Milo](https://pubmed.ncbi.nlm.nih.gov/34594043/). 
-It exploits the notion of overlapping neighborhoods (nhoods) of homogeneous cells, constructed from graph-representation of scRNA-seq data, and performs testing within each neighborhood. Multiple testing correction is performed either across nhoods or across genes. 
+It exploits the notion of overlapping neighborhoods of homogeneous cells, constructed from graph-representation of scRNA-seq data, and performs testing within each neighborhood. Multiple testing correction is performed either across neighborhoods or across genes. 
 
 In addition to DE testing, we provide functional to rank neighbourhoods by degree of the DE as well as plotting functions to visualise results. In vignette, we showcase how you can carry out clustering analysis to group genes in co-regulated transcriptional modules.
 
@@ -18,14 +19,18 @@ library(miloDE)
 
 ## If you plan to use parallelisation (desired for big datasets), please install BiocParallel:
 BiocManager::install("BiocParallel")
+
+## Not an immidiate functional of miloDE, but we illustrate in our vignette how to adapt WGCNA approach to discover DE patterns and co-regulated gene modules. If you want to perform similar analysis, please install Seurat and scWGCNA:
+install.packages('Seurat')
+devtools::install_github("neurorestore/Augur") 
+
+
 ```
-
-
 
 
 ## Pipeline
 
-1. *Input*. Input of `miloDE` is scRNA-seq data, provided as `SingleCellExperiment` object. 
+0. **Input**. Input of `miloDE` is scRNA-seq data, provided as `SingleCellExperiment` object. 
 Additionally, we require that:
 
 * Latent dimension (used for graph construction) is pre-computed and stored in `reducedDim(sce)`.
@@ -42,40 +47,36 @@ head(colData(sce_mouseEmbryo))
 # `tomato` corresponds to condition id  
 # `sample` corresponds to individual replicates. There are 2 samples per each condition:
 table(sce_mouseEmbryo$sample , sce_mouseEmbryo$sample$tomato)
-```
-
-2. *Neighbourhood assignment*: First step is to assign neighbourhoods using graph representation of scRNA-seq data'
 
 ```
 
-sce_mouseEmbryo = assign_neighbourhoods(sce_mouseEmbryo, k = 25, order = 2, 
-filtering = TRUE, reducedDim_name = "pca.corrected")
+1. **Neighbourhood assignment**: First step is to assign neighbourhoods using graph representation of scRNA-seq data'
 
 ```
 
-2. *DE testing*: Once neighbourhoods are assigned, we can carry out DE testing. Output is returned in either `data.frame` or `SingleCellExperiment format`. For each tested gene-nhood, we return `logFC`, `pvalue`, `pvalue corrected across genes` and `pvalue corrected across nhoods`. We also return two boolean flags (for each nhood): 
-
-* `sufficient_n_samples` indicates whether testing can be carried out given sample composition within a nhood (i.e. do we have cells from enough samples for both conditions); 
-* `design_matrix_suitable` indicates whether testing can be carried out with included covariates. 
-
-In other words, `sufficient_n_samples` reflects whether testing can be carried out without covariates, and `design_matrix_suitable` reflects whether testing can be carried out with covariates.
-
-
+sce_mouseEmbryo = assign_neighbourhoods(sce_mouseEmbryo, k = 20, order = 2, 
+                                        filtering = TRUE, reducedDim_name = "pca.corrected")
 
 ```
 
-de_stat = de_test_neighbourhoods = function(sce_mouseEmbryo , 
-                                            sample_id = "sample", condition_id = "tomato",
-                                            gene_selection = "none", output_type = "data.frame")
+2. **DE testing**: Once neighbourhoods are assigned, we can carry out DE testing. Output is returned in either `data.frame` or `SingleCellExperiment format`. For each tested gene-neighbourhood, we return `logFC`, `pvalue`, `pvalue corrected across genes` and `pvalue corrected across nhoods`. We also return boolean flag if test is performed.
+
+```
+
+de_stat = de_test_neighbourhoods(sce_mouseEmbryo , sample_id = "sample", 
+                                 design = ~tomato, covariates = c("tomato"))
 
 
 ```
 
-
-Please check the vignette to grasp on additional functions aiding interpretation and analysis of miloDE output.
 
 
 ## Vignette
 
-@@ Add link to vignette here
+Please check the vignette to grasp on additional functions aiding interpretation and analysis of miloDE output.
+
+[Effect of Tal1 knock out on mouse development](https://www.dropbox.com/sh/1hrqf0wiffeo12c/AAAdCwAtKgvQ53L1aHdd6ccqa?dl=0). 
+
+
+
 

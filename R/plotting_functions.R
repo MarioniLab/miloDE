@@ -32,7 +32,6 @@
 #' @import ggplot2
 #' @importFrom methods as
 #' @export
-#'
 #' @examples
 #' require(SingleCellExperiment)
 #' n_row = 500
@@ -46,7 +45,7 @@
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-#' de_stat = de_test_neighbourhoods(sce , condition_id = "type" , gene_selection = "none")
+#' de_stat = de_test_neighbourhoods(sce , design = ~type , covariates = c("type") )
 #' de_stat = de_stat[de_stat$gene == "1", ]
 #' umaps = as.data.frame(matrix(rnorm(n_col*2), ncol=2))
 #' colnames(umaps) = c("V1" , "V2")
@@ -200,6 +199,7 @@ plot_milo_by_single_metric = function(sce, nhood_stat, colour_by = "logFC" , sig
 #' @param alpha A scalar (between 0 and 1) specifying the significance level used
 #' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default: 'UMAP')
 #' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted
+#' @param set_na_to_0 Boolean specifying whether in, nhoods in which gene is not tested, logFC would be set to 0 and pvalues to 1
 #' @param ... Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc))
 #'
 #' @return
@@ -218,13 +218,13 @@ plot_milo_by_single_metric = function(sce, nhood_stat, colour_by = "logFC" , sig
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-#' de_stat = de_test_neighbourhoods(sce , condition_id = "type" , gene_selection = "none")
+#' de_stat = de_test_neighbourhoods(sce , design = ~type , covariates = c("type") )
 #' umaps = as.data.frame(matrix(rnorm(n_col*2), ncol=2))
 #' colnames(umaps) = c("V1" , "V2")
 #' reducedDim(sce , "UMAP") = umaps
 #' p = plot_DE_single_gene(sce, de_stat , gene = "1")
 #'
-plot_DE_single_gene = function(sce, de_stat , gene , alpha = 0.1, layout = "UMAP" , subset_nhoods = NULL , ...){
+plot_DE_single_gene = function(sce, de_stat , gene , alpha = 0.1, layout = "UMAP" , subset_nhoods = NULL , set_na_to_0 = TRUE, ...){
 
   if (!gene %in% rownames(sce)){
     stop("gene should be in rownames(sce)")
@@ -232,15 +232,25 @@ plot_DE_single_gene = function(sce, de_stat , gene , alpha = 0.1, layout = "UMAP
 
   out = .check_de_stat_valid(de_stat ,
                              assay_names = c("logFC" , "pval" , "pval_corrected_across_nhoods" , "pval_corrected_across_genes") ,
-                             coldata_names = c("Nhood" , "Nhood_center"))
+                             coldata_names = c("Nhood" , "Nhood_center" , "test_performed"))
 
   if (class(de_stat) == "SingleCellExperiment"){
     de_stat = de_stat[gene , ]
     de_stat = convert_de_stat(de_stat, assay_names = c("logFC" , "pval" , "pval_corrected_across_nhoods" , "pval_corrected_across_genes") ,
-                              coldata_names = c("Nhood" , "Nhood_center" , "sufficient_n_samples" , "design_matrix_suitable"))
+                              coldata_names = c("Nhood" , "Nhood_center" , "test_performed" ))
+  }
+  else {
+    de_stat = de_stat[de_stat$gene == gene ,]
   }
 
-  nhood_stat = de_stat[de_stat$gene == gene & de_stat$design_matrix_suitable == TRUE, ]
+  if (set_na_to_0){
+    idx = which(is.na(de_stat$logFC))
+    de_stat$logFC[idx] = 0
+    de_stat$pval[idx] = 1
+    de_stat$pval_corrected_across_genes[idx] = 1
+    de_stat$pval_corrected_across_nhoods[idx] = 1
+  }
+  nhood_stat = de_stat[de_stat$test_performed == TRUE & !is.na(de_stat$logFC), ]
 
   p = plot_milo_by_single_metric(sce, nhood_stat = nhood_stat, colour_by = "logFC" , significance_by = "pval_corrected_across_nhoods" ,
                              order_by = "pval_corrected_across_nhoods" , order_direction = TRUE, size_by = NULL,
@@ -283,7 +293,7 @@ plot_DE_single_gene = function(sce, de_stat , gene , alpha = 0.1, layout = "UMAP
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-#' de_stat = de_test_neighbourhoods(sce , condition_id = "type" , gene_selection = "none")
+#' de_stat = de_test_neighbourhoods(sce , design = ~type , covariates = c("type") )
 #' umaps = as.data.frame(matrix(rnorm(n_col*2), ncol=2))
 #' colnames(umaps) = c("V1" , "V2")
 #' reducedDim(sce , "UMAP") = umaps
@@ -309,7 +319,7 @@ plot_DE_gene_set = function(sce, de_stat , genes ,
       de_stat = de_stat[de_stat$gene %in% genes , ]
       de_stat = convert_de_stat(de_stat ,
                               assay_names = c("logFC" , "pval"  , "pval_corrected_across_genes" , "pval_corrected_across_nhoods") ,
-                              coldata_names = c("Nhood" , "Nhood_center"))
+                              coldata_names = c("Nhood" , "Nhood_center" , "test_performed"))
     }
   }
   else {
@@ -320,6 +330,15 @@ plot_DE_gene_set = function(sce, de_stat , genes ,
       de_stat = de_stat[genes, ]
     }
   }
+
+  # update pvalues for nans to 1 -- so they will not get
+  idx_nans = which(is.na(assay(de_stat , "pval_corrected_across_nhoods")))
+  assay(de_stat , "logFC")[idx_nans] = 0
+  assay(de_stat , "pval_corrected_across_nhoods")[idx_nans] = 1
+  assay(de_stat , "pval_corrected_across_genes")[idx_nans] = 1
+  assay(de_stat , "pval")[idx_nans] = 1
+  assay(de_stat , correction_by)[idx_nans] = 1
+
 
   if (logFC_correction){
     assay_correction_by = assay(de_stat , correction_by)
@@ -381,13 +400,14 @@ plot_DE_gene_set = function(sce, de_stat , genes ,
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-#' de_stat = de_test_neighbourhoods(sce , condition_id = "type" , gene_selection = "none")
+#' de_stat = de_test_neighbourhoods(sce , design = ~type , covariates = c("type") )
 #' de_stat$celltype = 1
 #' p = plot_beeswarm_single_gene(de_stat , gene = "1" , nhoodGroup = "celltype")
 #'
 plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 , subset_nhoods = NULL ){
 
-  out = .check_de_stat_valid(de_stat , assay_names = NULL, coldata_names = nhoodGroup)
+  out = .check_de_stat_valid(de_stat , assay_names = c("logFC" , "pval" , "pval_corrected_across_genes" , "pval_corrected_across_nhoods"),
+                             coldata_names = c("Nhood", nhoodGroup))
 
   if (class(de_stat) == "SingleCellExperiment"){
     if (!gene %in% rownames(de_stat)){
@@ -407,6 +427,7 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 ,
   }
 
   nhood_stat = de_stat
+  nhood_stat = nhood_stat[!is.na(nhood_stat$logFC) , ]
   nhood_stat = nhood_stat[order(nhood_stat$Nhood) , ]
   nhood_stat[, nhoodGroup] = as.factor(nhood_stat[, nhoodGroup])
   nhood_stat = mutate(nhood_stat, group_by = nhood_stat[,nhoodGroup])
@@ -422,11 +443,11 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 ,
     mutate(Nhood=factor(Nhood, levels=unique(Nhood))) %>%
     ggplot(aes(group_by, logFC, color=logFC_color)) +
     scale_color_gradient2() +
-    guides(color="none") +
+    #guides(color="none") +
     xlab(nhoodGroup) + ylab("Log Fold Change") +
     geom_quasirandom(alpha=1) +
     coord_flip() +
-    theme_bw(base_size=22) +
+    theme_bw() +
     theme(strip.text.y =  element_text(angle=0))
 
   return(p)
@@ -467,7 +488,7 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 ,
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-#' de_stat = de_test_neighbourhoods(sce , condition_id = "type" , gene_selection = "none")
+#' de_stat = de_test_neighbourhoods(sce , design = ~type , covariates = c("type") )
 #' de_stat$celltype = 1
 #' p = plot_beeswarm_gene_set(de_stat , genes = c("1","2") , nhoodGroup = "celltype")
 #'
@@ -490,6 +511,14 @@ plot_beeswarm_gene_set = function(de_stat , genes , nhoodGroup , logFC_correctio
     }
   }
   de_stat = de_stat[genes , ]
+
+  # update pvalues for nans to 1 -- so they will not get
+  idx_nans = which(is.na(assay(de_stat , "pval_corrected_across_nhoods")))
+  assay(de_stat , "logFC")[idx_nans] = 0
+  assay(de_stat , "pval_corrected_across_nhoods")[idx_nans] = 1
+  assay(de_stat , "pval_corrected_across_genes")[idx_nans] = 1
+  assay(de_stat , "pval")[idx_nans] = 1
+  assay(de_stat , correction_by)[idx_nans] = 1
 
   if (logFC_correction){
     assay_correction_by = assay(de_stat , correction_by)
@@ -520,11 +549,11 @@ plot_beeswarm_gene_set = function(de_stat , genes , nhoodGroup , logFC_correctio
     mutate(Nhood=factor(Nhood, levels=unique(Nhood))) %>%
     ggplot(aes(group_by, frac_DE_genes, color=avg_logFC)) +
     scale_color_gradient2(name = "Average logFC") +
-    guides(color="none") +
+    #guides(color="none") +
     xlab(nhoodGroup) + ylab("How often gene is DE") +
     geom_quasirandom(alpha=1) +
     coord_flip() +
-    theme_bw(base_size=22) +
+    theme_bw() +
     theme(strip.text.y =  element_text(angle=0))
 
   return(p)

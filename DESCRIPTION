@@ -50,9 +50,10 @@ Imports:
     ggpubr,
     RColorBrewer,
     methods,
-    ggbeeswarm
+    ggbeeswarm,
+    limma,
+    miloR
 Remotes:
-    github::MarioniLab/miloR,
     github::neurorestore/Augur,
     github::Bioconductor/MatrixGenerics,
     github::const-ae/sparseMatrixStats

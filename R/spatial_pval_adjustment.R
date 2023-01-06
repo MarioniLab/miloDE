@@ -28,26 +28,30 @@ spatial_pval_adjustment = function(nhoods_sce , pvalues){
 
   # we will only calculate weights for neighbourhoods in which we are testing
   idx_not_nan = which(!is.na(pvalues))
-  weights = .get_weights(nhoods_sce[,idx_not_nan])
+  if (length(idx_not_nan) > 1){
+    weights = .get_weights(as.matrix(nhoods_sce[,idx_not_nan]))
 
-  out = .check_weights_and_pvals(weights , pvalues[idx_not_nan] , nhoods_sce[,idx_not_nan]) & .check_nhoods_matrix(nhoods_sce)
+    out = .check_weights_and_pvals(weights , pvalues[idx_not_nan] , as.matrix(nhoods_sce[,idx_not_nan])) & .check_nhoods_matrix(nhoods_sce)
 
 
-  n_comparisons = length(pvalues)
-  #n_nans = sum(is.na(pvalues))
-  pvalues = pvalues[idx_not_nan]
+    n_comparisons = length(pvalues)
+    #n_nans = sum(is.na(pvalues))
+    pvalues = pvalues[idx_not_nan]
 
-  # calc correction
-  o <- order(pvalues)
-  pvalues <- pvalues[o]
-  weights <- weights[o]
-  adjp <- numeric(length(o))
-  adjp[o] <- rev(cummin(rev(sum(weights)*pvalues/cumsum(weights))))
-  adjp <- pmin(adjp, 1)
+    # calc correction
+    o <- order(pvalues)
+    pvalues <- pvalues[o]
+    weights <- weights[o]
+    adjp <- numeric(length(o))
+    adjp[o] <- rev(cummin(rev(sum(weights)*pvalues/cumsum(weights))))
+    adjp <- pmin(adjp, 1)
 
-  # add nans back
-  adjp_total = rep(NaN, 1,n_comparisons)
-  adjp_total[idx_not_nan] = adjp
+    # add nans back
+    adjp_total = rep(NaN, 1,n_comparisons)
+    adjp_total[idx_not_nan] = adjp
+  } else {
+    adjp_total = pvalues
+  }
   return(adjp_total)
 }
 

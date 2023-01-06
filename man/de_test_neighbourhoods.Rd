@@ -7,12 +7,11 @@
 de_test_neighbourhoods(
   sce,
   sample_id = "sample",
-  condition_id,
+  design,
+  covariates,
+  contrasts = NULL,
   subset_nhoods = NULL,
-  covariates = NULL,
   min_n_cells_per_sample = 2,
-  gene_selection = c("none", "per_neighbourhood"),
-  genes_2_test = rownames(sce),
   min_count = 3,
   output_type = "data.frame",
   plot_summary_stat = FALSE,
@@ -25,18 +24,15 @@ de_test_neighbourhoods(
 
 \item{sample_id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)}
 
-\item{condition_id}{Character specifying which variable should be used as a condition id. Should be in colData(sce)}
+\item{design}{A \code{formula} object describing the experimental design for DE testing. If contrasts == NULL (default), the last column column of model will be used for testing.}
+
+\item{covariates}{Vector specifying all covariates that are passed into experimental design.}
+
+\item{contrasts}{NULL or contrast specifying what comparison to perform (depending on design, multiple comparisons can be performed). Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.}
 
 \item{subset_nhoods}{NULL or character vector specifying the set of neighbourhoods that will be tested for DE}
 
-\item{covariates}{Vector specifying if additional covariates should be passed into experimental design. Default = NULL (no covariates)}
-
-\item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replica to be included in testing. Default = 2}
-
-\item{gene_selection}{In {"none" , "per_neighbourhood"}. If == "per_neighbourhood", it will further discard genes not relevant for this particular neighbourhood.
-If == "all", it will perform overall selection and then test each hood across same genes (default). If "none" = no selection based on expression.}
-
-\item{genes_2_test}{Character vector of genes for which we will perform DE testing. Default = rownames(sce). Only applicable if gene_selection == "none".}
+\item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replica to be included in testing. Default = 1.}
 
 \item{min_count}{Positive integer, specifying min.count for gene selection. Default = 3.}
 
@@ -67,7 +63,7 @@ sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
 reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-de_stat = de_test_neighbourhoods(sce , condition_id = "type" , gene_selection = "none" , plot_summary_stat = FALSE)
+de_stat = de_test_neighbourhoods(sce , design = ~type, covariates = c("type"), plot_summary_stat = FALSE)
 de_stat = convert_de_stat(de_stat)
 de_stat = convert_de_stat(de_stat)
 }

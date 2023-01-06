@@ -2,13 +2,14 @@
 
 #' calc_AUC_per_neighbourhood
 #'
-#' Returns per neighbourhood AUC from Augur-classifier
+#' Returns per neighbourhood AUC from Augur-based classifier. Note that it is only relevant for standard, additive models.
 #'
 #' @param sce Milo object
 #'
 #' @param sample_id Character specifying which variable should be used as a sample/replica id. Should be in colData(sce).
 #' @param genes Character vector specifying genes to be passed for the testing
 #' @param condition_id Character specifying which variable should be used as a condition id. Should be in colData(sce).
+#' @param conditions In case of multiple comparative groups, character vector specifying which conditions should be tested for separation. Default is NULL and assumes that only 2 groups are present in the data
 #' @param min_n_cells_per_sample Positive integer specifying the minimum number of cells per replica to be included in testing. Default = 2.
 #' @param n_threads Positive integer specifying the number of cores to be used to calculate AUC. Higher number results in faster calculation, but its feasibility depends on the specs of your machine. Only relevant if BPPARAM = NULL.
 #' @param BPPARAM NULL or MulticoreParam object
@@ -35,12 +36,15 @@
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
 #' sce = calc_AUC_per_neighbourhood(sce, sample_id = "sample" , condition_id = "type")
 #'
-calc_AUC_per_neighbourhood <- function(sce , genes = rownames(sce) , sample_id = "sample" , condition_id , min_n_cells_per_sample = 1, n_threads = 2 , BPPARAM = NULL){
+calc_AUC_per_neighbourhood <- function(sce , genes = rownames(sce) , sample_id = "sample" ,
+                                       condition_id , conditions = NULL,
+                                       min_n_cells_per_sample = 1, n_threads = 2 , BPPARAM = NULL){
 
   out = .check_argument_correct(sce, .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)") &
     .check_sce_milo(sce) &
     .check_argument_correct(sample_id, is.character, "Check sample_id - should be character vector") &
     .check_argument_correct(condition_id, is.character, "Check condition_id - should be character vector") &
+    .check_argument_correct(conditions, .check_string_or_null, "Check conditions - should be NULL or character vector") &
     .check_argument_correct(min_n_cells_per_sample, .check_positive_integer, "Check min_n_cells_per_sample - should be positive integer") &
     .check_argument_correct(n_threads , .check_positive_integer , "Check n_threads - should be positive integer") &
     .check_var_in_coldata_sce(sce , sample_id , "sample_id") & .check_condition_in_coldata_sce(sce , condition_id) &
@@ -56,6 +60,18 @@ calc_AUC_per_neighbourhood <- function(sce , genes = rownames(sce) , sample_id =
   coldata <- as.data.frame(colData(sce))
   sce$condition_id <- as.factor( coldata[, condition_id] )
   sce$sample_id <- as.factor( coldata[, sample_id] )
+
+  if (is.null(conditions)){
+    tab = table(sce$condition_id)
+    if (!length(tab) == 2){
+      stop("If conditions == NULL, there should be exactly two levels for tested conditions.")
+    }
+  } else {
+    if (mean(conditions %in% unique(sce$condition)) < 1){
+      stop("All specified conditions should be present.")
+    }
+    sce = sce[, sce$condition %in% conditions]
+  }
 
   nhoods_sce = nhoods(sce)
 

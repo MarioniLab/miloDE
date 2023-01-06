@@ -26,8 +26,7 @@ de_stat$logFC = sample(seq(-2,2,1) , nrow(de_stat) , 1)
 de_stat$pval = sample(c(0,1),nrow(de_stat),1)
 de_stat$pval_corrected_across_genes = sample(c(0,1),nrow(de_stat),1)
 de_stat$pval_corrected_across_nhoods = sample(c(0,1),nrow(de_stat),1)
-de_stat$sufficient_n_samples = TRUE
-de_stat$design_matrix_suitable = TRUE
+de_stat$test_performed = TRUE
 out = rank_neighbourhoods_by_DE_magnitude(de_stat)
 
 }

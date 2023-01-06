@@ -11,6 +11,7 @@ plot_DE_single_gene(
   alpha = 0.1,
   layout = "UMAP",
   subset_nhoods = NULL,
+  set_na_to_0 = TRUE,
   ...
 )
 }
@@ -26,6 +27,8 @@ plot_DE_single_gene(
 \item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default: 'UMAP')}
 
 \item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted}
+
+\item{set_na_to_0}{Boolean specifying whether in, nhoods in which gene is not tested, logFC would be set to 0 and pvalues to 1}
 
 \item{...}{Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc))}
 }
@@ -48,7 +51,7 @@ sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
 reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-de_stat = de_test_neighbourhoods(sce , condition_id = "type" , gene_selection = "none")
+de_stat = de_test_neighbourhoods(sce , design = ~type , covariates = c("type") )
 umaps = as.data.frame(matrix(rnorm(n_col*2), ncol=2))
 colnames(umaps) = c("V1" , "V2")
 reducedDim(sce , "UMAP") = umaps

@@ -16,8 +16,7 @@
 #' de_stat$pval = sample(c(0,1),nrow(de_stat),1)
 #' de_stat$pval_corrected_across_genes = sample(c(0,1),nrow(de_stat),1)
 #' de_stat$pval_corrected_across_nhoods = sample(c(0,1),nrow(de_stat),1)
-#' de_stat$sufficient_n_samples = TRUE
-#' de_stat$design_matrix_suitable = TRUE
+#' de_stat$test_performed = TRUE
 #' de_stat = convert_de_stat(de_stat)
 #' de_stat = convert_de_stat(de_stat)
 #'
@@ -26,7 +25,7 @@ convert_de_stat = function(de_stat ,
                            coldata_names = NULL){
 
   assay_names = unique( c("logFC" , "pval" , "pval_corrected_across_genes" , "pval_corrected_across_nhoods", assay_names))
-  coldata_names = unique( c("Nhood" , "Nhood_center" , "sufficient_n_samples" , "design_matrix_suitable" , coldata_names))
+  coldata_names = unique( c("Nhood" , "Nhood_center" , "test_performed"  , coldata_names))
   out = .check_de_stat_valid(de_stat , assay_names , coldata_names)
 
   if (class(de_stat) == "SingleCellExperiment"){

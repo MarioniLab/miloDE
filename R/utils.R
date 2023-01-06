@@ -106,8 +106,8 @@
     else {
       meta = as.data.frame(colData(sce))
       tab = table(meta[, condition_id])
-      if (!(length(tab) == 2)){
-        stop("sce should have exactly 2 levels for the condition_id (control and case).")
+      if (length(tab) < 2){
+        stop("sce should have at least two levels for tested conditions.")
         return(FALSE)
       } else{
         return(TRUE)
@@ -533,6 +533,27 @@
   return(out)
 }
 
+
+.check_non_negative = function(x){
+  out = TRUE
+  if (!is.numeric(x)){
+    out = FALSE
+  } else if (x < 0){
+    out = FALSE
+  }
+  return(out)
+}
+
+.check_design = function(x){
+  if (class(x) == "formula"){
+    return(TRUE)
+  }
+  else {
+    return(FALSE)
+  }
+}
+
+
 .check_number_or_null = function(x){
   out = TRUE
   if (!is.null(x)){
@@ -626,3 +647,21 @@
   }
 }
 
+#' @importFrom SummarizedExperiment colData
+#' @importFrom dplyr distinct
+#' @importFrom stats model.matrix
+.check_design_and_covariates_match = function(sce , design , sample_id , covariates){
+  design.df = as.data.frame(colData(sce)[,c(sample_id , covariates)])
+  design.df = distinct(design.df)
+  out = tryCatch(
+    {
+      design = model.matrix(design , data = design.df)
+      TRUE
+    },
+      error=function(err){
+        stop("Some of the design's arguments are not in the covariate vector.")
+        return(FALSE)
+    }
+  )
+  return(out)
+}

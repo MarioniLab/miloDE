@@ -9,11 +9,10 @@ de_test_single_neighbourhood(
   nhoods_sce,
   hood_id,
   sample_id,
-  condition_id,
-  covariates = NULL,
+  design,
+  covariates,
+  contrasts = NULL,
   min_n_cells_per_sample = 1,
-  gene_selection = "none",
-  genes_2_test = rownames(sce),
   min_count = 3,
   run_separately = TRUE
 )
@@ -27,15 +26,13 @@ de_test_single_neighbourhood(
 
 \item{sample_id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)}
 
-\item{condition_id}{Character specifying which variable should be used as a condition id. Should be in colData(sce)}
+\item{design}{A \code{formula} object describing the experimental design for DE testing. If contrasts == NULL (default), the last column column of model will be used for testing.}
 
-\item{covariates}{Vector specifying if additional covariates should be passed into experimental design. Default = NULL (no covariates)}
+\item{covariates}{Vector specifying all covariates that are passed into experimental design.}
+
+\item{contrasts}{NULL or contrast specifying what conditions to test. Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.}
 
 \item{min_n_cells_per_sample}{positive integer specifying the minimun number of cells per replica to be included in testing. Default = 2}
-
-\item{gene_selection}{In {"per_neighbourhood" , "none"}. If = "per_neighbourhood", we will further discard genes not relevant for this particular neighbourhood.}
-
-\item{genes_2_test}{Character vector of genes for which we will perform DE testing. Default = rownames(sce). Only applicable if gene_selection = "none"}
 
 \item{min_count}{Positive integer, specifying min.count for gene selection. Default = 5}
 
@@ -62,6 +59,6 @@ sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
 reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
 nhoods_sce = nhoods(sce)
-de_stat = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce, hood_id = 1 , sample_id = "sample" , condition_id = "type")
+de_stat = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce, hood_id = 1 , sample_id = "sample" , design = ~type, covariates = c("type"))
 
 }
