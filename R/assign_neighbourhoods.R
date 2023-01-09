@@ -53,13 +53,13 @@ assign_neighbourhoods = function(sce , k = 25, prop = 0.2, order = 2, filtering 
     sce = Milo(sce)
     # build 1st order to sample vertices
     k_init <- min(k , k_init)
-    sce <- buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim_name)
+    sce <- suppressMessages(buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim_name))
   }
   else {
     message("SCE is Milo object. Checking if graph is already constructed.")
     if (length(miloR::graph(sce)) == 0){
       message("Graph is not constructed yet. Building now.")
-      sce <- buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim_name)
+      sce <- suppressMessages(buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim_name))
     }
   }
   # find anchor cells

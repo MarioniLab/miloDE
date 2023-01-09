@@ -9,7 +9,8 @@ plot_beeswarm_single_gene(
   gene,
   nhoodGroup,
   alpha = 0.1,
-  subset_nhoods = NULL
+  subset_nhoods = NULL,
+  size = 2
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ plot_beeswarm_single_gene(
 \item{alpha}{A numeric between 0 and1 specifying the significance threshold. Default = 0.1.}
 
 \item{subset_nhoods}{NULL or numeric vector specifying which Nhoods to use}
+
+\item{size}{A positive number specifying size of the dots}
 }
 \value{
 

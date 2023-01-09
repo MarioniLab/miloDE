@@ -379,6 +379,7 @@ plot_DE_gene_set = function(sce, de_stat , genes ,
 #' @param nhoodGroup A character specifying which column to use for neighbourhood grouping.
 #' @param alpha A numeric between 0 and1 specifying the significance threshold. Default = 0.1.
 #' @param subset_nhoods NULL or numeric vector specifying which Nhoods to use
+#' @param size A positive number specifying size of the dots
 #'
 #' @return
 #' @importFrom dplyr mutate %>% arrange
@@ -404,7 +405,7 @@ plot_DE_gene_set = function(sce, de_stat , genes ,
 #' de_stat$celltype = 1
 #' p = plot_beeswarm_single_gene(de_stat , gene = "1" , nhoodGroup = "celltype")
 #'
-plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 , subset_nhoods = NULL ){
+plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 , subset_nhoods = NULL , size = 2){
 
   out = .check_de_stat_valid(de_stat , assay_names = c("logFC" , "pval" , "pval_corrected_across_genes" , "pval_corrected_across_nhoods"),
                              coldata_names = c("Nhood", nhoodGroup))
@@ -445,7 +446,7 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 ,
     scale_color_gradient2() +
     #guides(color="none") +
     xlab(nhoodGroup) + ylab("Log Fold Change") +
-    geom_quasirandom(alpha=1) +
+    geom_quasirandom(alpha=1 , size = size) +
     coord_flip() +
     theme_bw() +
     theme(strip.text.y =  element_text(angle=0))
@@ -466,6 +467,7 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 ,
 #' @param correction_by Character - colname from de_stat - specifying which column to use to decide on significance for logFC. Relevant only if logFC_correction = TRUE.
 #' @param alpha A numeric between 0 and1 specifying the significance threshold. Default = 0.1.
 #' @param subset_nhoods NULL or numeric vector specifying which Nhoods to use
+#' @param size A positive number specifying size of the dots
 #'
 #' @return
 #' @importFrom dplyr mutate %>% arrange
@@ -493,7 +495,8 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 ,
 #' p = plot_beeswarm_gene_set(de_stat , genes = c("1","2") , nhoodGroup = "celltype")
 #'
 plot_beeswarm_gene_set = function(de_stat , genes , nhoodGroup , logFC_correction = TRUE ,
-                                  correction_by = "pval_corrected_across_nhoods" , alpha = 0.1 , subset_nhoods = NULL ){
+                                  correction_by = "pval_corrected_across_nhoods" , alpha = 0.1 , subset_nhoods = NULL,
+                                  size = 2){
 
   out = .check_de_stat_valid(de_stat , assay_names = NULL, coldata_names = nhoodGroup)
 
@@ -551,7 +554,7 @@ plot_beeswarm_gene_set = function(de_stat , genes , nhoodGroup , logFC_correctio
     scale_color_gradient2(name = "Average logFC") +
     #guides(color="none") +
     xlab(nhoodGroup) + ylab("How often gene is DE") +
-    geom_quasirandom(alpha=1) +
+    geom_quasirandom(alpha=1, size = size) +
     coord_flip() +
     theme_bw() +
     theme(strip.text.y =  element_text(angle=0))
