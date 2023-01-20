@@ -14,6 +14,7 @@ In addition to DE testing, we provide functionality to rank neighbourhoods by de
 ```
 # Install development version:
 library(devtools)
+library(SingleCellExperiment)
 devtools::install_github("MarioniLab/miloDE") 
 library(miloDE)
 
