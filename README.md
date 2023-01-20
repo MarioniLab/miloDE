@@ -47,7 +47,7 @@ print(sce_mouseEmbryo)
 head(colData(sce_mouseEmbryo))
 # `tomato` corresponds to condition id  
 # `sample` corresponds to individual replicates. There are 2 samples per each condition:
-table(sce_mouseEmbryo$sample , sce_mouseEmbryo$sample$tomato)
+table(colData(sce_mouseEmbryo)[,c('sample','tomato')])
 
 ```
 
