@@ -4,11 +4,11 @@
 #'
 #' Assign hoods to SCE object
 #' @param sce SCE object
+#' @param reducedDim_name defines the slot in reducedDim(sce) to use as embedding for graph construction
 #' @param k Positive integer, defines how many neighbours to use for the hood assignment
 #' @param prop Numerical, between 0 and 1, defines fraction of cells from SCE to use for the hoods
 #' @param order In {1,2}, defines which order of neighbours to use
 #' @param filtering In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default = TRUE
-#' @param reducedDim_name defines the slot in reducedDim(sce) to use as embedding for graph construction
 #' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells
 #' @param d Positive integer, defines how many dimensions from reducedDim(sce) to use
 #'
@@ -31,7 +31,7 @@
 #' sce$cell = colnames(sce)
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' out = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-assign_neighbourhoods = function(sce , k = 25, prop = 0.2, order = 2, filtering = TRUE, reducedDim_name , k_init = 50, d = 30){
+assign_neighbourhoods = function(sce , reducedDim_name , k = 25, prop = 0.2, order = 2, filtering = TRUE, k_init = 50, d = 30){
 
   #args = c(as.list(environment()))
   #out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim_name)
