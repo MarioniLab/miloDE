@@ -2,10 +2,10 @@
 # milo_DE
 Framework for sensitive DE testing (using neighbourhoods).
 
-miloDE builds on existing framework for DA testing called [Milo](https://pubmed.ncbi.nlm.nih.gov/34594043/). 
+miloDE builds on an existing framework for DA testing called [Milo](https://pubmed.ncbi.nlm.nih.gov/34594043/). 
 It exploits the notion of overlapping neighborhoods of homogeneous cells, constructed from graph-representation of scRNA-seq data, and performs testing within each neighborhood. Multiple testing correction is performed either across neighborhoods or across genes. 
 
-In addition to DE testing, we provide functional to rank neighbourhoods by degree of the DE as well as plotting functions to visualise results. In vignette, we showcase how you can carry out clustering analysis to group genes in co-regulated transcriptional modules.
+In addition to DE testing, we provide functionality to rank neighbourhoods by degree of the DE as well as plotting functions to visualise results. In the vignette, we showcase how you can carry out clustering analysis to group genes in co-regulated transcriptional modules.
 
 
 
@@ -20,7 +20,7 @@ library(miloDE)
 ## If you plan to use parallelisation (desired for big datasets), please install BiocParallel:
 BiocManager::install("BiocParallel")
 
-## Not an immidiate functional of miloDE, but we illustrate in our vignette how to adapt WGCNA approach to discover DE patterns and co-regulated gene modules. If you want to perform similar analysis, please install Seurat and scWGCNA:
+## Not an immediate functionality of miloDE, but we illustrate in our vignette how to adapt WGCNA approach to discover DE patterns and co-regulated gene modules. If you want to perform similar analysis, please install Seurat and scWGCNA:
 install.packages('Seurat')
 devtools::install_github("neurorestore/Augur") 
 
@@ -30,11 +30,11 @@ devtools::install_github("neurorestore/Augur")
 
 ## Pipeline
 
-0. **Input**. Input of `miloDE` is scRNA-seq data, provided as `SingleCellExperiment` object. 
+0. **Input**. The input of `miloDE` is scRNA-seq data, provided as `SingleCellExperiment` object. 
 Additionally, we require that:
 
-* Latent dimension (used for graph construction) is pre-computed and stored in `reducedDim(sce)`.
-* `colData(sce)` has to contain metadata corresponding to individual replicates (passed to `sample_id`) and tested condition (e.g. healthy or disease, passed to `condition_id`).
+* Latent dimensions (used for graph construction) are pre-computed and stored in `reducedDim(sce)`.
+* `colData(sce)` has to contain metadata corresponding assigning cells to individual replicates (passed to `sample_id`) and tested condition (e.g. healthy or disease, passed to `condition_id`).
 
 You can explore toy data here:
 
@@ -73,7 +73,7 @@ de_stat = de_test_neighbourhoods(sce_mouseEmbryo , sample_id = "sample",
 
 ## Vignette
 
-Please check the vignette to grasp on additional functions aiding interpretation and analysis of miloDE output.
+Please check the vignette to grasp additional functions aiding interpretation and analysis of miloDE output.
 
 [Effect of Tal1 knock out on mouse development](https://www.dropbox.com/sh/1hrqf0wiffeo12c/AAAdCwAtKgvQ53L1aHdd6ccqa?dl=0). 
 
