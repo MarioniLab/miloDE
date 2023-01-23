@@ -13,7 +13,8 @@ estimate_neighbourhood_sizes(
   reducedDim_name,
   k_init = 50,
   d = 30,
-  plot_stat = TRUE
+  plot_stat = TRUE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ estimate_neighbourhood_sizes(
 \item{d}{Positive integer, defines how many dimensions from reducedDim(sce) to use}
 
 \item{plot_stat}{Boolean specifying whether to plot the stat}
+
+\item{verbose}{Boolean specifying whether to print intermediate output messages. Default = FALSE.}
 }
 \value{
 

@@ -10,6 +10,7 @@
 #' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells
 #' @param d Positive integer, defines how many dimensions from reducedDim(sce) to use
 #' @param plot_stat Boolean specifying whether to plot the stat
+#' @param verbose Boolean specifying whether to print intermediate output messages. Default = FALSE.
 #'
 #' @return
 #' @export
@@ -30,7 +31,7 @@
 #' out = estimate_neighbourhood_sizes(sce, k_grid = c(5,10), reducedDim_name = "reduced_dim")
 #'
 estimate_neighbourhood_sizes = function(sce, k_grid = seq(10,100,10) , order = 2, prop = 0.1 , filtering = TRUE,
-                               reducedDim_name , k_init = 50 , d = 30 , plot_stat = TRUE){
+                               reducedDim_name , k_init = 50 , d = 30 , plot_stat = TRUE , verbose = FALSE){
 
   quantile_vec = seq(0,1,0.25)
   #args = c(as.list(environment()))
@@ -51,13 +52,13 @@ estimate_neighbourhood_sizes = function(sce, k_grid = seq(10,100,10) , order = 2
   # check that k_grid reasonable -- at least 2 values, the the highest is smaller than 1000;
   # otherwise warn
   k_grid = sort(unique(k_grid))
-  message("Running for next k values:\n" )
+  message("Running for next k values:")
   message(c( paste0( sapply(k_grid[1:length(k_grid) - 1] , function(x) paste0(x , ", "))) , k_grid[length(k_grid)]))
 
 
   stat = lapply(k_grid , function(k){
     sce_milo = assign_neighbourhoods(sce , k = k , prop = prop , order = order , filtering = filtering,
-                            reducedDim_name = reducedDim_name , k_init = k_init , d = d)
+                            reducedDim_name = reducedDim_name , k_init = k_init , d = d , verbose = verbose)
     out = .get_stat_single_coverage(nhoods(sce_milo) , quantile_vec)
     return(out)
   })

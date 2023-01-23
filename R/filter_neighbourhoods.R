@@ -35,7 +35,7 @@ filter_neighbourhoods = function(sce_milo){
     return(out)
   })
   stat_hoods = do.call(rbind, stat_hoods)
-  stat_filtered = greedySetCover(stat_hoods)
+  stat_filtered = suppressMessages( greedySetCover(stat_hoods) )
   hoods_filtered = unique(stat_filtered$set)
   if (length(hoods_filtered) > 1){
     nhoods_sce = nhoods_sce[, colnames(nhoods_sce) %in% hoods_filtered]

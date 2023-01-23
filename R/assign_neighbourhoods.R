@@ -11,6 +11,7 @@
 #' @param filtering In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default = TRUE
 #' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells
 #' @param d Positive integer, defines how many dimensions from reducedDim(sce) to use
+#' @param verbose Boolean specifying whether to print intermediate output messages. Default = TRUE.
 #'
 #' @return
 #' @export
@@ -31,7 +32,7 @@
 #' sce$cell = colnames(sce)
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' out = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-assign_neighbourhoods = function(sce , reducedDim_name , k = 25, prop = 0.2, order = 2, filtering = TRUE, k_init = 50, d = 30){
+assign_neighbourhoods = function(sce , reducedDim_name , k = 25, prop = 0.2, order = 2, filtering = TRUE, k_init = 50, d = 30, verbose = TRUE){
 
   #args = c(as.list(environment()))
   #out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim_name)
@@ -67,14 +68,14 @@ assign_neighbourhoods = function(sce , reducedDim_name , k = 25, prop = 0.2, ord
 
   # rebuild to the actual graph, with parameters specified by user
   if (!k == k_init){
-    sce <- buildGraph(sce, k = k, d = d, reduced.dim = reducedDim_name)
+    sce <- suppressMessages(buildGraph(sce, k = k, d = d, reduced.dim = reducedDim_name))
   }
   # if order == 2 -- reassign edges
   if (order == 2){
     graph(sce) = connect(graph(sce),order)
   }
 
-  # create hoods
+  # create nhoods
   nh_mat <- Matrix(data = 0, nrow=ncol(sce), ncol=length(sampled_vertices), sparse = TRUE)
   v.class <- V(graph(sce))$name
   rownames(nh_mat) <- colnames(sce)
@@ -87,17 +88,21 @@ assign_neighbourhoods = function(sce , reducedDim_name , k = 25, prop = 0.2, ord
 
   # filter
   if (!filtering){
-    sce = buildNhoodGraph(sce)
+    sce = suppressMessages(buildNhoodGraph(sce))
   }
   else {
-    message("Filtering redundant neighbourhoods.")
+    if (verbose){
+      message("Filtering redundant neighbourhoods.")
+    }
     sce = suppressMessages(filter_neighbourhoods(sce))
   }
 
-  stat_print =.calc_quick_stat(sce , nhoods(sce))
-  message(paste0("Finished successfully.\nNumber of neighbourhoods assigned: ", stat_print$n_hoods ,
+  if (verbose){
+    stat_print =.calc_quick_stat(sce , nhoods(sce))
+    message(paste0("Finished successfully.\nNumber of neighbourhoods assigned: ", stat_print$n_hoods ,
                  ";\naverage neighbourhood size: ", stat_print$avg_hood_size ,
                  ";\nnumber of unassigned cells: ", stat_print$n_cells_unocovered))
+  }
   return(sce)
 }
 
@@ -109,7 +114,6 @@ assign_neighbourhoods = function(sce , reducedDim_name , k = 25, prop = 0.2, ord
 #' @importFrom dplyr %>%
 .get_graph_refined_sampling <- function(graph, prop){
   random_vertices <- sample(V(graph), size=floor(prop*length(V(graph))))
-  message("Running refined sampling with graph")
   random_vertices <- as.vector(random_vertices)
   X_graph <- set_vertex_attr(graph, "name", value = 1:length(V(graph)))
   refined_vertices <- lapply(seq_along(random_vertices), function(i){

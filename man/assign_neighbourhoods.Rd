@@ -12,7 +12,8 @@ assign_neighbourhoods(
   order = 2,
   filtering = TRUE,
   k_init = 50,
-  d = 30
+  d = 30,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ assign_neighbourhoods(
 \item{k_init}{Positive integer, defines how many neighbours to use for identifying anchor cells}
 
 \item{d}{Positive integer, defines how many dimensions from reducedDim(sce) to use}
+
+\item{verbose}{Boolean specifying whether to print intermediate output messages. Default = TRUE.}
 }
 \value{
 
