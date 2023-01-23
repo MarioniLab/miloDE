@@ -323,12 +323,14 @@ de_test_single_neighbourhood = function(sce , nhoods_sce , hood_id , sample_id ,
     y <- DGEList(counts(summed), samples=colData(summed))
 
     # select genes for testing
-    keep <- filterByExpr(y, group=summed$sample_id , min.count = min_count , min.total.count = round(min_count * 1.5))
-    if (sum(keep) == 0){
-      stop(paste0("For hood_id " , hood_id , " 0 genes are selected for testing. Check that 'min.count' is of the appropriate value and possibly decrease it?"))
-      return(NULL)
-    } else {
-      y <- y[keep,]
+    if (min_count > 0){
+      keep <- filterByExpr(y, group=summed$sample_id , min.count = min_count , min.total.count = round(min_count * 1.5))
+      if (sum(keep) == 0){
+        stop(paste0("For hood_id " , hood_id , " 0 genes are selected for testing. Check that 'min.count' is of the appropriate value and possibly decrease it?"))
+        return(NULL)
+      } else {
+        y <- y[keep,]
+      }
     }
     y <- calcNormFactors(y)
 

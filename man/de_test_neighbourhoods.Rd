@@ -26,7 +26,7 @@ de_test_neighbourhoods(
 
 \item{design}{A \code{formula} object describing the experimental design for DE testing. If contrasts == NULL (default), the last column column of model will be used for testing.}
 
-\item{covariates}{Vector specifying all covariates that are passed into experimental design.}
+\item{covariates}{Vector specifying all covariates that are passed into experimental design. This should contain all columns used in the design formula.}
 
 \item{contrasts}{NULL or contrast specifying what comparison to perform (depending on design, multiple comparisons can be performed). Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.}
 
@@ -42,7 +42,7 @@ de_test_neighbourhoods(
 
 \item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default: 'UMAP'). Only relevant if plot_summary_stat == TRUE.}
 
-\item{BPPARAM}{NULL or BPPARAM object}
+\item{BPPARAM}{NULL or BPPARAM object to use for parallelization}
 }
 \value{
 

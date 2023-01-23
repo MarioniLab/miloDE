@@ -6,17 +6,19 @@
 \usage{
 assign_neighbourhoods(
   sce,
+  reducedDim_name,
   k = 25,
   prop = 0.2,
   order = 2,
   filtering = TRUE,
-  reducedDim_name,
   k_init = 50,
   d = 30
 )
 }
 \arguments{
 \item{sce}{SCE object}
+
+\item{reducedDim_name}{defines the slot in reducedDim(sce) to use as embedding for graph construction}
 
 \item{k}{Positive integer, defines how many neighbours to use for the hood assignment}
 
@@ -25,8 +27,6 @@ assign_neighbourhoods(
 \item{order}{In {1,2}, defines which order of neighbours to use}
 
 \item{filtering}{In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default = TRUE}
-
-\item{reducedDim_name}{defines the slot in reducedDim(sce) to use as embedding for graph construction}
 
 \item{k_init}{Positive integer, defines how many neighbours to use for identifying anchor cells}
 
