@@ -5,7 +5,7 @@
 #' @param sce Milo object
 #' @param sample_id Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)
 #' @param design A \code{formula} object describing the experimental design for DE testing. If contrasts == NULL (default), the last column column of model will be used for testing.
-#' @param covariates Vector specifying all covariates that are passed into experimental design.
+#' @param covariates Vector specifying all covariates that are passed into experimental design. This should contain all columns used in the design formula.
 #' @param contrasts NULL or contrast specifying what comparison to perform (depending on design, multiple comparisons can be performed). Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.
 #' @param subset_nhoods NULL or character vector specifying the set of neighbourhoods that will be tested for DE
 #' @param min_n_cells_per_sample Positive integer specifying the minimum number of cells per replica to be included in testing. Default = 1.
@@ -13,7 +13,7 @@
 #' @param output_type In {"data.frame","SCE"} Specifying the output format - either in data.frame or sce (with assays corresponding to logFC, pvals (raw and corrected)); columns correspond to neighbourhoods. Note that default is data.frame, but if number of genes x neighbourhoods combinations is > 10^8 -- the output will be sce.
 #' @param plot_summary_stat Boolean specifying if we plot Milo neighbourhood plot summarising per neighbourhood whether testing was performed
 #' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default: 'UMAP'). Only relevant if plot_summary_stat == TRUE.
-#' @param BPPARAM NULL or BPPARAM object
+#' @param BPPARAM NULL or BPPARAM object to use for parallelization
 #' @return
 #' @export
 #' @importFrom SingleCellExperiment SingleCellExperiment counts
