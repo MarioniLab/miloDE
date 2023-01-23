@@ -23,7 +23,7 @@ BiocManager::install("BiocParallel")
 
 ## Not an immediate functionality of miloDE, but we illustrate in our vignette how to adapt WGCNA approach to discover DE patterns and co-regulated gene modules. If you want to perform similar analysis, please install Seurat and scWGCNA:
 install.packages('Seurat')
-devtools::install_github("neurorestore/Augur") 
+devtools::install_github("cferegrino/scWGCNA", ref="main")
 
 
 ```
