@@ -178,4 +178,3 @@ test_that("Values increase as expected", {
   expect_gt(stat$q25[2] , stat$min[3])
 
 })
-

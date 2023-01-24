@@ -6,19 +6,22 @@
 \usage{
 estimate_neighbourhood_sizes(
   sce,
+  reducedDim_name,
   k_grid = seq(10, 100, 10),
   order = 2,
   prop = 0.1,
   filtering = TRUE,
-  reducedDim_name,
   k_init = 50,
   d = 30,
+  cluster_id = NULL,
   plot_stat = TRUE,
   verbose = FALSE
 )
 }
 \arguments{
 \item{sce}{SCE object}
+
+\item{reducedDim_name}{defines the slot in reducedDim(sce) to use as embedding for graph construction}
 
 \item{k_grid}{Vector of positive integers, defines how many neighbours to use for the hood assignment}
 
@@ -28,11 +31,13 @@ estimate_neighbourhood_sizes(
 
 \item{filtering}{In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default = TRUE}
 
-\item{reducedDim_name}{defines the slot in reducedDim(sce) to use as embedding for graph construction}
-
 \item{k_init}{Positive integer, defines how many neighbours to use for identifying anchor cells}
 
 \item{d}{Positive integer, defines how many dimensions from reducedDim(sce) to use}
+
+\item{cluster_id}{Character specifying which field in colData(sce) to use for 'localised' neighbourhood size estimation. This might be useful in case dataset is
+rather big that will result in excessive running time. In this case we will calculate neighbourhood size distribution within individual clusters and aggregate results
+across clusters in order to speed up the process (but might result in slightly biased estimates). Default is NULL, in which case neighbourhood sizes will be estimated for the whole dataset.}
 
 \item{plot_stat}{Boolean specifying whether to plot the stat}
 
