@@ -61,9 +61,7 @@ estimate_neighbourhood_sizes = function(sce, reducedDim_name , k_grid = seq(10,1
   # check that k_grid reasonable -- at least 2 values, the the highest is smaller than 1000;
   # otherwise warn
   k_grid = sort(unique(k_grid))
-  message("Running for next k values:")
-  message(c( paste0( sapply(k_grid[1:length(k_grid) - 1] , function(x) paste0(x , ", "))) , k_grid[length(k_grid)]))
-
+  message(paste0("Running for next k values:\n" , paste(k_grid , collapse = ", ")))
 
   if (is.null(cluster_id)){
     stat = lapply(k_grid , function(k){

@@ -45,6 +45,7 @@ assign_neighbourhoods = function(sce , reducedDim_name , k = 25, prop = 0.2, ord
         .check_argument_correct(reducedDim_name, is.character, "Check reducedDim_name - should be character vector") &
         .check_argument_correct(k_init, .check_positive_integer, "Check k_init - should be positive integer") &
         .check_argument_correct(d, .check_positive_integer, "Check d - should be positive integer") &
+        .check_argument_correct(verbose, .check_boolean, "Check verbose - should be either TRUE or FALSE") &
         .check_reducedDim_in_sce(sce , reducedDim_name)
 
 

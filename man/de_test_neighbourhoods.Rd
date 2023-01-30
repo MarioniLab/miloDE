@@ -16,7 +16,8 @@ de_test_neighbourhoods(
   output_type = "data.frame",
   plot_summary_stat = FALSE,
   layout = "UMAP",
-  BPPARAM = NULL
+  BPPARAM = NULL,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ de_test_neighbourhoods(
 \item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default: 'UMAP'). Only relevant if plot_summary_stat == TRUE.}
 
 \item{BPPARAM}{NULL or BPPARAM object to use for parallelization}
+
+\item{verbose}{Boolean specifying whether to print intermediate output messages. Default = TRUE.}
 }
 \value{
 

@@ -14,6 +14,7 @@
 #' @param plot_summary_stat Boolean specifying if we plot Milo neighbourhood plot summarising per neighbourhood whether testing was performed
 #' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default: 'UMAP'). Only relevant if plot_summary_stat == TRUE.
 #' @param BPPARAM NULL or BPPARAM object to use for parallelization
+#' @param verbose Boolean specifying whether to print intermediate output messages. Default = TRUE.
 #' @return
 #' @export
 #' @importFrom SingleCellExperiment SingleCellExperiment counts
@@ -52,7 +53,8 @@ de_test_neighbourhoods = function(sce ,
                                   output_type = "data.frame" ,
                                   plot_summary_stat = FALSE,
                                   layout = "UMAP",
-                                  BPPARAM = NULL){
+                                  BPPARAM = NULL,
+                                  verbose = TRUE){
 
 
   out = .check_argument_correct(sce, .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)") &
@@ -66,14 +68,17 @@ de_test_neighbourhoods = function(sce ,
     .check_argument_correct(output_type, function(x) .check_arg_within_options(x, c("data.frame", "SCE")),
                             "Check output_type - should be either 'data.frame' or 'SCE'") &
     .check_argument_correct(plot_summary_stat, .check_boolean, "Check plot_summary_stat - should be either TRUE or FALSE") &
+    .check_argument_correct(verbose, .check_boolean, "Check verbose - should be either TRUE or FALSE") &
     .check_var_in_coldata_sce(sce , sample_id , "sample_id") & .check_covariates_in_coldata_sce(sce , covariates) &
     .check_design_and_covariates_match(sce , design , sample_id , covariates)
 
   if (plot_summary_stat){
     out = .check_reducedDim_in_sce(sce , layout)
   }
-  if (length(contrasts) > 1){
-    stop("At the moment we only support one comparison - contrasts should be of length 1. If you wish to perform several comparisons, please run separately for each of them.")
+  if (!is.null(contrasts)){
+    if (!length(contrasts) == 1){
+      stop("At the moment we only support one comparison - contrasts should be of length 1. If you wish to perform several comparisons, please run separately for each of them.")
+    }
   }
 
   nhoods_sce = nhoods(sce)
@@ -93,6 +98,36 @@ de_test_neighbourhoods = function(sce ,
       covariates = setdiff(covariates , "sample_id")
     }
   }
+
+  # check that contrasts are of the correct syntax
+  if (!is.null(contrasts)){
+    # need to select non0 counts
+    counts_sum = rowSums(counts(sce))
+    if (max(counts_sum) == 0){
+      stop("At least some counts should be higher than 0.")
+    } else {
+      idx = which(counts_sum == max(counts_sum))
+      idx = idx[1]
+      dummy.sce = sce[idx,]
+      summed = summarizeAssayByGroup(counts(dummy.sce), colData(dummy.sce)[,c("sample_id" , covariates)])
+      summed = SingleCellExperiment(list(counts=assay(summed, "sum")), colData=colData(summed))
+      y <- DGEList(counts(summed), samples=colData(summed))
+      dummy.design = model.matrix(design , data = y$samples)
+      y <- estimateDisp(y, dummy.design)
+      fit <- glmQLFit(y, dummy.design, robust=TRUE)
+      out = tryCatch(
+        {
+          dummy = makeContrasts(contrasts = c(contrasts) , levels = dummy.design)
+          TRUE
+        },
+        error=function(err){
+          stop(paste0("contrasts are not right. All variables in the formula should be the colnames from model matrix:\n" , paste(colnames(dummy.design),collapse=", ")))
+          return(FALSE)
+        }
+      )
+    }
+  }
+
 
   # select hoods for testing
   if (is.null(subset_nhoods)){
@@ -117,25 +152,44 @@ de_test_neighbourhoods = function(sce ,
     return(out)
   }
   else {
+
     if (is.null(BPPARAM)) {
+      if (verbose){
+        message("Starting DE testing within each neighbourhood:")
+      }
       de_stat = lapply(seq(length(subset_nhoods)) , function(i){
         hood_id = subset_nhoods[i]
         out = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce, hood_id = hood_id,
                                            sample_id = sample_id, design = design, covariates = covariates, contrasts = contrasts,
                                            min_n_cells_per_sample = min_n_cells_per_sample ,
                                            min_count = min_count , run_separately = F)
+        if (verbose){
+          message(paste0("DE testing is completed for neighboourhood ", i))
+        }
         return(out)
       })
+      if (verbose){
+        message("Finished DE testing within each neighbourhood.")
+      }
     }
     else {
+      if (verbose){
+        message("Starting DE testing within each neighbourhood:")
+      }
       de_stat = bplapply(seq(length(subset_nhoods)) , function(i){
         hood_id = subset_nhoods[i]
         out = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce, hood_id = hood_id,
                                            sample_id = sample_id, design = design, covariates = covariates, contrasts = contrasts,
                                            min_n_cells_per_sample = min_n_cells_per_sample ,
                                            min_count = min_count , run_separately = F)
+        if (verbose){
+          message(paste0("DE testing is completed for neighboourhood ", i))
+        }
         return(out)
       } , BPPARAM = BPPARAM)
+      if (verbose){
+        message("Finished DE testing within each neighbourhood.")
+      }
     }
 
     # put it together in SCE format
@@ -169,11 +223,9 @@ de_test_neighbourhoods = function(sce ,
     } else {
       de_stat_sce = de_stat_sce[idx , ]
 
-
-      # add pval-corrected-across-nhoods
-      ## get weights from nhoods_sce
-      #weights = get_weights(nhoods_sce = as.matrix(nhoods_sce[,subset_nhoods]))
-
+      if (verbose){
+        message("Performing p-value correction across neighbourhoods..")
+      }
       ## calc corrected pvals
       if (is.null(BPPARAM)){
         pval_corrected = lapply(rownames(de_stat_sce) , function(gene){
@@ -205,16 +257,11 @@ de_test_neighbourhoods = function(sce ,
         cols = c("coral4" , "cyan4")
         names(cols) = c(FALSE , TRUE)
         meta_nhoods = meta_nhoods[order(meta_nhoods$Nhood) , ]
-        #meta_nhoods$class = NaN
-        #meta_nhoods$class[!meta_nhoods$test_performed] = "Test not performed"
-        #meta_nhoods$class[meta_nhoods$test_performed] = "Testing possible wo/ covariates"
-        #meta_nhoods$class[meta_nhoods$sufficient_n_samples & meta_nhoods$design_matrix_not_full_rank] = "Testing possible w/ covariates"
 
-        p = plot_milo_by_single_metric(sce, meta_nhoods, colour_by = "test_performed" , layout = layout , size_range = c(1.5,3) , edge_width = c(0.2,0.5)) +
-          scale_fill_manual(values = cols, name = "Test performed")
+        p = suppressWarnings(plot_milo_by_single_metric(sce, meta_nhoods, colour_by = "test_performed" , layout = layout , size_range = c(1.5,3) , edge_width = c(0.2,0.5)) +
+          scale_fill_manual(values = cols, name = "Test performed"))
         print(p)
       }
-
 
       # return output
       if (output_type == "data.frame"){

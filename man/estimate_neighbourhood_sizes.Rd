@@ -36,8 +36,8 @@ estimate_neighbourhood_sizes(
 \item{d}{Positive integer, defines how many dimensions from reducedDim(sce) to use}
 
 \item{cluster_id}{Character specifying which field in colData(sce) to use for 'localised' neighbourhood size estimation. This might be useful in case dataset is
-rather big that will result in excessive running time. In this case we will calculate neighbourhood size distribution within individual clusters and aggregate results
-across clusters in order to speed up the process (but might result in slightly biased estimates). Default is NULL, in which case neighbourhood sizes will be estimated for the whole dataset.}
+rather big which will result in excessive running time. In case cluster_id is provided, we will calculate neighbourhood size distribution within individual clusters and aggregate results
+across clusters in order to speed up the process (note that it might result in slightly biased estimates). Default is NULL, in which case neighbourhood sizes will be estimated for the whole dataset.}
 
 \item{plot_stat}{Boolean specifying whether to plot the stat}
 
