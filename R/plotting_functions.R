@@ -465,7 +465,7 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 ,
 #' plot_beeswarm_gene_set
 #'
 #' Returns beeswarm plot for many genes
-#' @param de_stat milo-DE stat (output of \link{de_test_neighbourhoods})
+#' @param de_stat milo-DE stat (output of \code{\link{de_test_neighbourhoods}})
 #' @param genes A character specifying genes ID
 #' @param nhoodGroup A character specifying which column to use for neighbourhood grouping.
 #' @param logFC_correction Boolean specifying whether to perfrom logFC correction. If TRUE (default), logFC will be set to 0 if corrected pvalue (defined by 'correction_by' variable) < alpha
