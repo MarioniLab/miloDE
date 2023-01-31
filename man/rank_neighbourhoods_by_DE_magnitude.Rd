@@ -14,7 +14,7 @@ rank_neighbourhoods_by_DE_magnitude(de_stat, pval.thresh = 0.1, z.thresh = -3)
 \item{z.thresh}{A scalar specifying which threshold to use for deciding on which z-normalised p-values are going to be considered specifically DE. Default = -3.}
 }
 \value{
-
+data.frame, with calculated n-DE-genes and n-specific-DE-genes for each neighbourhood
 }
 \description{
 Ranks neighbourhoods by the magnitude of DE: number of DE genes and number of 'specifically' DE genes. Note that for this analysis we set NaN p-values (raw and corrected) to 1 - interpret accordingly.

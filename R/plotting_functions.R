@@ -2,12 +2,11 @@
 # plotting functions
 
 
-
 #' plot_milo_by_single_metric
 #'
 #' Return Milo-graph plot; each node is coloured by colour_by column from nhood_stat, if significance_by is smaller than alpha. Vetices are ordered by order_by column
-#' @param sce \code{\linkS4class{Milo}} object
-#' @param nhood_stat data.frame object, containing columns 'Nhood' (should correspond to neighbourhoods from nhoodGraph(sce))
+#' @param x A \code{\linkS4class{Milo}} object
+#' @param nhood_stat data.frame object, containing columns 'Nhood' (should correspond to neighbourhoods from nhoodGraph(x))
 #' @param colour_by A colname from nhood_stat - nodes will be coloured by the values from this column
 #' @param significance_by A colname from nhood_stat (or NULL) - if values for this column exceed alpha, colour_by will be set to 0. Default = NULL meaning that we will not use any column to define the significance (i.e. no correction for colour_by)
 #' @param order_by A colname from nhood_stat (or NULL) specifying by which column we will order neighbourhoods for plotting. Default = NULL meaning we will use size of the neighbourhoods.
@@ -20,8 +19,7 @@
 #' @param node_stroke A numeric indicating the desired thickness of the border around each node
 #' @param edge_width A numeric vector indicating the range (min and max) of edge widths to use for plotting
 #' @param edge_weight.thresh A numeric (or NULL) specifying a threshold for minimum cells in common (between neighbourhoods) required for an edge to be plotted
-#'
-#' @return
+#' @return ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by the provided in colour_by column value
 #' @importFrom SingleCellExperiment reducedDims reducedDim
 #' @importFrom SummarizedExperiment colData<- colData
 #' @importFrom miloR nhoodIndex nhoodIndex<- nhoodGraph nhoodGraph<-
@@ -37,31 +35,34 @@
 #' n_row = 500
 #' n_col = 100
 #' n_latent = 5
-#' sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+#' sce = SingleCellExperiment(assays =
+#' list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 #' rownames(sce) = as.factor(1:n_row)
 #' colnames(sce) = c(1:n_col)
 #' sce$cell = colnames(sce)
 #' sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
 #' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-#' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-#' de_stat = de_test_neighbourhoods(sce , design = ~type , covariates = c("type") )
+#' sce = assign_neighbourhoods(sce,
+#' reducedDim_name = "reduced_dim")
+#' de_stat = de_test_neighbourhoods(sce ,
+#' design = ~type , covariates = c("type") )
 #' de_stat = de_stat[de_stat$gene == "1", ]
 #' umaps = as.data.frame(matrix(rnorm(n_col*2), ncol=2))
 #' colnames(umaps) = c("V1" , "V2")
 #' reducedDim(sce , "UMAP") = umaps
 #' p = plot_milo_by_single_metric(sce, de_stat)
 #'
-plot_milo_by_single_metric = function(sce, nhood_stat, colour_by = "logFC" , significance_by = NULL , order_by = NULL , order_direction = TRUE,
+plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , significance_by = NULL , order_by = NULL , order_direction = TRUE,
                                       size_by = NULL ,
                                       alpha = 0.1, layout = "UMAP" , subset_nhoods = NULL , size_range = c(1,3) ,
                                       node_stroke = 0.3, edge_width = c(0.2,0.5), edge_weight.thresh = NULL){
 
   # checks
-  out = .check_argument_correct(sce, .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)") &
-    .check_sce_milo(sce) &
+  out = .check_argument_correct(x, .check_sce, "Check x - something is wrong (gene names unique? reducedDim.name is not present?)") &
+    .check_sce_milo(x) &
     .check_argument_correct(order_direction, .check_boolean, "Check order_direction - should be either TRUE or FALSE") &
-    .check_reducedDim_in_sce(sce , layout) & .check_nhood_stat(nhood_stat , sce)
+    .check_reducedDim_in_sce(x , layout) & .check_nhood_stat(nhood_stat , x)
 
   if (!colour_by %in% colnames(nhood_stat)){
     stop("colour_by should be in colnames(nhood_stat)")
@@ -83,17 +84,17 @@ plot_milo_by_single_metric = function(sce, nhood_stat, colour_by = "logFC" , sig
   }
 
   if (!is.null(subset_nhoods)){
-    nhoods_sce = nhoods(sce)
+    nhoods_sce = nhoods(x)
     out = .check_subset_nhoods(subset_nhoods , nhoods_sce)
   }
 
 
-  if(!.valid_graph(nhoodGraph(sce))){
+  if(!.valid_graph(nhoodGraph(x))){
     stop("Not a valid Milo object - neighbourhood graph is missing. Please run buildNhoodGraph() first.")
   }
   if (is.character(layout)) {
-    if (!layout %in% names(reducedDims(sce))) {
-      stop(layout, "isn't in readucedDim(sce) - choose a different layout")
+    if (!layout %in% names(reducedDims(x))) {
+      stop(layout, "isn't in readucedDim(x) - choose a different layout")
     }
   }
 
@@ -104,16 +105,16 @@ plot_milo_by_single_metric = function(sce, nhood_stat, colour_by = "logFC" , sig
     nhood_stat[nhood_stat[, significance_by] > alpha, colour_by] <- 0
   }
 
-  # assign colour_by to sce
-  colData(sce)[colour_by] <- NA
-  colData(sce)[unlist(nhoodIndex(sce)[nhood_stat$Nhood]),colour_by] <- nhood_stat[,colour_by]
+  # assign colour_by to x
+  colData(x)[colour_by] <- NA
+  colData(x)[unlist(nhoodIndex(x)[nhood_stat$Nhood]),colour_by] <- nhood_stat[,colour_by]
 
-  # pull the graph from sce
-  nh_graph <- nhoodGraph(sce)
+  # pull the graph from x
+  nh_graph <- nhoodGraph(x)
 
   ## subset for hoods we will plot
   if (!is.null(subset_nhoods)) {
-    nh_graph <- induced_subgraph(nh_graph, vids = which(as.numeric(V(nh_graph)$name) %in% unlist(nhoodIndex(sce)[subset_nhoods])))
+    nh_graph <- induced_subgraph(nh_graph, vids = which(as.numeric(V(nh_graph)$name) %in% unlist(nhoodIndex(x)[subset_nhoods])))
   }
 
   if (!is.null(size_by)){
@@ -144,7 +145,7 @@ plot_milo_by_single_metric = function(sce, nhood_stat, colour_by = "logFC" , sig
   ## define layout
   if (is.character(layout)) {
     redDim <- layout
-    layout <- reducedDim(sce, redDim)[as.numeric(vertex_attr(nh_graph)$name),]
+    layout <- reducedDim(x, redDim)[as.numeric(vertex_attr(nh_graph)$name),]
     # make sure this is a matrix!
     if(!any(class(layout) %in% c("matrix"))){
       warning("Coercing layout to matrix format")
@@ -154,9 +155,9 @@ plot_milo_by_single_metric = function(sce, nhood_stat, colour_by = "logFC" , sig
 
 
   ## Define node color
-  if (colour_by %in% colnames(colData(sce))) {
+  if (colour_by %in% colnames(colData(x))) {
 
-    col_vals <- colData(sce)[as.numeric(vertex_attr(nh_graph)$name), colour_by]
+    col_vals <- colData(x)[as.numeric(vertex_attr(nh_graph)$name), colour_by]
     if (!is.numeric(col_vals)) {
       col_vals <- as.character(col_vals)
     }
@@ -164,7 +165,6 @@ plot_milo_by_single_metric = function(sce, nhood_stat, colour_by = "logFC" , sig
   } else {
     stop(colour_by, "is not a column in colData(x)")
   }
-
 
 
   pl <- ggraph(simplify(nh_graph), layout = layout) +
@@ -192,8 +192,8 @@ plot_milo_by_single_metric = function(sce, nhood_stat, colour_by = "logFC" , sig
 #
 #' plot_DE_single_gene
 #'
-#' Return Milo-graph plot; each node is coloured by logFC, if p-value corrected across nhoods < alpha
-#' @param sce Milo object
+#' Returns 'neighbourhood' plot; each node is coloured by logFC, if p-value corrected across nhoods < alpha
+#' @param x A \code{\linkS4class{Milo}} object
 #' @param de_stat milo-DE stat (output of 'de_stat_all_neighbourhoods')
 #' @param gene A character specifying gene ID
 #' @param alpha A scalar (between 0 and 1) specifying the significance level used
@@ -201,40 +201,42 @@ plot_milo_by_single_metric = function(sce, nhood_stat, colour_by = "logFC" , sig
 #' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted
 #' @param set_na_to_0 Boolean specifying whether in, nhoods in which gene is not tested, logFC would be set to 0 and pvalues to 1
 #' @param ... Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc))
-#'
-#' @return
+#' @return ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by logFC for the selected gene (if significant)
 #' @export
-#'
 #' @examples
 #' require(SingleCellExperiment)
 #' n_row = 500
 #' n_col = 100
 #' n_latent = 5
-#' sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+#' sce = SingleCellExperiment(assays =
+#' list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 #' rownames(sce) = as.factor(1:n_row)
 #' colnames(sce) = c(1:n_col)
 #' sce$cell = colnames(sce)
 #' sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
-#' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-#' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-#' de_stat = de_test_neighbourhoods(sce , design = ~type , covariates = c("type") )
+#' reducedDim(sce , "reduced_dim") =
+#' matrix(rnorm(n_col*n_latent), ncol=n_latent)
+#' sce = assign_neighbourhoods(sce,
+#' reducedDim_name = "reduced_dim")
+#' de_stat = de_test_neighbourhoods(sce ,
+#' design = ~type , covariates = c("type") )
 #' umaps = as.data.frame(matrix(rnorm(n_col*2), ncol=2))
 #' colnames(umaps) = c("V1" , "V2")
 #' reducedDim(sce , "UMAP") = umaps
 #' p = plot_DE_single_gene(sce, de_stat , gene = "1")
 #'
-plot_DE_single_gene = function(sce, de_stat , gene , alpha = 0.1, layout = "UMAP" , subset_nhoods = NULL , set_na_to_0 = TRUE, ...){
+plot_DE_single_gene = function(x, de_stat , gene , alpha = 0.1, layout = "UMAP" , subset_nhoods = NULL , set_na_to_0 = TRUE, ...){
 
-  if (!gene %in% rownames(sce)){
-    stop("gene should be in rownames(sce)")
+  if (!gene %in% rownames(x)){
+    stop("gene should be in rownames(x)")
   }
 
   out = .check_de_stat_valid(de_stat ,
                              assay_names = c("logFC" , "pval" , "pval_corrected_across_nhoods" , "pval_corrected_across_genes") ,
                              coldata_names = c("Nhood" , "Nhood_center" , "test_performed"))
 
-  if (class(de_stat) == "SingleCellExperiment"){
+  if (is(de_stat , "SingleCellExperiment")){
     de_stat = de_stat[gene , ]
     de_stat = convert_de_stat(de_stat, assay_names = c("logFC" , "pval" , "pval_corrected_across_nhoods" , "pval_corrected_across_genes") ,
                               coldata_names = c("Nhood" , "Nhood_center" , "test_performed" ))
@@ -252,7 +254,7 @@ plot_DE_single_gene = function(sce, de_stat , gene , alpha = 0.1, layout = "UMAP
   }
   nhood_stat = de_stat[de_stat$test_performed == TRUE & !is.na(de_stat$logFC), ]
 
-  p = plot_milo_by_single_metric(sce, nhood_stat = nhood_stat, colour_by = "logFC" , significance_by = "pval_corrected_across_nhoods" ,
+  p = plot_milo_by_single_metric(x, nhood_stat = nhood_stat, colour_by = "logFC" , significance_by = "pval_corrected_across_nhoods" ,
                              order_by = "pval_corrected_across_nhoods" , order_direction = TRUE, size_by = NULL,
                              alpha = alpha, layout = layout , subset_nhoods = subset_nhoods  , ...)
   return(p)
@@ -265,8 +267,8 @@ plot_DE_single_gene = function(sce, de_stat , gene , alpha = 0.1, layout = "UMAP
 
 #' plot_DE_gene_set
 #'
-#' Returns Milo plot, in which colour of nodes correposnd to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (based on pval_corrected_across_nhoods)
-#' @param sce Milo object
+#' Returns 'neighbourhood' plot, in which colour of nodes correposnd to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (based on pval_corrected_across_nhoods)
+#' @param x A \code{\linkS4class{Milo}} object
 #' @param de_stat milo-DE stat (output of 'de_stat_neighbourhoods')
 #' @param genes Character vector, each element corresponds to gene ID
 #' @param logFC_correction Boolean specifying whether to perfrom logFC correction. If TRUE (default), logFC will be set to 0 if corrected pvalue (defined by 'correction_by' variable) < alpha
@@ -275,43 +277,44 @@ plot_DE_single_gene = function(sce, de_stat , gene , alpha = 0.1, layout = "UMAP
 #' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default: 'UMAP')
 #' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted
 #' @param ... Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc))
-#'
-#' @return
+#' @return ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by average logFC across the selected genes; neighbourhood size corresponds to the fraction of genes that are DE in this neighbourhood.
 #' @importFrom SummarizedExperiment assay assay<- colData
 #' @export
-#'
 #' @examples
 #' require(SingleCellExperiment)
 #' n_row = 500
 #' n_col = 100
 #' n_latent = 5
-#' sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+#' sce = SingleCellExperiment(assays =
+#' list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 #' rownames(sce) = as.factor(1:n_row)
 #' colnames(sce) = c(1:n_col)
 #' sce$cell = colnames(sce)
 #' sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
-#' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+#' reducedDim(sce , "reduced_dim") =
+#' matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-#' de_stat = de_test_neighbourhoods(sce , design = ~type , covariates = c("type") )
+#' de_stat = de_test_neighbourhoods(sce ,
+#' design = ~type , covariates = c("type") )
 #' umaps = as.data.frame(matrix(rnorm(n_col*2), ncol=2))
 #' colnames(umaps) = c("V1" , "V2")
 #' reducedDim(sce , "UMAP") = umaps
 #' genes = c("1","2")
 #' p = plot_DE_gene_set(sce, de_stat , genes = c("1","2"))
 #'
-plot_DE_gene_set = function(sce, de_stat , genes ,
+plot_DE_gene_set = function(x, de_stat , genes ,
                             logFC_correction = TRUE , correction_by = "pval_corrected_across_nhoods", alpha = 0.1,
                             layout = "UMAP" , subset_nhoods = NULL , ...){
   # checks
-  if (mean(genes %in% rownames(sce)) < 1){
-    stop("genes should be in rownames(sce)")
+  if (mean(genes %in% rownames(x)) < 1){
+    stop("genes should be in rownames(x)")
   }
   out = .check_de_stat_valid(de_stat ,
                              assay_names = c("logFC" , "pval" , "pval_corrected_across_genes" , "pval_corrected_across_nhoods") ,
                              coldata_names = c("Nhood" , "Nhood_center"))
 
-  if (class(de_stat) == "data.frame"){
+  if (is(de_stat , "data.frame")){
     if (mean(genes %in% unique(de_stat$gene)) < 1){
       stop("All genes should be in de_stat$gene")
     }
@@ -360,7 +363,7 @@ plot_DE_gene_set = function(sce, de_stat , genes ,
   nhood_stat$avg_logFC = colMeans(assay(de_stat , "logFC_corrected"))
   nhood_stat$frac_DE_genes = colMeans(assay(de_stat , "pval_corrected_across_nhoods") < alpha)
 
-  p = plot_milo_by_single_metric(sce, nhood_stat, colour_by = "avg_logFC" , significance_by = NULL ,
+  p = plot_milo_by_single_metric(x, nhood_stat, colour_by = "avg_logFC" , significance_by = NULL ,
                                  order_by = "frac_DE_genes" , order_direction = FALSE, size_by = "frac_DE_genes",
                                            layout = layout , subset_nhoods = subset_nhoods , ...)
   return(p)
@@ -380,37 +383,39 @@ plot_DE_gene_set = function(sce, de_stat , genes ,
 #' @param alpha A numeric between 0 and1 specifying the significance threshold. Default = 0.1.
 #' @param subset_nhoods NULL or numeric vector specifying which Nhoods to use
 #' @param size A positive number specifying size of the dots
-#'
-#' @return
+#' @return beeswarm, broke down by cell types; each point is a neighbourhood, colour - logFC for the selected gene
 #' @importFrom dplyr mutate %>% arrange
 #' @importFrom ggbeeswarm geom_quasirandom
 #' @import ggplot2
 #' @export
-#'
 #' @examples
 #'
 #' require(SingleCellExperiment)
 #' n_row = 500
 #' n_col = 100
 #' n_latent = 5
-#' sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+#' sce = SingleCellExperiment(assays =
+#' list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 #' rownames(sce) = as.factor(1:n_row)
 #' colnames(sce) = c(1:n_col)
 #' sce$cell = colnames(sce)
 #' sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
-#' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+#' reducedDim(sce , "reduced_dim") =
+#' matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-#' de_stat = de_test_neighbourhoods(sce , design = ~type , covariates = c("type") )
+#' de_stat = de_test_neighbourhoods(sce ,
+#' design = ~type , covariates = c("type") )
 #' de_stat$celltype = 1
-#' p = plot_beeswarm_single_gene(de_stat , gene = "1" , nhoodGroup = "celltype")
+#' p = plot_beeswarm_single_gene(de_stat ,
+#' gene = "1" , nhoodGroup = "celltype")
 #'
 plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 , subset_nhoods = NULL , size = 2){
 
   out = .check_de_stat_valid(de_stat , assay_names = c("logFC" , "pval" , "pval_corrected_across_genes" , "pval_corrected_across_nhoods"),
                              coldata_names = c("Nhood", nhoodGroup))
 
-  if (class(de_stat) == "SingleCellExperiment"){
+  if (is(de_stat , "SingleCellExperiment")){
     if (!gene %in% rownames(de_stat)){
       stop("gene should be in rownames(de_stat)")
     }
@@ -460,7 +465,7 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 ,
 #' plot_beeswarm_gene_set
 #'
 #' Returns beeswarm plot for many genes
-#' @param de_stat milo-DE stat (output of 'de_stat_neighbourhoods')
+#' @param de_stat milo-DE stat (output of \code{\link{de_stat_neighbourhoods}})
 #' @param genes A character specifying genes ID
 #' @param nhoodGroup A character specifying which column to use for neighbourhood grouping.
 #' @param logFC_correction Boolean specifying whether to perfrom logFC correction. If TRUE (default), logFC will be set to 0 if corrected pvalue (defined by 'correction_by' variable) < alpha
@@ -468,31 +473,33 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 ,
 #' @param alpha A numeric between 0 and1 specifying the significance threshold. Default = 0.1.
 #' @param subset_nhoods NULL or numeric vector specifying which Nhoods to use
 #' @param size A positive number specifying size of the dots
-#'
-#' @return
+#' @return beeswarm, broke down by cell types; each point is a neighbourhood, colour - average logFC across selected genes; x - fraction of genes that are DE
 #' @importFrom dplyr mutate %>% arrange
 #' @importFrom ggbeeswarm geom_quasirandom
 #' @import ggplot2
 #' @importFrom SummarizedExperiment assay assay<-
 #' @export
-#'
 #' @examples
 #'
 #' require(SingleCellExperiment)
 #' n_row = 500
 #' n_col = 100
 #' n_latent = 5
-#' sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+#' sce = SingleCellExperiment(assays = list(counts =
+#' floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 #' rownames(sce) = as.factor(1:n_row)
 #' colnames(sce) = c(1:n_col)
 #' sce$cell = colnames(sce)
 #' sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
-#' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+#' reducedDim(sce , "reduced_dim") =
+#' matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-#' de_stat = de_test_neighbourhoods(sce , design = ~type , covariates = c("type") )
+#' de_stat = de_test_neighbourhoods(sce , design = ~type ,
+#' covariates = c("type") )
 #' de_stat$celltype = 1
-#' p = plot_beeswarm_gene_set(de_stat , genes = c("1","2") , nhoodGroup = "celltype")
+#' p = plot_beeswarm_gene_set(de_stat , genes = c("1","2") ,
+#' nhoodGroup = "celltype")
 #'
 plot_beeswarm_gene_set = function(de_stat , genes , nhoodGroup , logFC_correction = TRUE ,
                                   correction_by = "pval_corrected_across_nhoods" , alpha = 0.1 , subset_nhoods = NULL,
@@ -501,7 +508,7 @@ plot_beeswarm_gene_set = function(de_stat , genes , nhoodGroup , logFC_correctio
   out = .check_de_stat_valid(de_stat , assay_names = NULL, coldata_names = nhoodGroup)
 
 
-  if (class(de_stat) == "data.frame"){
+  if (is(de_stat , "data.frame")){
     if (mean(genes %in% unique(de_stat$gene)) < 1){
       stop("genes should be in de_stat$gene")
     }

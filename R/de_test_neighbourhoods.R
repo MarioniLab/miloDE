@@ -2,20 +2,20 @@
 #' de_test_neighbourhoods
 #'
 #' Tests neighbourhoods for DE + performs per gene correction across neighbourhoods
-#' @param sce Milo object
-#' @param sample_id Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)
+#' @param x A \code{\linkS4class{Milo}} object
+#' @param sample_id Character specifying which variable should be used as a sample/replica id. Should be in colData(x)
 #' @param design A \code{formula} object describing the experimental design for DE testing. If contrasts == NULL (default), the last column column of model will be used for testing.
 #' @param covariates Vector specifying all covariates that are passed into experimental design. This should contain all columns used in the design formula.
-#' @param contrasts NULL or contrast specifying what comparison to perform (depending on design, multiple comparisons can be performed). Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.
+#' @param contrasts NULL or contrast specifying what comparison to perform. Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.
 #' @param subset_nhoods NULL or character vector specifying the set of neighbourhoods that will be tested for DE
 #' @param min_n_cells_per_sample Positive integer specifying the minimum number of cells per replica to be included in testing. Default = 1.
 #' @param min_count Positive integer, specifying min.count for gene selection. Default = 3.
-#' @param output_type In {"data.frame","SCE"} Specifying the output format - either in data.frame or sce (with assays corresponding to logFC, pvals (raw and corrected)); columns correspond to neighbourhoods. Note that default is data.frame, but if number of genes x neighbourhoods combinations is > 10^8 -- the output will be sce.
+#' @param output_type In {"data.frame","SCE"} Specifying the output format - either in data.frame or SingleCellExperiment (with assays corresponding to logFC, pvals (raw and corrected)); columns correspond to neighbourhoods. Note that default is data.frame, but if number of genes x neighbourhoods combinations is > 10^8 -- the output will be SCE.
 #' @param plot_summary_stat Boolean specifying if we plot Milo neighbourhood plot summarising per neighbourhood whether testing was performed
 #' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default: 'UMAP'). Only relevant if plot_summary_stat == TRUE.
 #' @param BPPARAM NULL or BPPARAM object to use for parallelization
 #' @param verbose Boolean specifying whether to print intermediate output messages. Default = TRUE.
-#' @return
+#' @return data.frame (or SCE) object containing milo-DE results for all supplied neighbourhoods
 #' @export
 #' @importFrom SingleCellExperiment SingleCellExperiment counts
 #' @importFrom SummarizedExperiment assay colData
@@ -31,18 +31,21 @@
 #' n_row = 500
 #' n_col = 100
 #' n_latent = 5
-#' sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+#' sce = SingleCellExperiment(assays = list(counts =
+#' floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 #' rownames(sce) = as.factor(1:n_row)
 #' colnames(sce) = c(1:n_col)
 #' sce$cell = colnames(sce)
 #' sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
-#' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+#' reducedDim(sce , "reduced_dim") =
+#' matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-#' de_stat = de_test_neighbourhoods(sce , design = ~type, covariates = c("type"), plot_summary_stat = FALSE)
+#' de_stat = de_test_neighbourhoods(sce , design = ~type,
+#' covariates = c("type"), plot_summary_stat = FALSE)
 #' de_stat = convert_de_stat(de_stat)
 #' de_stat = convert_de_stat(de_stat)
-de_test_neighbourhoods = function(sce ,
+de_test_neighbourhoods = function(x ,
                                   sample_id = "sample",
                                   design ,
                                   covariates,
@@ -57,8 +60,8 @@ de_test_neighbourhoods = function(sce ,
                                   verbose = TRUE){
 
 
-  out = .check_argument_correct(sce, .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)") &
-    .check_sce_milo(sce) &
+  out = .check_argument_correct(x, .check_sce, "Check x - something is wrong (gene names unique? reducedDim.name is not present?)") &
+    .check_sce_milo(x) &
     .check_argument_correct(sample_id, is.character, "Check sample_id - should be character vector") &
     .check_argument_correct(design, .check_design, "Check design - should be formula object") &
     .check_argument_correct(covariates, is.character, "Check covariates - should be character vector") &
@@ -69,11 +72,12 @@ de_test_neighbourhoods = function(sce ,
                             "Check output_type - should be either 'data.frame' or 'SCE'") &
     .check_argument_correct(plot_summary_stat, .check_boolean, "Check plot_summary_stat - should be either TRUE or FALSE") &
     .check_argument_correct(verbose, .check_boolean, "Check verbose - should be either TRUE or FALSE") &
-    .check_var_in_coldata_sce(sce , sample_id , "sample_id") & .check_covariates_in_coldata_sce(sce , covariates) &
-    .check_design_and_covariates_match(sce , design , sample_id , covariates)
+    .check_var_in_coldata_sce(x , sample_id , "sample_id") &
+    .check_covariates_in_coldata_sce(x , covariates) &
+    .check_design_and_covariates_match(x , design , sample_id , covariates)
 
   if (plot_summary_stat){
-    out = .check_reducedDim_in_sce(sce , layout)
+    out = .check_reducedDim_in_sce(x , layout)
   }
   if (!is.null(contrasts)){
     if (!length(contrasts) == 1){
@@ -81,35 +85,35 @@ de_test_neighbourhoods = function(sce ,
     }
   }
 
-  nhoods_sce = nhoods(sce)
+  nhoods_sce = nhoods(x)
 
   if (!is.null(subset_nhoods)){
     out = .check_subset_nhoods(subset_nhoods , nhoods_sce)
   }
 
   # assign sample_id
-  coldata <- as.data.frame(colData(sce))
-  sce$sample_id <- as.character( coldata[, sample_id] )
+  coldata <- as.data.frame(colData(x))
+  x$milo_sample_id <- as.character( coldata[, sample_id] )
 
   # delete sample_id from covariates
   if (!is.null(covariates)){
-    if ("sample_id" %in% covariates){
-      warning("Discarding 'sample_id' from covariates since 'sample_id' can not be a covariate name. If in fact you wish to pass a covariate 'sample_id', please rename it first.")
-      covariates = setdiff(covariates , "sample_id")
+    if ("milo_sample_id" %in% covariates){
+      warning("Discarding 'milo_sample_id' from covariates since 'milo_sample_id' can not be a covariate name. If in fact you wish to pass a covariate 'milo_sample_id', please rename it first.")
+      covariates = setdiff(covariates , "milo_sample_id")
     }
   }
 
   # check that contrasts are of the correct syntax
   if (!is.null(contrasts)){
     # need to select non0 counts
-    counts_sum = rowSums(counts(sce))
+    counts_sum = rowSums(counts(x))
     if (max(counts_sum) == 0){
       stop("At least some counts should be higher than 0.")
     } else {
       idx = which(counts_sum == max(counts_sum))
       idx = idx[1]
-      dummy.sce = sce[idx,]
-      summed = summarizeAssayByGroup(counts(dummy.sce), colData(dummy.sce)[,c("sample_id" , covariates)])
+      dummy.sce = x[idx,]
+      summed = summarizeAssayByGroup(counts(dummy.sce), colData(dummy.sce)[,c("milo_sample_id" , covariates)])
       summed = SingleCellExperiment(list(counts=assay(summed, "sum")), colData=colData(summed))
       y <- DGEList(counts(summed), samples=colData(summed))
       dummy.design = model.matrix(design , data = y$samples)
@@ -144,7 +148,7 @@ de_test_neighbourhoods = function(sce ,
   # get DE for each hood
   if (length(subset_nhoods) == 1){
     warning("You are testing only one neighbourhood. If this is really the intended case, we recommend to run 'de_test_single_neighbourhood' directly.")
-    out = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce, hood_id = subset_nhoods,
+    out = de_test_single_neighbourhood(x , nhoods_sce = nhoods_sce, hood_id = subset_nhoods,
                                        sample_id = sample_id, design = design, covariates = covariates, contrasts = contrasts,
                                        min_n_cells_per_sample = min_n_cells_per_sample ,
                                        min_count = min_count , run_separately = F)
@@ -159,7 +163,7 @@ de_test_neighbourhoods = function(sce ,
       }
       de_stat = lapply(seq(length(subset_nhoods)) , function(i){
         hood_id = subset_nhoods[i]
-        out = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce, hood_id = hood_id,
+        out = de_test_single_neighbourhood(x , nhoods_sce = nhoods_sce, hood_id = hood_id,
                                            sample_id = sample_id, design = design, covariates = covariates, contrasts = contrasts,
                                            min_n_cells_per_sample = min_n_cells_per_sample ,
                                            min_count = min_count , run_separately = F)
@@ -178,7 +182,7 @@ de_test_neighbourhoods = function(sce ,
       }
       de_stat = bplapply(seq(length(subset_nhoods)) , function(i){
         hood_id = subset_nhoods[i]
-        out = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce, hood_id = hood_id,
+        out = de_test_single_neighbourhood(x , nhoods_sce = nhoods_sce, hood_id = hood_id,
                                            sample_id = sample_id, design = design, covariates = covariates, contrasts = contrasts,
                                            min_n_cells_per_sample = min_n_cells_per_sample ,
                                            min_count = min_count , run_separately = F)
@@ -193,10 +197,10 @@ de_test_neighbourhoods = function(sce ,
     }
 
     # put it together in SCE format
-    de_stat_sce = SingleCellExperiment(list(logFC = matrix(NA, nrow = nrow(sce), ncol = length(subset_nhoods)) ,
-                                            pval = matrix(NA, nrow = nrow(sce), ncol = length(subset_nhoods)) ,
-                                            pval_corrected_across_genes = matrix(NA, nrow = nrow(sce), ncol = length(subset_nhoods))))
-    rownames(de_stat_sce) = rownames(sce)
+    de_stat_sce = SingleCellExperiment(list(logFC = matrix(NA, nrow = nrow(x), ncol = length(subset_nhoods)) ,
+                                            pval = matrix(NA, nrow = nrow(x), ncol = length(subset_nhoods)) ,
+                                            pval_corrected_across_genes = matrix(NA, nrow = nrow(x), ncol = length(subset_nhoods))))
+    rownames(de_stat_sce) = rownames(x)
     for (i in seq(length(de_stat))){
       current.de_stat = de_stat[[i]]
       assay(de_stat_sce , "logFC")[current.de_stat$gene , i] = current.de_stat$logFC
@@ -258,7 +262,7 @@ de_test_neighbourhoods = function(sce ,
         names(cols) = c(FALSE , TRUE)
         meta_nhoods = meta_nhoods[order(meta_nhoods$Nhood) , ]
 
-        p = suppressWarnings(plot_milo_by_single_metric(sce, meta_nhoods, colour_by = "test_performed" , layout = layout , size_range = c(1.5,3) , edge_width = c(0.2,0.5)) +
+        p = suppressWarnings(plot_milo_by_single_metric(x, meta_nhoods, colour_by = "test_performed" , layout = layout , size_range = c(1.5,3) , edge_width = c(0.2,0.5)) +
           scale_fill_manual(values = cols, name = "Test performed"))
         print(p)
       }
@@ -279,18 +283,17 @@ de_test_neighbourhoods = function(sce ,
 #' de_test_single_neighbourhood
 #'
 #' Tests single hood for DE. Not intended to be used by itself (however possible), but rather as a part of `de_test_all_hoods`
-#' @param sce Milo object
-#' @param nhoods_sce Can be extracted from sce as nhoods(sce) prior to running the function. The reason the argument is passed by itself is to avoid calculating it every time.
+#' @param x A \code{\linkS4class{Milo}} object
+#' @param nhoods_sce Can be extracted from x as nhoods(x) prior to running the function. The reason the argument is passed by itself is to avoid calculating it every time.
 #' @param hood_id Character specifying for which hood we should perform testing. Should be in colnames(nhoods_sce)
-#' @param sample_id Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)
+#' @param sample_id Character specifying which variable should be used as a sample/replica id. Should be in colData(x)
 #' @param design A \code{formula} object describing the experimental design for DE testing. If contrasts == NULL (default), the last column column of model will be used for testing.
 #' @param covariates Vector specifying all covariates that are passed into experimental design.
 #' @param contrasts NULL or contrast specifying what conditions to test. Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.
 #' @param min_n_cells_per_sample positive integer specifying the minimun number of cells per replica to be included in testing. Default = 2
 #' @param min_count Positive integer, specifying min.count for gene selection. Default = 5
 #' @param run_separately A boolean parameter specifying whether the function is to be run as a part of 'de_test_all_hoods'(F) or as a stand-alone run (T)
-#'
-#' @return
+#' @return data.frame object containing milo-DE results for the selected neighbourhood
 #' @export
 #' @importFrom SingleCellExperiment SingleCellExperiment counts
 #' @importFrom SummarizedExperiment assay colData
@@ -305,32 +308,36 @@ de_test_neighbourhoods = function(sce ,
 #' n_row = 500
 #' n_col = 100
 #' n_latent = 5
-#' sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+#' sce = SingleCellExperiment(assays = list(counts =
+#' floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 #' rownames(sce) = as.factor(1:n_row)
 #' colnames(sce) = c(1:n_col)
 #' sce$cell = colnames(sce)
 #' sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
-#' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+#' reducedDim(sce , "reduced_dim") =
+#' matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
 #' nhoods_sce = nhoods(sce)
-#' de_stat = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce, hood_id = 1 , sample_id = "sample" , design = ~type, covariates = c("type"))
+#' de_stat = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce,
+#' hood_id = 1 , sample_id = "sample" ,
+#' design = ~type, covariates = c("type"))
 #'
-de_test_single_neighbourhood = function(sce , nhoods_sce , hood_id , sample_id ,
+de_test_single_neighbourhood = function(x , nhoods_sce , hood_id , sample_id ,
                                         design , covariates, contrasts = NULL,
                                         min_n_cells_per_sample = 1 ,
                                         min_count = 3 , run_separately = TRUE ){
 
   if (!hood_id %in% 1:ncol(nhoods_sce)){
-    stop("'hood_id' should be in 1:ncol(nhoods(sce))")
+    stop("'hood_id' should be in 1:ncol(nhoods(x))")
     return(FALSE)
   }
 
   # if 'de_test_single_hood' is a part of the the main run - these steps have already been carried out before
   if (run_separately){
 
-    out = .check_argument_correct(sce, .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)") &
-      .check_sce_milo(sce) &
+    out = .check_argument_correct(x, .check_sce, "Check x - something is wrong (gene names unique? reducedDim.name is not present?)") &
+      .check_sce_milo(x) &
       .check_argument_correct(sample_id, is.character, "Check sample_id - should be character vector") &
       .check_argument_correct(design, .check_design, "Check design - should be formula object") &
       .check_argument_correct(covariates, is.character, "Check covariates - should be character vector") &
@@ -339,20 +346,20 @@ de_test_single_neighbourhood = function(sce , nhoods_sce , hood_id , sample_id ,
       .check_argument_correct(min_n_cells_per_sample, .check_positive_integer, "Check min_n_cells_per_sample - should be positive integer") &
       .check_argument_correct(min_count, .check_non_negative, "Check min_count - should be non negative number") &
       .check_argument_correct(run_separately, .check_boolean, "Check run_separately - should be either TRUE or FALSE") &
-      .check_var_in_coldata_sce(sce , sample_id , "sample_id") &
-      .check_covariates_in_coldata_sce(sce , covariates) &
-      .check_design_and_covariates_match(sce , design , sample_id , covariates)
+      .check_var_in_coldata_sce(x , sample_id , "sample_id") &
+      .check_covariates_in_coldata_sce(x , covariates) &
+      .check_design_and_covariates_match(x , design , sample_id , covariates)
 
 
-    coldata <- as.data.frame(colData(sce))
+    coldata <- as.data.frame(colData(x))
     # assign sample_id
-    sce$sample_id <- as.character( coldata[, sample_id] )
+    x$milo_sample_id <- as.character( coldata[, sample_id] )
 
     # delete sample_id and from covariates
     if (!is.null(covariates)){
-      if ("sample_id" %in% covariates){
-        warning("Discarding 'sample_id' from covariates since 'sample_id' can not be a covariate name. If in fact you wish to pass a covariate 'sample_id', please rename it first.")
-        covariates = setdiff(covariates , "sample_id")
+      if ("milo_sample_id" %in% covariates){
+        warning("Discarding 'milo_sample_id' from covariates since 'milo_sample_id' can not be a covariate name. If in fact you wish to pass a covariate 'milo_sample_id', please rename it first.")
+        covariates = setdiff(covariates , "milo_sample_id")
       }
     }
   }
@@ -360,18 +367,18 @@ de_test_single_neighbourhood = function(sce , nhoods_sce , hood_id , sample_id ,
 
   # select cells in the hood
   current.cells = which(nhoods_sce[,hood_id] == 1)
-  current.sce = sce[,current.cells]
+  current.sce = x[,current.cells]
   current.sce = .filter_samples_with_low_n_cells_in_hood(current.sce , min_n_cells_per_sample = min_n_cells_per_sample)
 
 
   if (ncol(current.sce) > 0){
-    summed = summarizeAssayByGroup(counts(current.sce), colData(current.sce)[,c("sample_id" , covariates)])
+    summed = summarizeAssayByGroup(counts(current.sce), colData(current.sce)[,c("milo_sample_id" , covariates)])
     summed = SingleCellExperiment(list(counts=assay(summed, "sum")), colData=colData(summed))
     y <- DGEList(counts(summed), samples=colData(summed))
 
     # select genes for testing
     if (min_count > 0){
-      keep <- filterByExpr(y, group=summed$sample_id , min.count = min_count , min.total.count = round(min_count * 1.5))
+      keep <- filterByExpr(y, group=summed$milo_sample_id , min.count = min_count , min.total.count = round(min_count * 1.5))
       if (sum(keep) == 0){
         stop(paste0("For hood_id " , hood_id , " 0 genes are selected for testing. Check that 'min.count' is of the appropriate value and possibly decrease it?"))
         return(NULL)
@@ -403,7 +410,7 @@ de_test_single_neighbourhood = function(sce , nhoods_sce , hood_id , sample_id ,
       },
       error=function(err){
         warning(paste0("For hood_id " , hood_id , " test can not be performed. It is possible, that there are not enough cells in one of the condition or design matrix is not full rank. If it is likely the latter, please reconsider design."))
-        out = .return_null_stat(rownames(sce) , test_performed = FALSE)
+        out = .return_null_stat(rownames(x) , test_performed = FALSE)
         return(out)
       }
     )
@@ -423,7 +430,7 @@ de_test_single_neighbourhood = function(sce , nhoods_sce , hood_id , sample_id ,
   }
   else {
     message(paste0("For neighbourhood " , hood_id , " no samples have number of cells higher than specified threshold. Consider reducing 'min_n_cells_per_sample'?"))
-    stat = .return_null_stat(rownames(sce) , test_performed = FALSE)
+    stat = .return_null_stat(rownames(x) , test_performed = FALSE)
 
     # clean output
     stat$Nhood = hood_id
@@ -442,11 +449,11 @@ de_test_single_neighbourhood = function(sce , nhoods_sce , hood_id , sample_id ,
 
 
 #'
-.filter_samples_with_low_n_cells_in_hood = function(sce , min_n_cells_per_sample = 1){
-  tab = table(sce$sample_id)
+.filter_samples_with_low_n_cells_in_hood = function(x , min_n_cells_per_sample = 1){
+  tab = table(x$milo_sample_id)
   samples_2_keep = names(tab)[tab >= min_n_cells_per_sample]
-  sce = sce[, sce$sample_id %in% samples_2_keep]
-  return(sce)
+  x = x[, x$milo_sample_id %in% samples_2_keep]
+  return(x)
 }
 
 

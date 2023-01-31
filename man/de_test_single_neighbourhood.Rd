@@ -5,7 +5,7 @@
 \title{de_test_single_neighbourhood}
 \usage{
 de_test_single_neighbourhood(
-  sce,
+  x,
   nhoods_sce,
   hood_id,
   sample_id,
@@ -18,13 +18,13 @@ de_test_single_neighbourhood(
 )
 }
 \arguments{
-\item{sce}{Milo object}
+\item{x}{Milo object}
 
-\item{nhoods_sce}{Can be extracted from sce as nhoods(sce) prior to running the function. The reason the argument is passed by itself is to avoid calculating it every time.}
+\item{nhoods_sce}{Can be extracted from x as nhoods(x) prior to running the function. The reason the argument is passed by itself is to avoid calculating it every time.}
 
 \item{hood_id}{Character specifying for which hood we should perform testing. Should be in colnames(nhoods_sce)}
 
-\item{sample_id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)}
+\item{sample_id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(x)}
 
 \item{design}{A \code{formula} object describing the experimental design for DE testing. If contrasts == NULL (default), the last column column of model will be used for testing.}
 
@@ -39,7 +39,7 @@ de_test_single_neighbourhood(
 \item{run_separately}{A boolean parameter specifying whether the function is to be run as a part of 'de_test_all_hoods'(F) or as a stand-alone run (T)}
 }
 \value{
-
+data.frame object containing milo-DE results for the selected neighbourhood
 }
 \description{
 Tests single hood for DE. Not intended to be used by itself (however possible), but rather as a part of \code{de_test_all_hoods}
@@ -50,15 +50,19 @@ require(miloR)
 n_row = 500
 n_col = 100
 n_latent = 5
-sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+sce = SingleCellExperiment(assays = list(counts =
+floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 rownames(sce) = as.factor(1:n_row)
 colnames(sce) = c(1:n_col)
 sce$cell = colnames(sce)
 sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
-reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+reducedDim(sce , "reduced_dim") =
+matrix(rnorm(n_col*n_latent), ncol=n_latent)
 sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
 nhoods_sce = nhoods(sce)
-de_stat = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce, hood_id = 1 , sample_id = "sample" , design = ~type, covariates = c("type"))
+de_stat = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce,
+hood_id = 1 , sample_id = "sample" ,
+design = ~type, covariates = c("type"))
 
 }

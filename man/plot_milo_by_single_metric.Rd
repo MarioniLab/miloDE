@@ -5,7 +5,7 @@
 \title{plot_milo_by_single_metric}
 \usage{
 plot_milo_by_single_metric(
-  sce,
+  x,
   nhood_stat,
   colour_by = "logFC",
   significance_by = NULL,
@@ -22,9 +22,9 @@ plot_milo_by_single_metric(
 )
 }
 \arguments{
-\item{sce}{\code{\linkS4class{Milo}} object}
+\item{x}{\code{\linkS4class{Milo}} object}
 
-\item{nhood_stat}{data.frame object, containing columns 'Nhood' (should correspond to neighbourhoods from nhoodGraph(sce))}
+\item{nhood_stat}{data.frame object, containing columns 'Nhood' (should correspond to neighbourhoods from nhoodGraph(x))}
 
 \item{colour_by}{A colname from nhood_stat - nodes will be coloured by the values from this column}
 
@@ -51,7 +51,7 @@ plot_milo_by_single_metric(
 \item{edge_weight.thresh}{A numeric (or NULL) specifying a threshold for minimum cells in common (between neighbourhoods) required for an edge to be plotted}
 }
 \value{
-
+ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by the provided in colour_by column value
 }
 \description{
 Return Milo-graph plot; each node is coloured by colour_by column from nhood_stat, if significance_by is smaller than alpha. Vetices are ordered by order_by column
@@ -61,15 +61,18 @@ require(SingleCellExperiment)
 n_row = 500
 n_col = 100
 n_latent = 5
-sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+sce = SingleCellExperiment(assays =
+list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 rownames(sce) = as.factor(1:n_row)
 colnames(sce) = c(1:n_col)
 sce$cell = colnames(sce)
 sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
 reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-de_stat = de_test_neighbourhoods(sce , design = ~type , covariates = c("type") )
+sce = assign_neighbourhoods(sce,
+reducedDim_name = "reduced_dim")
+de_stat = de_test_neighbourhoods(sce ,
+design = ~type , covariates = c("type") )
 de_stat = de_stat[de_stat$gene == "1", ]
 umaps = as.data.frame(matrix(rnorm(n_col*2), ncol=2))
 colnames(umaps) = c("V1" , "V2")

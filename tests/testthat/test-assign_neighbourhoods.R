@@ -9,23 +9,16 @@ data("sce_mouseEmbryo", package = "miloDE")
 test_that("Wrong input gives errors", {
 
   # sce should be of the right format
-  expect_error(assign_neighbourhoods(sce = 1 , k = 10, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30),
-               "sce should be a SingleCellExperiment or Milo object.",
+  expect_error(assign_neighbourhoods(x = 1 , k = 10, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30),
+               "x should be a SingleCellExperiment or Milo object.",
                fixed=TRUE
   )
   sce_test = sce_mouseEmbryo
   colnames(sce_test) = rep(1,1,ncol(sce_test))
   expect_error(assign_neighbourhoods(sce_test , k = 10, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30),
-               "If colnames(sce) exist, they should be unique.",
+               "If colnames(x) exist, they should be unique.",
                fixed=TRUE
   )
-
-  #sce_test = sce_mouseEmbryo
-  #sce_test = rbind(sce_test , sce_test)
-  #expect_error(assign_neighbourhoods(sce_test, k = 10, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30),
-  #             "sce should have unique rownames.",
-  #             fixed=TRUE
-  #)
 
 
   # k should be positive integer
@@ -135,11 +128,11 @@ test_that("Wrong input gives errors", {
 
 
   # reduced dim should be in reducedDimNames
-  expect_error(assign_neighbourhoods(sce = sce_mouseEmbryo , k = 10, prop = 0.2, k_init = 50, d = 30)
+  expect_error(assign_neighbourhoods(x = sce_mouseEmbryo , k = 10, prop = 0.2, k_init = 50, d = 30)
   )
 
-  expect_error(assign_neighbourhoods(sce = sce_mouseEmbryo , k = 10, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca_corrected", k_init = 50, d = 30),
-               "reducedDim_name should be in reducedDimNames(sce).",
+  expect_error(assign_neighbourhoods(x = sce_mouseEmbryo , k = 10, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca_corrected", k_init = 50, d = 30),
+               "reducedDim_name should be in reducedDimNames(x).",
                fixed=TRUE
   )
 
@@ -150,7 +143,7 @@ test_that("Wrong input gives errors", {
 # return of the correct output
 test_that("Return is the correct class", {
   # right class
-  out = assign_neighbourhoods(sce = sce_mouseEmbryo , k = 10, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+  out = assign_neighbourhoods(x = sce_mouseEmbryo , k = 10, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
   expect_s4_class(out, "Milo")
 })
 
@@ -159,47 +152,47 @@ test_that("Return is the correct class", {
 test_that("Scaling of neighbourhood sizes and numbers with k, order, filtering", {
 
   # smaller k - more neighbourhoods
-  sce_1 = assign_neighbourhoods(sce = sce_mouseEmbryo , k = 10, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
-  sce_2 = assign_neighbourhoods(sce = sce_mouseEmbryo , k = 20, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+  sce_1 = assign_neighbourhoods(x = sce_mouseEmbryo , k = 10, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+  sce_2 = assign_neighbourhoods(x = sce_mouseEmbryo , k = 20, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
   nhoods_1 = nhoods(sce_1)
   nhoods_2 = nhoods(sce_2)
   expect_gt(ncol(nhoods_1) , ncol(nhoods_2))
 
   # smaller k - more neighbourhoods
-  sce_1 = assign_neighbourhoods(sce = sce_mouseEmbryo , k = 25, prop = 0.2, order = 1, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
-  sce_2 = assign_neighbourhoods(sce = sce_mouseEmbryo , k = 75, prop = 0.2, order = 1, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+  sce_1 = assign_neighbourhoods(x = sce_mouseEmbryo , k = 25, prop = 0.2, order = 1, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+  sce_2 = assign_neighbourhoods(x = sce_mouseEmbryo , k = 75, prop = 0.2, order = 1, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
   nhoods_1 = nhoods(sce_1)
   nhoods_2 = nhoods(sce_2)
   expect_gt(ncol(nhoods_1) , ncol(nhoods_2))
 
 
   # order 1 - more neighbourhoods
-  sce_1 = assign_neighbourhoods(sce = sce_mouseEmbryo , k = 25, prop = 0.1, order = 1, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
-  sce_2 = assign_neighbourhoods(sce = sce_mouseEmbryo , k = 25, prop = 0.1, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+  sce_1 = assign_neighbourhoods(x = sce_mouseEmbryo , k = 25, prop = 0.1, order = 1, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+  sce_2 = assign_neighbourhoods(x = sce_mouseEmbryo , k = 25, prop = 0.1, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
   nhoods_1 = nhoods(sce_1)
   nhoods_2 = nhoods(sce_2)
   expect_gt(ncol(nhoods_1) , ncol(nhoods_2))
 
 
   # order 1 - more neighbourhoods
-  sce_1 = assign_neighbourhoods(sce = sce_mouseEmbryo , k = 5, prop = 0.2, order = 1, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
-  sce_2 = assign_neighbourhoods(sce = sce_mouseEmbryo , k = 5, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+  sce_1 = assign_neighbourhoods(x = sce_mouseEmbryo , k = 5, prop = 0.2, order = 1, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+  sce_2 = assign_neighbourhoods(x = sce_mouseEmbryo , k = 5, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
   nhoods_1 = nhoods(sce_1)
   nhoods_2 = nhoods(sce_2)
   expect_gt(ncol(nhoods_1) , ncol(nhoods_2))
 
 
   # filtering - less neighbourhoods
-  sce_1 = assign_neighbourhoods(sce = sce_mouseEmbryo , k = 5, prop = 0.2, order = 1, filtering = F, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
-  sce_2 = assign_neighbourhoods(sce = sce_mouseEmbryo , k = 5, prop = 0.2, order = 1, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+  sce_1 = assign_neighbourhoods(x = sce_mouseEmbryo , k = 5, prop = 0.2, order = 1, filtering = F, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+  sce_2 = assign_neighbourhoods(x = sce_mouseEmbryo , k = 5, prop = 0.2, order = 1, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
   nhoods_1 = nhoods(sce_1)
   nhoods_2 = nhoods(sce_2)
   expect_gt(ncol(nhoods_1) , ncol(nhoods_2))
 
 
   # filtering - less neighbourhoods
-  sce_1 = assign_neighbourhoods(sce = sce_mouseEmbryo , k = 20, prop = 0.1, order = 2, filtering = F, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
-  sce_2 = assign_neighbourhoods(sce = sce_mouseEmbryo , k = 20, prop = 0.1, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+  sce_1 = assign_neighbourhoods(x = sce_mouseEmbryo , k = 20, prop = 0.1, order = 2, filtering = F, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+  sce_2 = assign_neighbourhoods(x = sce_mouseEmbryo , k = 20, prop = 0.1, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
   nhoods_1 = nhoods(sce_1)
   nhoods_2 = nhoods(sce_2)
   expect_gt(ncol(nhoods_1) , ncol(nhoods_2))
@@ -208,12 +201,6 @@ test_that("Scaling of neighbourhood sizes and numbers with k, order, filtering",
 })
 
 
-
-
-
-# filtering filtered milo object results in the same object
-# k > ncol(sce) would give 1 neighbourhood
-# toy data - 2 clusters
 
 
 

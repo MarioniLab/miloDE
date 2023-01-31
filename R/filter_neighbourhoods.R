@@ -3,9 +3,8 @@
 #' filter_neighbourhoods
 #'
 #' Filtering redundant hoods, using the greedy approach to set cover problem
-#' @param sce_milo A Milo object (SCE + assigned hoods)
-#'
-#' @return
+#' @param x A \code{\linkS4class{Milo}} object
+#' @return Milo object with refined neighbourhood assignment
 #' @export
 #' @importFrom RcppGreedySetCover greedySetCover
 #' @importFrom miloR buildNhoodGraph nhoodIndex nhoods graph graph<-
@@ -14,20 +13,23 @@
 #' n_row = 500
 #' n_col = 100
 #' n_latent = 5
-#' sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+#' sce = SingleCellExperiment(assays =
+#' list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 #' rownames(sce) = as.factor(1:n_row)
 #' colnames(sce) = c(1:n_col)
 #' sce$cell = colnames(sce)
-#' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-#' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim" , k = 10 , order = 1)
+#' reducedDim(sce , "reduced_dim") =
+#' matrix(rnorm(n_col*n_latent), ncol=n_latent)
+#' sce = assign_neighbourhoods(sce,
+#' reducedDim_name = "reduced_dim" , k = 10 , order = 1)
 #' sce = filter_neighbourhoods(sce)
-filter_neighbourhoods = function(sce_milo){
+filter_neighbourhoods = function(x){
 
   #args = c(as.list(environment()))
   #out = .general_check_arguments(args)
-  out = .check_argument_correct(sce_milo, .check_sce_milo, "Check sce_milo - something is wrong. Calculate 'assign_neighbourhoods' first.)")
+  out = .check_argument_correct(x, .check_sce_milo, "Check x - something is wrong. Calculate 'assign_neighbourhoods' first.)")
 
-  nhoods_sce = nhoods(sce_milo)
+  nhoods_sce = nhoods(x)
   stat_hoods = lapply(1:ncol(nhoods_sce) , function(i){
     current.cells = which(nhoods_sce[,i] == 1)
     out = data.frame(set = colnames(nhoods_sce)[i],
@@ -44,8 +46,8 @@ filter_neighbourhoods = function(sce_milo){
     nhoods_sce = as.matrix(nhoods_sce[, colnames(nhoods_sce) %in% hoods_filtered])
     colnames(nhoods_sce) = hoods_filtered
   }
-  nhoods(sce_milo) = nhoods_sce
-  sce_milo = buildNhoodGraph(sce_milo)
-  nhoodIndex(sce_milo) = nhoodIndex(sce_milo)[match(colnames(nhoods(sce_milo)) , nhoodIndex(sce_milo))]
-  return(sce_milo)
+  nhoods(x) = nhoods_sce
+  x = buildNhoodGraph(x)
+  nhoodIndex(x) = nhoodIndex(x)[match(colnames(nhoods(x)) , nhoodIndex(x))]
+  return(x)
 }

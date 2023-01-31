@@ -6,9 +6,7 @@
 #' @param de_stat Output of milo-DE, either in data.frame format or SCE
 #' @param pval.thresh A scalar specifying which threshold to use for deciding on significance for gene being DE in a hood. Default = 0.1.
 #' @param z.thresh A scalar specifying which threshold to use for deciding on which z-normalised p-values are going to be considered specifically DE. Default = -3.
-#'
-#'
-#' @return
+#' @return data.frame, with calculated n-DE-genes and n-specific-DE-genes for each neighbourhood
 #' @export
 #' @importFrom SummarizedExperiment colData
 #' @importFrom stats sd
@@ -27,7 +25,7 @@ rank_neighbourhoods_by_DE_magnitude = function(de_stat, pval.thresh = 0.1, z.thr
   out = .check_de_stat_valid(de_stat , assay_names = c("logFC" , "pval" , "pval_corrected_across_nhoods" , "pval_corrected_across_genes") , coldata_names = c("Nhood" , "Nhood_center")) &
     .check_pval_thresh(pval.thresh) & .check_z_thresh(z.thresh)
 
-  if (class(de_stat) == "data.frame"){
+  if (is(de_stat , "data.frame")){
     de_stat = convert_de_stat(de_stat ,
                               assay_names = c("logFC" , "pval" , "pval_corrected_across_nhoods" , "pval_corrected_across_genes") ,
                               coldata_names = c("Nhood" , "Nhood_center" , "test_performed"))

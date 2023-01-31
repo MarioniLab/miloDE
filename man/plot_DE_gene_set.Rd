@@ -5,7 +5,7 @@
 \title{plot_DE_gene_set}
 \usage{
 plot_DE_gene_set(
-  sce,
+  x,
   de_stat,
   genes,
   logFC_correction = TRUE,
@@ -17,7 +17,7 @@ plot_DE_gene_set(
 )
 }
 \arguments{
-\item{sce}{Milo object}
+\item{x}{Milo object}
 
 \item{de_stat}{milo-DE stat (output of 'de_stat_neighbourhoods')}
 
@@ -36,7 +36,7 @@ plot_DE_gene_set(
 \item{...}{Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc))}
 }
 \value{
-
+ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by average logFC across the selected genes; neighbourhood size corresponds to the fraction of genes that are DE in this neighbourhood.
 }
 \description{
 Returns Milo plot, in which colour of nodes correposnd to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (based on pval_corrected_across_nhoods)
@@ -46,15 +46,18 @@ require(SingleCellExperiment)
 n_row = 500
 n_col = 100
 n_latent = 5
-sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+sce = SingleCellExperiment(assays =
+list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 rownames(sce) = as.factor(1:n_row)
 colnames(sce) = c(1:n_col)
 sce$cell = colnames(sce)
 sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
-reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+reducedDim(sce , "reduced_dim") =
+matrix(rnorm(n_col*n_latent), ncol=n_latent)
 sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-de_stat = de_test_neighbourhoods(sce , design = ~type , covariates = c("type") )
+de_stat = de_test_neighbourhoods(sce ,
+design = ~type , covariates = c("type") )
 umaps = as.data.frame(matrix(rnorm(n_col*2), ncol=2))
 colnames(umaps) = c("V1" , "V2")
 reducedDim(sce , "UMAP") = umaps

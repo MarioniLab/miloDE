@@ -4,17 +4,15 @@
 #'
 #' Returns per neighbourhood AUC from Augur-based classifier. Note that it is only relevant for standard, additive models.
 #'
-#' @param sce Milo object
-#'
-#' @param sample_id Character specifying which variable should be used as a sample/replica id. Should be in colData(sce).
+#' @param x A \code{\linkS4class{Milo}} object
 #' @param genes Character vector specifying genes to be passed for the testing
-#' @param condition_id Character specifying which variable should be used as a condition id. Should be in colData(sce).
+#' @param sample_id Character specifying which variable should be used as a sample/replica id. Should be in colData(sce).
+#' @param condition_id Character specifying which variable should be used as a condition id. Should be in colData(x).
 #' @param conditions In case of multiple comparative groups, character vector specifying which conditions should be tested for separation. Default is NULL and assumes that only 2 groups are present in the data
 #' @param min_n_cells_per_sample Positive integer specifying the minimum number of cells per replica to be included in testing. Default = 2.
 #' @param n_threads Positive integer specifying the number of cores to be used to calculate AUC. Higher number results in faster calculation, but its feasibility depends on the specs of your machine. Only relevant if BPPARAM = NULL.
 #' @param BPPARAM NULL or MulticoreParam object
-#'
-#' @return
+#' @return data.frame object, with AUC calculated for each neighbourhood
 #' @export
 #' @importFrom SummarizedExperiment colData assayNames
 #' @importFrom miloR nhoods
@@ -25,65 +23,80 @@
 #' n_row = 500
 #' n_col = 100
 #' n_latent = 5
-#' sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+#' sce = SingleCellExperiment(assays = list(counts =
+#' floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 #' logcounts(sce) = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4
 #' rownames(sce) = as.factor(1:n_row)
 #' colnames(sce) = c(1:n_col)
 #' sce$cell = colnames(sce)
 #' sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 #' sce$type = ifelse(sce$sample %in% c(1,2) , "ref" , "query")
-#' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+#' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent),
+#' ncol=n_latent)
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-#' sce = calc_AUC_per_neighbourhood(sce, sample_id = "sample" , condition_id = "type")
+#' sce = calc_AUC_per_neighbourhood(sce, condition_id = "type")
 #'
-calc_AUC_per_neighbourhood <- function(sce , genes = rownames(sce) , sample_id = "sample" ,
+calc_AUC_per_neighbourhood <- function(x , genes = rownames(x) , sample_id = "sample" ,
                                        condition_id , conditions = NULL,
                                        min_n_cells_per_sample = 1, n_threads = 2 , BPPARAM = NULL){
 
-  out = .check_argument_correct(sce, .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)") &
-    .check_sce_milo(sce) &
+  out = .check_argument_correct(x, .check_sce, "Check x - something is wrong (gene names unique? reducedDim.name is not present?)") &
+    .check_sce_milo(x) &
     .check_argument_correct(sample_id, is.character, "Check sample_id - should be character vector") &
     .check_argument_correct(condition_id, is.character, "Check condition_id - should be character vector") &
     .check_argument_correct(conditions, .check_string_or_null, "Check conditions - should be NULL or character vector") &
     .check_argument_correct(min_n_cells_per_sample, .check_positive_integer, "Check min_n_cells_per_sample - should be positive integer") &
     .check_argument_correct(n_threads , .check_positive_integer , "Check n_threads - should be positive integer") &
-    .check_var_in_coldata_sce(sce , sample_id , "sample_id") & .check_condition_in_coldata_sce(sce , condition_id) &
-    .check_sample_and_condition_id_valid(sce , condition_id , sample_id) &
-    .check_genes_in_sce(sce , genes)
+    .check_var_in_coldata_sce(x , sample_id , "sample_id") & .check_condition_in_coldata_sce(x , condition_id) &
+    .check_sample_and_condition_id_valid(x , condition_id , sample_id) &
+    .check_genes_in_sce(x , genes)
 
-  if (!"logcounts" %in% assayNames(sce)){
+  if (!"logcounts" %in% assayNames(x)){
     stop("Please calculate log-normalised counts first if you want to calculate AUC per neighbourhood.")
   }
 
-  sce = sce[genes, ]
+  x = x[genes, ]
+
+  if (is.null(colnames(x))){
+    colnames(x) = as.character(c(1:ncol(x)))
+  }
   # assign condition and sample ids
-  coldata <- as.data.frame(colData(sce))
-  sce$condition_id <- as.factor( coldata[, condition_id] )
-  sce$sample_id <- as.factor( coldata[, sample_id] )
+  coldata <- as.data.frame(colData(x))
+  x$milo_sample_id <- as.factor( coldata[, sample_id] )
+  x$milo_condition_id <- as.factor( coldata[, condition_id] )
 
   if (is.null(conditions)){
-    tab = table(sce$condition_id)
+    tab = table(x$milo_condition_id)
     if (!length(tab) == 2){
       stop("If conditions == NULL, there should be exactly two levels for tested conditions.")
     }
   } else {
-    if (mean(conditions %in% unique(sce$condition)) < 1){
+    if (mean(conditions %in% unique(x$milo_condition_id)) < 1){
       stop("All specified conditions should be present.")
     }
-    sce = sce[, sce$condition %in% conditions]
+    x = x[, x$milo_condition_id %in% conditions]
   }
 
-  nhoods_sce = nhoods(sce)
+  nhoods_sce = nhoods(x)
+  # filter out for relevant cells
+  current_cols = colnames(nhoods_sce)
+  nhoods_sce = as.matrix( nhoods_sce[rownames(nhoods_sce) %in% colnames(x), ] )
+  colnames(nhoods_sce) = current_cols
+  # delete neighbourhoods that contain 0 cells (possible due to the upstream filtering)
+  idx = which(colSums(nhoods_sce) > 0)
+  current_cols = colnames(nhoods_sce)[idx]
+  nhoods_sce = as.matrix( nhoods_sce[, idx] )
+  colnames(nhoods_sce) = current_cols
 
   if (is.null(BPPARAM)){
     auc_stat = lapply(colnames(nhoods_sce) , function(hood_id){
-      out = .get_auc_single_hood(sce , nhoods_sce , hood_id , min_cells = 3 , min_n_cells_per_sample = min_n_cells_per_sample , n_threads = n_threads)
+      out = .get_auc_single_hood(x , nhoods_sce , hood_id , min_cells = 3 , min_n_cells_per_sample = min_n_cells_per_sample , n_threads = n_threads)
       return(out)
     })
   }
   else {
     auc_stat = bplapply(colnames(nhoods_sce) , function(hood_id){
-      out = .get_auc_single_hood(sce , nhoods_sce , hood_id , min_cells = 3 , min_n_cells_per_sample = min_n_cells_per_sample , n_threads = 1)
+      out = .get_auc_single_hood(x , nhoods_sce , hood_id , min_cells = 3 , min_n_cells_per_sample = min_n_cells_per_sample , n_threads = 1)
       return(out)
     } , BPPARAM = BPPARAM)
   }
@@ -101,32 +114,30 @@ calc_AUC_per_neighbourhood <- function(sce , genes = rownames(sce) , sample_id =
 #' @importFrom SingleCellExperiment logcounts
 #' @importFrom SummarizedExperiment colData
 #' @import Augur
-.get_auc_single_hood = function(sce , nhoods_sce , hood_id , min_cells = 3 , min_n_cells_per_sample = 1 , n_threads = 2){
-
+.get_auc_single_hood = function(x , nhoods_sce , hood_id , min_cells = 3 , min_n_cells_per_sample = 1 , n_threads = 2){
   out = .check_argument_correct(min_cells, .check_positive_integer, "Check min_cells - should be positive integer")
   # select cells
   current.cells = which(nhoods_sce[,hood_id] == 1)
-  current.sce = sce[,current.cells]
+  current.cells = rownames(nhoods_sce)[current.cells]
+  current.sce = x[,colnames(x) %in% current.cells]
   current.sce = .filter_samples_with_low_n_cells_in_hood(current.sce , min_n_cells_per_sample = min_n_cells_per_sample)
 
   current.sce$celltype.dummy = "dummy"
   meta = as.data.frame(colData(current.sce))
 
   if (ncol(current.sce) > 0){
-    tab = table(current.sce$condition_id)
+    tab = table(current.sce$milo_condition_id)
     if (length(tab) == 2 & tab[1] >= min_cells & tab[2] >= min_cells){
       auc = calculate_auc(logcounts(current.sce), meta, cell_type_col = "celltype.dummy",
-                          label_col = "condition_id" , n_subsamples = 0 ,
+                          label_col = "milo_condition_id" , n_subsamples = 0 ,
                           subsample_size = min_cells , min_cells = min_cells ,
                           feature_perc = 1 , n_threads = n_threads , show_progress = FALSE)
       out = as.data.frame(auc$AUC)
       out$auc_calculated = TRUE
-    }
-    else {
+    } else {
       out = data.frame(cell_type = "dummy" , auc = NaN , auc_calculated = FALSE)
     }
-  }
-  else {
+  } else {
     out = data.frame(cell_type = "dummy" , auc = NaN , auc_calculated = FALSE)
   }
   out$Nhood_center = hood_id

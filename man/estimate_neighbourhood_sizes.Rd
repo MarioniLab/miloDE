@@ -5,7 +5,7 @@
 \title{estimate_neighbourhood_sizes}
 \usage{
 estimate_neighbourhood_sizes(
-  sce,
+  x,
   reducedDim_name,
   k_grid = seq(10, 100, 10),
   order = 2,
@@ -15,13 +15,13 @@ estimate_neighbourhood_sizes(
   d = 30,
   cluster_id = NULL,
   plot_stat = TRUE,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
-\item{sce}{SCE object}
+\item{x}{SCE object}
 
-\item{reducedDim_name}{defines the slot in reducedDim(sce) to use as embedding for graph construction}
+\item{reducedDim_name}{defines the slot in reducedDim(x) to use as embedding for graph construction}
 
 \item{k_grid}{Vector of positive integers, defines how many neighbours to use for the hood assignment}
 
@@ -33,9 +33,9 @@ estimate_neighbourhood_sizes(
 
 \item{k_init}{Positive integer, defines how many neighbours to use for identifying anchor cells}
 
-\item{d}{Positive integer, defines how many dimensions from reducedDim(sce) to use}
+\item{d}{Positive integer, defines how many dimensions from reducedDim(x) to use}
 
-\item{cluster_id}{Character specifying which field in colData(sce) to use for 'localised' neighbourhood size estimation. This might be useful in case dataset is
+\item{cluster_id}{Character specifying which field in colData(x) to use for 'localised' neighbourhood size estimation. This might be useful in case dataset is
 rather big which will result in excessive running time. In case cluster_id is provided, we will calculate neighbourhood size distribution within individual clusters and aggregate results
 across clusters in order to speed up the process (note that it might result in slightly biased estimates). Default is NULL, in which case neighbourhood sizes will be estimated for the whole dataset.}
 
@@ -44,7 +44,7 @@ across clusters in order to speed up the process (note that it might result in s
 \item{verbose}{Boolean specifying whether to print intermediate output messages. Default = FALSE.}
 }
 \value{
-
+data.frame object, in which each row corresponds to k and 5 columns correspond to min, q25, median, q75 and max of neighbourhood size distributions; also returns a boxplot
 }
 \description{
 For a grid of k (order fixed), return hood size distribution; that will help a user to select appropriate k
@@ -54,11 +54,14 @@ require(SingleCellExperiment)
 n_row = 500
 n_col = 100
 n_latent = 5
-sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+sce = SingleCellExperiment(assays = list(counts =
+floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 rownames(sce) = as.factor(1:n_row)
 colnames(sce) = c(1:n_col)
 sce$cell = colnames(sce)
-reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
-out = estimate_neighbourhood_sizes(sce, k_grid = c(5,10), reducedDim_name = "reduced_dim")
+reducedDim(sce , "reduced_dim") =
+matrix(rnorm(n_col*n_latent), ncol=n_latent)
+out = estimate_neighbourhood_sizes(sce, k_grid = c(5,10),
+reducedDim_name = "reduced_dim")
 
 }

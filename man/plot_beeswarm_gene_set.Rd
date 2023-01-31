@@ -33,7 +33,7 @@ plot_beeswarm_gene_set(
 \item{size}{A positive number specifying size of the dots}
 }
 \value{
-
+beeswarm, broke down by cell types; each point is a neighbourhood, colour - average logFC across selected genes; x - fraction of genes that are DE
 }
 \description{
 Returns beeswarm plot for many genes
@@ -44,16 +44,20 @@ require(SingleCellExperiment)
 n_row = 500
 n_col = 100
 n_latent = 5
-sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+sce = SingleCellExperiment(assays = list(counts =
+floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 rownames(sce) = as.factor(1:n_row)
 colnames(sce) = c(1:n_col)
 sce$cell = colnames(sce)
 sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
-reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+reducedDim(sce , "reduced_dim") =
+matrix(rnorm(n_col*n_latent), ncol=n_latent)
 sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-de_stat = de_test_neighbourhoods(sce , design = ~type , covariates = c("type") )
+de_stat = de_test_neighbourhoods(sce , design = ~type ,
+covariates = c("type") )
 de_stat$celltype = 1
-p = plot_beeswarm_gene_set(de_stat , genes = c("1","2") , nhoodGroup = "celltype")
+p = plot_beeswarm_gene_set(de_stat , genes = c("1","2") ,
+nhoodGroup = "celltype")
 
 }

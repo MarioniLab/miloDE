@@ -7,21 +7,21 @@
 # sce-milo check: that is used in de_test_all_hoods, de_test_single_hood, filter_hoods, subset_milo
 #' @importFrom miloR Milo nhoods graph graph<- nhoods<- nhoodIndex<- buildNhoodGraph
 #' @importFrom methods is
-.check_sce_milo = function(sce){
-  if (!is(sce , "Milo")){
-    stop("sce should be a Milo object. Please run `assign_neighbourhoods` first.")
+.check_sce_milo = function(x){
+  if (!is(x , "Milo")){
+    stop("x should be a Milo object. Please run `assign_neighbourhoods` first.")
     return(FALSE)
-  } else if (length(miloR::graph(sce)) == 0){
-    stop("sce should contain non-trivial graph. Please run `assign_neighbourhoods` first.")
+  } else if (length(miloR::graph(x)) == 0){
+    stop("x should contain non-trivial graph. Please run `assign_neighbourhoods` first.")
     return(FALSE)
-  } else if (sum(sum(nhoods(sce))) == 0){
-    stop("sce should have calculated nhoods. Please run 'assign_neighbourhoods' first.")
+  } else if (sum(sum(nhoods(x))) == 0){
+    stop("x should have calculated nhoods. Please run 'assign_neighbourhoods' first.")
     return(FALSE)
-  } else if ( nrow(nhoods(sce)) == 1 & ncol(nhoods(sce)) == 1 ){
-    stop("sce should contain non-trivial nhoods. Please run `assign_neighbourhoods` first.")
+  } else if ( nrow(nhoods(x)) == 1 & ncol(nhoods(x)) == 1 ){
+    stop("x should contain non-trivial nhoods. Please run `assign_neighbourhoods` first.")
     return(FALSE)
-  } else if (isEmpty(nhoodIndex(sce))){
-    stop("sce should have calculated nhoodIndex. Please run 'assign_neighbourhoods' first.")
+  } else if (isEmpty(nhoodIndex(x))){
+    stop("x should have calculated nhoodIndex. Please run 'assign_neighbourhoods' first.")
     return(FALSE)
   } else {
     return(TRUE)
@@ -33,18 +33,18 @@
 #' @importFrom SummarizedExperiment assays<- assays
 #' @importFrom miloR Milo
 #' @importFrom methods is
-.check_sce = function(sce){
-  if (!is(sce , "SingleCellExperiment") & !is(sce , "Milo")){
-    stop("sce should be a SingleCellExperiment or Milo object.")
+.check_sce = function(x){
+  if (!is(x , "SingleCellExperiment") & !is(x , "Milo")){
+    stop("x should be a SingleCellExperiment or Milo object.")
     return(FALSE)
-  } else if (!("counts" %in% names(assays(sce)))){
-    stop("sce should contain 'counts' assay that will be used to calculate DE. If counts are stored in different assay, please move them to slot 'counts'.")
+  } else if (!("counts" %in% names(assays(x)))){
+    stop("x should contain 'counts' assay that will be used to calculate DE. If counts are stored in different assay, please move them to slot 'counts'.")
     return(FALSE)
-  } else if (length(unique(rownames(sce))) < nrow(sce) ){
-    stop("sce should have unique rownames.")
+  } else if (length(unique(rownames(x))) < nrow(x) ){
+    stop("x should have unique rownames.")
     return(FALSE)
-  } else if (!is.null(colnames(sce)) & length(unique(colnames(sce))) < ncol(sce)){
-    stop("If colnames(sce) exist, they should be unique.")
+  } else if (!is.null(colnames(x)) & length(unique(colnames(x))) < ncol(x)){
+    stop("If colnames(x) exist, they should be unique.")
     return(FALSE)
   } else {
     return(TRUE)
@@ -56,9 +56,9 @@
 
 
 #' @importFrom igraph is_igraph
-.valid_nhood <- function(milo){
+.valid_nhood <- function(x){
   # check for a valid nhood slot
-  n_neigh <- ncol(nhoods(milo))
+  n_neigh <- ncol(nhoods(x))
   is_not_empty <- n_neigh > 0
   if (is_not_empty) {
     return(TRUE)
@@ -80,10 +80,10 @@
 
 
 #' @importFrom SummarizedExperiment assayNames
-.check_assay_in_sce = function(sce , assay_type){
-  if (.check_sce(sce)){
-    if (!assay_type %in% assayNames(sce)){
-      stop("assay_type should be in assayNames(sce)")
+.check_assay_in_sce = function(x , assay_type){
+  if (.check_sce(x)){
+    if (!assay_type %in% assayNames(x)){
+      stop("assay_type should be in assayNames(x)")
       return(FALSE)
     }
     else {
@@ -97,17 +97,17 @@
 
 
 #' @importFrom SummarizedExperiment colData
-.check_condition_in_coldata_sce = function(sce , condition_id){
-  if (.check_sce(sce)){
-    if (!(condition_id %in% colnames(colData(sce)))){
-      stop("'condition_id' should be in colData(sce)")
+.check_condition_in_coldata_sce = function(x , condition_id){
+  if (.check_sce(x)){
+    if (!(condition_id %in% colnames(colData(x)))){
+      stop("'condition_id' should be in colData(x)")
       return(FALSE)
     }
     else {
-      meta = as.data.frame(colData(sce))
+      meta = as.data.frame(colData(x))
       tab = table(meta[, condition_id])
       if (length(tab) < 2){
-        stop("sce should have at least two levels for tested conditions.")
+        stop("x should have at least two levels for tested conditions.")
         return(FALSE)
       } else{
         return(TRUE)
@@ -120,9 +120,9 @@
 }
 
 #' @importFrom SummarizedExperiment colData
-.check_sample_and_condition_id_valid = function(sce , condition_id , sample_id){
+.check_sample_and_condition_id_valid = function(x , condition_id , sample_id){
   out = TRUE
-  meta = as.data.frame(colData(sce))
+  meta = as.data.frame(colData(x))
   tab = table(meta[, sample_id] , meta[, condition_id])
   tab = sapply(1:nrow(tab) , function(i) sum(tab[i,] == 0))
 
@@ -138,10 +138,10 @@
 }
 
 #' @importFrom SummarizedExperiment colData
-.check_var_in_coldata_sce = function( sce , var , var_intended){
-  if (.check_sce(sce)){
-    if (!(var %in% colnames(colData(sce)))){
-      stop(paste0("'", var_intended, "'", " should be in colData(sce)"))
+.check_var_in_coldata_sce = function( x , var , var_intended){
+  if (.check_sce(x)){
+    if (!(var %in% colnames(colData(x)))){
+      stop(paste0("'", var_intended, "'", " should be in colData(x)"))
       return(FALSE)
     }
     else {
@@ -155,8 +155,8 @@
 
 
 #' @importFrom miloR nhoods
-.check_nhood_stat = function(nhood_stat , sce){
-  if (!class(nhood_stat) == "data.frame"){
+.check_nhood_stat = function(nhood_stat , x){
+  if (!is(nhood_stat , "data.frame")){
     stop("'nhood_stat' should be a data.frame.")
     return(FALSE)
   }
@@ -171,9 +171,9 @@
         return(FALSE)
       }
       else {
-        nhoods_sce = nhoods(sce)
+        nhoods_sce = nhoods(x)
         if (mean(nhood_stat$Nhood %in% c(1:ncol(nhoods_sce))) < 1){
-          stop("'nhood_stat$Nhood' should be within c(1:ncol(nhoods(sce))).")
+          stop("'nhood_stat$Nhood' should be within c(1:ncol(nhoods(x))).")
           return(FALSE)
         }
         else {
@@ -186,25 +186,25 @@
 
 
 #' @importFrom SummarizedExperiment colData
-.check_covariates_in_coldata_sce = function(sce , covariates){
-  if (.check_sce(sce)){
+.check_covariates_in_coldata_sce = function(x , covariates){
+  if (.check_sce(x)){
     if (is.null(covariates)){
       return(TRUE)
     }
     else {
-      coldata = colnames(colData(sce))
+      coldata = colnames(colData(x))
 
       covariates_exist = sapply(covariates , function(covariate){
         out = as.numeric(covariate %in% coldata)
         return(out)
       })
       if (sum(covariates_exist) < length(covariates)){
-        stop("All covariates should be colnames of colData(sce).")
+        stop("All covariates should be colnames of colData(x).")
         return(FALSE)
       }
       else {
         covariates_w_contrast = sapply(covariates , function(covariate){
-          tab = table(colData(sce)[, covariate])
+          tab = table(colData(x)[, covariate])
           out = as.numeric(length(tab) != 1)
           return(out)
         })
@@ -227,14 +227,14 @@
 
 
 #' @importFrom SummarizedExperiment colData
-.check_cell_id_in_sce = function(sce , cell_id){
-  if (is.null(cell_id) & is.null(colnames(sce))){
-    stop("If colnames(sce) are NULL, cell_id has to be specified in order to assgin unique cell identifiers.")
+.check_cell_id_in_sce = function(x , cell_id){
+  if (is.null(cell_id) & is.null(colnames(x))){
+    stop("If colnames(x) are NULL, cell_id has to be specified in order to assgin unique cell identifiers.")
     return(FALSE)
   } else {
-    if (is.null(colnames(sce))){
-      if (!cell_id %in% colnames(colData(sce))){
-        stop("cell_id should be in colData(sce)")
+    if (is.null(colnames(x))){
+      if (!cell_id %in% colnames(colData(x))){
+        stop("cell_id should be in colData(x)")
         return(FALSE)
       }
       else {
@@ -249,11 +249,11 @@
 
 
 
-.check_genes_in_sce = function(sce, genes){
-  if (.check_sce(sce)){
+.check_genes_in_sce = function(x, genes){
+  if (.check_sce(x)){
     if (!is.null(genes)){
-      if (mean(genes %in% rownames(sce)) < 1){
-        stop("Some gene names are missing from sce")
+      if (mean(genes %in% rownames(x)) < 1){
+        stop("Some gene names are missing from x")
         return(FALSE)
       }
       else {
@@ -271,10 +271,10 @@
 
 
 #' @importFrom SingleCellExperiment reducedDimNames
-.check_reducedDim_in_sce = function(sce , reducedDim_name){
-  if (.check_sce(sce)){
-    if (!reducedDim_name %in% reducedDimNames(sce)){
-      stop("reducedDim_name should be in reducedDimNames(sce).")
+.check_reducedDim_in_sce = function(x , reducedDim_name){
+  if (.check_sce(x)){
+    if (!reducedDim_name %in% reducedDimNames(x)){
+      stop("reducedDim_name should be in reducedDimNames(x).")
       return(FALSE)
     }
   }
@@ -310,7 +310,7 @@
   } else if (length(intersect(assay_names, coldata_names)) > 0){
     stop("assay_names and coldata_names can not overlap")
     return(FALSE)
-  } else if (class(de_stat) == "data.frame"){
+  } else if (is(de_stat , "data.frame")){
     cols = colnames(de_stat)
     cols_required = c(assay_names , coldata_names)
     if (mean(cols_required %in% cols) < 1){
@@ -320,7 +320,7 @@
       stop("Nhood field should be numeric. To get valid de_stat object, please run 'de_test_neighbourhoods.R'")
       return(FALSE)
     }
-  } else if (class(de_stat) == "SingleCellExperiment"){
+  } else if (is(de_stat , "SingleCellExperiment")){
     cols = assayNames(de_stat)
     if (mean(assay_names %in% cols) < 1){
       stop("de_stat missing some of the required assays.")
@@ -545,7 +545,7 @@
 }
 
 .check_design = function(x){
-  if (class(x) == "formula"){
+  if (is(x , "formula")){
     return(TRUE)
   }
   else {
@@ -613,7 +613,7 @@
 .check_nhoods_matrix = function(nhoods_sce){
   unq_elements = unique(as.numeric(nhoods_sce))
   if (mean(unq_elements %in% c(0,1)) < 1){
-    stop("All elements of nhoods matrix should be either 0 or 1. To get valid matrix, run nhoods(sce).")
+    stop("All elements of nhoods matrix should be either 0 or 1. To get valid matrix, run nhoods(x).")
     return(FALSE)
   }
   else {
@@ -629,7 +629,7 @@
   }
   else if (is.numeric(subset_nhoods)){
     if (mean(subset_nhoods %in% c(1:ncol(nhoods_sce))) < 1){
-      stop("If 'subset_nhoods' is numeric vector, it should lie within c(1:ncol(nhoods(sce))).")
+      stop("If 'subset_nhoods' is numeric vector, it should lie within c(1:ncol(nhoods(x))).")
       return(FALSE)
     }
     else {
@@ -638,7 +638,7 @@
   }
   else {
     if (!length(subset_nhoods) == ncol(nhoods_sce)){
-      stop("If 'subset_nhoods' is logical vector, it should be the same size as ncol(nhoods(sce)).")
+      stop("If 'subset_nhoods' is logical vector, it should be the same size as ncol(nhoods(x)).")
       return(FALSE)
     }
     else {
@@ -650,8 +650,8 @@
 #' @importFrom SummarizedExperiment colData
 #' @importFrom dplyr distinct
 #' @importFrom stats model.matrix
-.check_design_and_covariates_match = function(sce , design , sample_id , covariates){
-  design.df = as.data.frame(colData(sce)[,c(sample_id , covariates)])
+.check_design_and_covariates_match = function(x , design , sample_id , covariates){
+  design.df = as.data.frame(colData(x)[,c(sample_id , covariates)])
   design.df = distinct(design.df)
   out = tryCatch(
     {
@@ -665,3 +665,5 @@
   )
   return(out)
 }
+
+

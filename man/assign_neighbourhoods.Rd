@@ -5,7 +5,7 @@
 \title{assign_neighbourhoods}
 \usage{
 assign_neighbourhoods(
-  sce,
+  x,
   reducedDim_name,
   k = 25,
   prop = 0.2,
@@ -17,9 +17,9 @@ assign_neighbourhoods(
 )
 }
 \arguments{
-\item{sce}{SCE object}
+\item{x}{SingleCellExperiment object}
 
-\item{reducedDim_name}{defines the slot in reducedDim(sce) to use as embedding for graph construction}
+\item{reducedDim_name}{defines the slot in reducedDim(x) to use as embedding for graph construction}
 
 \item{k}{Positive integer, defines how many neighbours to use for the hood assignment}
 
@@ -31,12 +31,12 @@ assign_neighbourhoods(
 
 \item{k_init}{Positive integer, defines how many neighbours to use for identifying anchor cells}
 
-\item{d}{Positive integer, defines how many dimensions from reducedDim(sce) to use}
+\item{d}{Positive integer, defines how many dimensions from reducedDim(x) to use}
 
 \item{verbose}{Boolean specifying whether to print intermediate output messages. Default = TRUE.}
 }
 \value{
-
+Milo object containing cell-neighbourhood matrix in nhoods(out) slot
 }
 \description{
 Assign hoods to SCE object
@@ -46,10 +46,12 @@ require(SingleCellExperiment)
 n_row = 500
 n_col = 100
 n_latent = 5
-sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+sce = SingleCellExperiment(assays =
+list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 rownames(sce) = as.factor(1:n_row)
 colnames(sce) = c(1:n_col)
 sce$cell = colnames(sce)
-reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+reducedDim(sce , "reduced_dim") =
+matrix(rnorm(n_col*n_latent), ncol=n_latent)
 out = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
 }

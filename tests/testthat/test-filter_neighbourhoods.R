@@ -9,17 +9,17 @@ data("sce_mouseEmbryo", package = "miloDE")
 # error msgs
 test_that("Wrong input gives errors", {
   # sce should be of the right format
-  expect_error(filter_neighbourhoods(sce = 1),
-               "sce should be a Milo object. Please run `assign_neighbourhoods` first.",
+  expect_error(filter_neighbourhoods(x = 1),
+               "x should be a Milo object. Please run `assign_neighbourhoods` first.",
                fixed=TRUE
   )
   expect_error(filter_neighbourhoods(sce_mouseEmbryo),
-               "sce should be a Milo object. Please run `assign_neighbourhoods` first.",
+               "x should be a Milo object. Please run `assign_neighbourhoods` first.",
                fixed=TRUE
   )
   sce_test = Milo(sce_mouseEmbryo)
   expect_error(filter_neighbourhoods(sce_test),
-               "sce should contain non-trivial graph. Please run `assign_neighbourhoods` first.",
+               "x should contain non-trivial graph. Please run `assign_neighbourhoods` first.",
                fixed=TRUE
   )
 })
@@ -27,7 +27,7 @@ test_that("Wrong input gives errors", {
 # return correct class
 test_that("Return is the correct class", {
   # right class
-  out = assign_neighbourhoods(sce = sce_mouseEmbryo , k = 10, prop = 0.2, order = 2, filtering = FALSE, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+  out = assign_neighbourhoods(x = sce_mouseEmbryo , k = 10, prop = 0.2, order = 2, filtering = FALSE, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
   out = filter_neighbourhoods(out)
   expect_s4_class(out, "Milo")
 })

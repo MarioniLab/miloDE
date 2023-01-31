@@ -4,20 +4,20 @@ library(miloDE)
 # load data
 data("sce_mouseEmbryo", package = "miloDE")
 
-stat = estimate_neighbourhood_sizes(sce = sce_mouseEmbryo , k = c(5,10,20), prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
+stat = estimate_neighbourhood_sizes(x = sce_mouseEmbryo , k = c(5,10,20), prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
 
 # error msgs
 test_that("Wrong input gives errors", {
 
-  # sce should be of the right format
-  expect_error(estimate_neighbourhood_sizes(sce = 1 , k_grid = c(10,30,50), prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30),
-               "sce should be a SingleCellExperiment or Milo object.",
+  # x should be of the right format
+  expect_error(estimate_neighbourhood_sizes(x = 1 , k_grid = c(10,30,50), prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30),
+               "x should be a SingleCellExperiment or Milo object.",
                fixed=TRUE
   )
   sce_test = sce_mouseEmbryo
   colnames(sce_test) = rep(1,1,ncol(sce_test))
   expect_error(estimate_neighbourhood_sizes(sce_test , k_grid = c(10,30,50), prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30),
-               "If colnames(sce) exist, they should be unique.",
+               "If colnames(x) exist, they should be unique.",
                fixed=TRUE
   )
 
@@ -140,11 +140,11 @@ test_that("Wrong input gives errors", {
 
 
   # reduced dim should be in reducedDimNames
-  expect_error(estimate_neighbourhood_sizes(sce = sce_mouseEmbryo , k_grid = c(10,30,50), prop = 0.2, k_init = 50, d = 30)
+  expect_error(estimate_neighbourhood_sizes(x = sce_mouseEmbryo , k_grid = c(10,30,50), prop = 0.2, k_init = 50, d = 30)
   )
 
-  expect_error(estimate_neighbourhood_sizes(sce = sce_mouseEmbryo , k_grid = c(10,30,50), prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca_corrected", k_init = 50, d = 30),
-               "reducedDim_name should be in reducedDimNames(sce).",
+  expect_error(estimate_neighbourhood_sizes(x = sce_mouseEmbryo , k_grid = c(10,30,50), prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca_corrected", k_init = 50, d = 30),
+               "reducedDim_name should be in reducedDimNames(x).",
                fixed=TRUE
   )
 

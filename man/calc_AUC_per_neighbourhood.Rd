@@ -5,8 +5,8 @@
 \title{calc_AUC_per_neighbourhood}
 \usage{
 calc_AUC_per_neighbourhood(
-  sce,
-  genes = rownames(sce),
+  x,
+  genes = rownames(x),
   sample_id = "sample",
   condition_id,
   conditions = NULL,
@@ -16,13 +16,13 @@ calc_AUC_per_neighbourhood(
 )
 }
 \arguments{
-\item{sce}{Milo object}
+\item{x}{Milo object}
 
 \item{genes}{Character vector specifying genes to be passed for the testing}
 
 \item{sample_id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(sce).}
 
-\item{condition_id}{Character specifying which variable should be used as a condition id. Should be in colData(sce).}
+\item{condition_id}{Character specifying which variable should be used as a condition id. Should be in colData(x).}
 
 \item{conditions}{In case of multiple comparative groups, character vector specifying which conditions should be tested for separation. Default is NULL and assumes that only 2 groups are present in the data}
 
@@ -33,7 +33,7 @@ calc_AUC_per_neighbourhood(
 \item{BPPARAM}{NULL or MulticoreParam object}
 }
 \value{
-
+data.frame object, with AUC calculated for each neighbourhood
 }
 \description{
 Returns per neighbourhood AUC from Augur-based classifier. Note that it is only relevant for standard, additive models.
@@ -43,15 +43,17 @@ require(SingleCellExperiment)
 n_row = 500
 n_col = 100
 n_latent = 5
-sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+sce = SingleCellExperiment(assays = list(counts =
+floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 logcounts(sce) = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4
 rownames(sce) = as.factor(1:n_row)
 colnames(sce) = c(1:n_col)
 sce$cell = colnames(sce)
 sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
-reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent),
+ncol=n_latent)
 sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-sce = calc_AUC_per_neighbourhood(sce, sample_id = "sample" , condition_id = "type")
+sce = calc_AUC_per_neighbourhood(sce, condition_id = "type")
 
 }

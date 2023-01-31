@@ -2,18 +2,17 @@
 
 #' assign_neighbourhoods
 #'
-#' Assign hoods to SCE object
-#' @param sce SCE object
-#' @param reducedDim_name defines the slot in reducedDim(sce) to use as embedding for graph construction
-#' @param k Positive integer, defines how many neighbours to use for the hood assignment
-#' @param prop Numerical, between 0 and 1, defines fraction of cells from SCE to use for the hoods
-#' @param order In {1,2}, defines which order of neighbours to use
-#' @param filtering In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default = TRUE
-#' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells
-#' @param d Positive integer, defines how many dimensions from reducedDim(sce) to use
+#' Assign neighbourhoods to \code{SingleCellExperiment} object
+#' @param x A \code{\linkS4class{SingleCellExperiment}} object
+#' @param reducedDim_name defines the assay in \code{reducedDim(x)} to use as embedding for graph construction.
+#' @param k Positive integer, defines how many neighbours to use for the hood assignment. Default \code{k = 25}.
+#' @param prop Numerical, between 0 and 1, defines fraction of cells from SCE to use for the hoods. Default \code{prop = 0.2}.
+#' @param order In {1,2}, defines which order of neighbours to use. Default \code{order = 2}.
+#' @param filtering In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default \code{filtering = TRUE}.
+#' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells. Default \code{k_init = 25}.
+#' @param d Positive integer, defines how many dimensions from reducedDim(x) to use
 #' @param verbose Boolean specifying whether to print intermediate output messages. Default = TRUE.
-#'
-#' @return
+#' @return Milo object containing cell-neighbourhood matrix in nhoods(out) slot
 #' @export
 #' @importFrom miloR Milo buildGraph graph<- graph nhoods<- nhoodIndex<- buildNhoodGraph
 #' @importFrom SingleCellExperiment reducedDim
@@ -26,17 +25,19 @@
 #' n_row = 500
 #' n_col = 100
 #' n_latent = 5
-#' sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+#' sce = SingleCellExperiment(assays =
+#' list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 #' rownames(sce) = as.factor(1:n_row)
 #' colnames(sce) = c(1:n_col)
 #' sce$cell = colnames(sce)
-#' reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+#' reducedDim(sce , "reduced_dim") =
+#' matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' out = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-assign_neighbourhoods = function(sce , reducedDim_name , k = 25, prop = 0.2, order = 2, filtering = TRUE, k_init = 50, d = 30, verbose = TRUE){
+assign_neighbourhoods = function(x , reducedDim_name , k = 25, prop = 0.2, order = 2, filtering = TRUE, k_init = 50, d = 30, verbose = TRUE){
 
   #args = c(as.list(environment()))
   #out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim_name)
-  out = .check_argument_correct(sce, .check_sce, "Check sce - something is wrong (gene names unique? reducedDim.name is not present?)") &
+  out = .check_argument_correct(x, .check_sce, "Check x - something is wrong (gene names unique? reducedDim.name is not present?)") &
         .check_argument_correct(k, .check_positive_integer, "Check k - should be positive integer") &
         .check_argument_correct(prop, .check_prop, "Check prop - should be positive number between 0 and 1") &
         .check_argument_correct(order, function(x) .check_arg_within_options(x, c(1,2)),
@@ -46,65 +47,69 @@ assign_neighbourhoods = function(sce , reducedDim_name , k = 25, prop = 0.2, ord
         .check_argument_correct(k_init, .check_positive_integer, "Check k_init - should be positive integer") &
         .check_argument_correct(d, .check_positive_integer, "Check d - should be positive integer") &
         .check_argument_correct(verbose, .check_boolean, "Check verbose - should be either TRUE or FALSE") &
-        .check_reducedDim_in_sce(sce , reducedDim_name)
+        .check_reducedDim_in_sce(x , reducedDim_name)
 
 
-  d <- min(d , ncol(reducedDim(sce , reducedDim_name)))
+  d <- min(d , ncol(reducedDim(x , reducedDim_name)))
   k_init <- min(k , k_init)
-  if (is(sce , "SingleCellExperiment")){
-    sce = Milo(sce)
+
+  if (is.null(colnames(x))){
+    colnames(x) = as.character(c(1:ncol(x)))
+  }
+  if (is(x , "SingleCellExperiment")){
+    x = Milo(x)
     # build 1st order to sample vertices
     k_init <- min(k , k_init)
-    sce <- suppressMessages(buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim_name))
+    x <- suppressMessages(buildGraph(x, k = k_init, d = d, reduced.dim = reducedDim_name))
   }
   else {
     message("SCE is Milo object. Checking if graph is already constructed.")
-    if (length(miloR::graph(sce)) == 0){
+    if (length(miloR::graph(x)) == 0){
       message("Graph is not constructed yet. Building now.")
-      sce <- suppressMessages(buildGraph(sce, k = k_init, d = d, reduced.dim = reducedDim_name))
+      x <- suppressMessages(buildGraph(x, k = k_init, d = d, reduced.dim = reducedDim_name))
     }
   }
   # find anchor cells
-  sampled_vertices <- .get_graph_refined_sampling(graph(sce), prop)
+  sampled_vertices <- .get_graph_refined_sampling(graph(x), prop)
 
   # rebuild to the actual graph, with parameters specified by user
   if (!k == k_init){
-    sce <- suppressMessages(buildGraph(sce, k = k, d = d, reduced.dim = reducedDim_name))
+    x <- suppressMessages(buildGraph(x, k = k, d = d, reduced.dim = reducedDim_name))
   }
   # if order == 2 -- reassign edges
   if (order == 2){
-    graph(sce) = connect(graph(sce),order)
+    graph(x) = connect(graph(x),order)
   }
 
   # create nhoods
-  nh_mat <- Matrix(data = 0, nrow=ncol(sce), ncol=length(sampled_vertices), sparse = TRUE)
-  v.class <- V(graph(sce))$name
-  rownames(nh_mat) <- colnames(sce)
+  nh_mat <- Matrix(data = 0, nrow=ncol(x), ncol=length(sampled_vertices), sparse = TRUE)
+  v.class <- V(graph(x))$name
+  rownames(nh_mat) <- colnames(x)
   for (X in seq_len(length(sampled_vertices))){
-    nh_mat[unlist(neighborhood(graph(sce), order = 1, nodes = sampled_vertices[X])), X] <- 1
+    nh_mat[unlist(neighborhood(graph(x), order = 1, nodes = sampled_vertices[X])), X] <- 1
   }
   colnames(nh_mat) <- as.character(sampled_vertices)
-  nhoodIndex(sce) <- as(sampled_vertices, "list")
-  nhoods(sce) <- nh_mat
+  nhoodIndex(x) <- as(sampled_vertices, "list")
+  nhoods(x) <- nh_mat
 
   # filter
   if (!filtering){
-    sce = suppressMessages(buildNhoodGraph(sce))
+    x = suppressMessages(buildNhoodGraph(x))
   }
   else {
     if (verbose){
       message("Filtering redundant neighbourhoods.")
     }
-    sce = suppressMessages(filter_neighbourhoods(sce))
+    x = suppressMessages(filter_neighbourhoods(x))
   }
 
   if (verbose){
-    stat_print =.calc_quick_stat(sce , nhoods(sce))
+    stat_print =.calc_quick_stat(x , nhoods(x))
     message(paste0("Finished successfully.\nNumber of neighbourhoods assigned: ", stat_print$n_hoods ,
                  ";\naverage neighbourhood size: ", stat_print$avg_hood_size ,
                  ";\nnumber of unassigned cells: ", stat_print$n_cells_unocovered))
   }
-  return(sce)
+  return(x)
 }
 
 
@@ -132,18 +137,13 @@ assign_neighbourhoods = function(sce , reducedDim_name , k = 25, prop = 0.2, ord
   return(refined_vertices)
 }
 
-
 #'
-.calc_quick_stat = function(sce , nhoods_sce){
+.calc_quick_stat = function(x , nhoods_sce){
   n_hoods = ncol(nhoods_sce)
   avg_hood_size = round(mean(colSums(nhoods_sce)))
-  n_cells_unocovered = ncol(sce) - sum(rowSums(nhoods_sce) > 0)
+  n_cells_unocovered = ncol(x) - sum(rowSums(nhoods_sce) > 0)
   out = list(n_hoods = n_hoods ,
              avg_hood_size = avg_hood_size ,
              n_cells_unocovered = n_cells_unocovered)
   return(out)
 }
-
-
-
-

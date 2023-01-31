@@ -6,8 +6,7 @@
 #' @param de_stat Output of milo-DE (from \code{de_test_neighbourhoods}), either in \code{data.frame} or \code{SingleCellExperiment}
 #' @param assay_names Character string specifying which fields are treated as assays
 #' @param coldata_names Character string specifying which fields are treated as Nhood metadata. Please note that they have to be an attribute of Nhood and not Nhood-gene (i.e. same across different genes for the same neighbourhood).
-#'
-#' @return
+#' @return SCE or data.frame object, containing milo-DE results
 #' @export
 #' @examples
 #' de_stat = expand.grid(gene = paste0("gene" , c(1:5)) , Nhood = c(1:10))
@@ -28,10 +27,10 @@ convert_de_stat = function(de_stat ,
   coldata_names = unique( c("Nhood" , "Nhood_center" , "test_performed"  , coldata_names))
   out = .check_de_stat_valid(de_stat , assay_names , coldata_names)
 
-  if (class(de_stat) == "SingleCellExperiment"){
+  if (is(de_stat , "SingleCellExperiment")){
     message("Converting de_stat to 'data.frame' format")
     de_stat = .convert_from_sce(de_stat , assay_names = assay_names , coldata_names = coldata_names)
-  } else if (class(de_stat) == "data.frame"){
+  } else if (is(de_stat , "data.frame")){
     message("Converting de_stat to 'SingleCellExperiment' format")
     de_stat = .convert_from_df(de_stat , assay_names = assay_names , coldata_names = coldata_names)
   }

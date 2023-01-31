@@ -14,7 +14,7 @@ convert_de_stat(de_stat, assay_names = NULL, coldata_names = NULL)
 \item{coldata_names}{Character string specifying which fields are treated as Nhood metadata. Please note that they have to be an attribute of Nhood and not Nhood-gene (i.e. same across different genes for the same neighbourhood).}
 }
 \value{
-
+SCE or data.frame object, containing milo-DE results
 }
 \description{
 Converts output of milo-DE between \code{\link[base]{data.frame}} and \code{\linkS4class{SingleCellExperiment}} formats

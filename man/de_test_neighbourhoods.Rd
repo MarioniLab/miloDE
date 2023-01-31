@@ -5,7 +5,7 @@
 \title{de_test_neighbourhoods}
 \usage{
 de_test_neighbourhoods(
-  sce,
+  x,
   sample_id = "sample",
   design,
   covariates,
@@ -21,15 +21,15 @@ de_test_neighbourhoods(
 )
 }
 \arguments{
-\item{sce}{Milo object}
+\item{x}{Milo object}
 
-\item{sample_id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(sce)}
+\item{sample_id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(x)}
 
 \item{design}{A \code{formula} object describing the experimental design for DE testing. If contrasts == NULL (default), the last column column of model will be used for testing.}
 
 \item{covariates}{Vector specifying all covariates that are passed into experimental design. This should contain all columns used in the design formula.}
 
-\item{contrasts}{NULL or contrast specifying what comparison to perform (depending on design, multiple comparisons can be performed). Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.}
+\item{contrasts}{NULL or contrast specifying what comparison to perform. Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.}
 
 \item{subset_nhoods}{NULL or character vector specifying the set of neighbourhoods that will be tested for DE}
 
@@ -37,7 +37,7 @@ de_test_neighbourhoods(
 
 \item{min_count}{Positive integer, specifying min.count for gene selection. Default = 3.}
 
-\item{output_type}{In {"data.frame","SCE"} Specifying the output format - either in data.frame or sce (with assays corresponding to logFC, pvals (raw and corrected)); columns correspond to neighbourhoods. Note that default is data.frame, but if number of genes x neighbourhoods combinations is > 10^8 -- the output will be sce.}
+\item{output_type}{In {"data.frame","SCE"} Specifying the output format - either in data.frame or SingleCellExperiment (with assays corresponding to logFC, pvals (raw and corrected)); columns correspond to neighbourhoods. Note that default is data.frame, but if number of genes x neighbourhoods combinations is > 10^8 -- the output will be SCE.}
 
 \item{plot_summary_stat}{Boolean specifying if we plot Milo neighbourhood plot summarising per neighbourhood whether testing was performed}
 
@@ -48,7 +48,7 @@ de_test_neighbourhoods(
 \item{verbose}{Boolean specifying whether to print intermediate output messages. Default = TRUE.}
 }
 \value{
-
+data.frame (or SCE) object containing milo-DE results for all supplied neighbourhoods
 }
 \description{
 Tests neighbourhoods for DE + performs per gene correction across neighbourhoods
@@ -58,15 +58,18 @@ require(SingleCellExperiment)
 n_row = 500
 n_col = 100
 n_latent = 5
-sce = SingleCellExperiment(assays = list(counts = floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
+sce = SingleCellExperiment(assays = list(counts =
+floor(matrix(rnorm(n_row*n_col), ncol=n_col)) + 4))
 rownames(sce) = as.factor(1:n_row)
 colnames(sce) = c(1:n_col)
 sce$cell = colnames(sce)
 sce$sample = floor(runif(n = n_col , min = 1 , max = 5))
 sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
-reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent), ncol=n_latent)
+reducedDim(sce , "reduced_dim") =
+matrix(rnorm(n_col*n_latent), ncol=n_latent)
 sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-de_stat = de_test_neighbourhoods(sce , design = ~type, covariates = c("type"), plot_summary_stat = FALSE)
+de_stat = de_test_neighbourhoods(sce , design = ~type,
+covariates = c("type"), plot_summary_stat = FALSE)
 de_stat = convert_de_stat(de_stat)
 de_stat = convert_de_stat(de_stat)
 }
