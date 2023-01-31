@@ -38,7 +38,7 @@
 #' ncol=n_latent)
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
 #' sce = calc_AUC_per_neighbourhood(sce, condition_id = "type")
-#'
+#' @name calc_AUC_per_neighbourhood
 calc_AUC_per_neighbourhood <- function(x , genes = rownames(x) , sample_id = "sample" ,
                                        condition_id , conditions = NULL,
                                        min_n_cells_per_sample = 3, n_threads = 2 , BPPARAM = NULL){

@@ -42,7 +42,7 @@ Milo object containing cell-neighbourhood matrix in \code{nhoods(out)} slot.
 Assign neighbourhoods to \code{SingleCellExperiment} object
 }
 \examples{
-library(SingleCellExperiment)
+require(SingleCellExperiment)
 n_row = 500
 n_col = 100
 n_latent = 5

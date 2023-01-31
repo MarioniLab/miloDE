@@ -58,5 +58,4 @@ reducedDim(sce , "reduced_dim") = matrix(rnorm(n_col*n_latent),
 ncol=n_latent)
 sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
 sce = calc_AUC_per_neighbourhood(sce, condition_id = "type")
-
 }
