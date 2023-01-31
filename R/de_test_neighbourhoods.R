@@ -282,7 +282,7 @@ de_test_neighbourhoods = function(x ,
 
 #' de_test_single_neighbourhood
 #'
-#' Tests single hood for DE. Not intended to be used by itself (however possible), but rather as a part of `de_test_all_hoods`
+#' Tests single hood for DE. Not intended to be used by itself (however possible), but rather as a part of `de_test_neighbourhoods`
 #' @param x A \code{\linkS4class{Milo}} object
 #' @param nhoods_sce Can be extracted from x as nhoods(x) prior to running the function. The reason the argument is passed by itself is to avoid calculating it every time.
 #' @param hood_id Character specifying for which hood we should perform testing. Should be in colnames(nhoods_sce)

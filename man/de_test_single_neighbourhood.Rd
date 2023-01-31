@@ -42,7 +42,7 @@ de_test_single_neighbourhood(
 data.frame object containing milo-DE results for the selected neighbourhood
 }
 \description{
-Tests single hood for DE. Not intended to be used by itself (however possible), but rather as a part of \code{de_test_all_hoods}
+Tests single hood for DE. Not intended to be used by itself (however possible), but rather as a part of \code{de_test_neighbourhoods}
 }
 \examples{
 require(SingleCellExperiment)
