@@ -16,7 +16,7 @@ plot_beeswarm_gene_set(
 )
 }
 \arguments{
-\item{de_stat}{milo-DE stat (output of \link{de_stat_neighbourhoods})}
+\item{de_stat}{milo-DE stat (output of \link{de_test_neighbourhoods})}
 
 \item{genes}{A character specifying genes ID}
 
