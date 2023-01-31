@@ -22,7 +22,7 @@ plot_milo_by_single_metric(
 )
 }
 \arguments{
-\item{x}{\code{\linkS4class{Milo}} object}
+\item{x}{A \code{\linkS4class{Milo}} object}
 
 \item{nhood_stat}{data.frame object, containing columns 'Nhood' (should correspond to neighbourhoods from nhoodGraph(x))}
 

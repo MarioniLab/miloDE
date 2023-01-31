@@ -17,32 +17,32 @@ assign_neighbourhoods(
 )
 }
 \arguments{
-\item{x}{SingleCellExperiment object}
+\item{x}{A \code{\linkS4class{SingleCellExperiment}} object.}
 
-\item{reducedDim_name}{defines the slot in reducedDim(x) to use as embedding for graph construction}
+\item{reducedDim_name}{defines the assay in \code{reducedDim(x)} to use as embedding for graph construction.}
 
-\item{k}{Positive integer, defines how many neighbours to use for the hood assignment}
+\item{k}{Positive integer, defines how many neighbours to use for the hood assignment. Default \code{k = 25}.}
 
-\item{prop}{Numerical, between 0 and 1, defines fraction of cells from SCE to use for the hoods}
+\item{prop}{Numerical, between 0 and 1, defines fraction of cells from SCE to use for the hoods. Default \code{prop = 0.2}.}
 
-\item{order}{In {1,2}, defines which order of neighbours to use}
+\item{order}{In {1,2}, defines which order of neighbours to use. Default \code{order = 2}.}
 
-\item{filtering}{In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default = TRUE}
+\item{filtering}{In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default \code{filtering = TRUE}.}
 
-\item{k_init}{Positive integer, defines how many neighbours to use for identifying anchor cells}
+\item{k_init}{Positive integer, defines how many neighbours to use for identifying anchor cells. Default \code{k_init = 25}.}
 
-\item{d}{Positive integer, defines how many dimensions from reducedDim(x) to use}
+\item{d}{Positive integer, defines how many dimensions from \code{reducedDim(x)} to use. Default \code{d = 30}.}
 
-\item{verbose}{Boolean specifying whether to print intermediate output messages. Default = TRUE.}
+\item{verbose}{Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.}
 }
 \value{
-Milo object containing cell-neighbourhood matrix in nhoods(out) slot
+Milo object containing cell-neighbourhood matrix in \code{nhoods(out)} slot.
 }
 \description{
-Assign hoods to SCE object
+Assign neighbourhoods to \code{SingleCellExperiment} object
 }
 \examples{
-require(SingleCellExperiment)
+library(SingleCellExperiment)
 n_row = 500
 n_col = 100
 n_latent = 5

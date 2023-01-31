@@ -19,7 +19,7 @@ estimate_neighbourhood_sizes(
 )
 }
 \arguments{
-\item{x}{SCE object}
+\item{x}{A \code{\linkS4class{SingleCellExperiment}} object}
 
 \item{reducedDim_name}{defines the slot in reducedDim(x) to use as embedding for graph construction}
 

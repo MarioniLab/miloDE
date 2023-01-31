@@ -3,16 +3,16 @@
 #' assign_neighbourhoods
 #'
 #' Assign neighbourhoods to \code{SingleCellExperiment} object
-#' @param x A \code{\linkS4class{SingleCellExperiment}} object
+#' @param x A \code{\linkS4class{SingleCellExperiment}} object.
 #' @param reducedDim_name defines the assay in \code{reducedDim(x)} to use as embedding for graph construction.
 #' @param k Positive integer, defines how many neighbours to use for the hood assignment. Default \code{k = 25}.
 #' @param prop Numerical, between 0 and 1, defines fraction of cells from SCE to use for the hoods. Default \code{prop = 0.2}.
 #' @param order In {1,2}, defines which order of neighbours to use. Default \code{order = 2}.
 #' @param filtering In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default \code{filtering = TRUE}.
 #' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells. Default \code{k_init = 25}.
-#' @param d Positive integer, defines how many dimensions from reducedDim(x) to use
-#' @param verbose Boolean specifying whether to print intermediate output messages. Default = TRUE.
-#' @return Milo object containing cell-neighbourhood matrix in nhoods(out) slot
+#' @param d Positive integer, defines how many dimensions from \code{reducedDim(x)} to use. Default \code{d = 30}.
+#' @param verbose Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.
+#' @return Milo object containing cell-neighbourhood matrix in \code{nhoods(out)} slot.
 #' @export
 #' @importFrom miloR Milo buildGraph graph<- graph nhoods<- nhoodIndex<- buildNhoodGraph
 #' @importFrom SingleCellExperiment reducedDim

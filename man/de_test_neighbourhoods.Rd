@@ -21,7 +21,7 @@ de_test_neighbourhoods(
 )
 }
 \arguments{
-\item{x}{Milo object}
+\item{x}{A \code{\linkS4class{Milo}} object}
 
 \item{sample_id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(x)}
 

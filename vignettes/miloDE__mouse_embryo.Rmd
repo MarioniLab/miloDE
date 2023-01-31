@@ -39,7 +39,6 @@ suppressMessages(library(Seurat))
 
 # plotting libraries
 library(ggplot2)
-library(wesanderson)
 library(viridis)
 library(ggpubr)
 
@@ -82,10 +81,10 @@ sce$celltype.mapped[sce$celltype.mapped == "Haematoendothelial progenitors"] = "
 sce = sce[!rownames(sce) == "tomato-td" , ]
 
 # add logcounts
-sce = scuttle::logNormCounts(sce)
+sce = logNormCounts(sce)
 
 # update tomato field to be more interpretable 
-sce$tomato = sapply(sce$tomato , function(x) ifelse(isTRUE(x) , "Tal1-" , "Tal1+"))
+sce$tomato = sapply(sce$tomato , function(x) ifelse(isTRUE(x) , "Tal1_KO" , "WT"))
 
 # for this exercise, we focus on 3000 highly variable genes (for computational efficiency)
 dec.sce = modelGeneVar(sce)
@@ -131,7 +130,7 @@ stat_k = estimate_neighbourhood_sizes(sce, k_grid = seq(10,40,5) ,
                                       order = 2, prop = 0.1 , filtering = TRUE,
                                       reducedDim_name = "pca.corrected" , plot_stat = TRUE)
 
-knitr::kable(stat_k , caption = "Neighbourhood size distribution ~ k")
+kable(stat_k , caption = "Neighbourhood size distribution ~ k")
 
 ```
 
@@ -148,7 +147,7 @@ Note that we set `filtering = TRUE` to achieve a refined assignment in which red
 
 set.seed(32)
 sce_milo = assign_neighbourhoods(sce , k = 20 , order = 2, 
-                                 filtering = TRUE , reducedDim_name = "pca.corrected")
+                                 filtering = TRUE , reducedDim_name = "pca.corrected" , verbose = F)
 
 
 ```
@@ -202,6 +201,7 @@ Let's proceed with DE testing within each neighbourhood. We will test neighbourh
 
 ```{r de-testing, fig.width=5 , fig.cap="Neighbourhood plot, coloured by whether DE testing is performed"}
 
+
 de_stat = de_test_neighbourhoods(sce_milo ,
                              sample_id = "sample",
                              design = ~tomato,
@@ -209,8 +209,10 @@ de_stat = de_test_neighbourhoods(sce_milo ,
                              subset_nhoods = stat_auc$Nhood[!is.na(stat_auc$auc)],
                              output_type = "SCE",
                              plot_summary_stat = TRUE,
-                             layout = "UMAP",
-                             BPPARAM = mcparam)
+                             layout = "UMAP", BPPARAM = mcparam , 
+                             verbose = T)
+
+
 
 ```
 
@@ -292,7 +294,7 @@ get_wgcna_modules = function(de_stat , subset_hoods = NULL ,
   obj.seurat = FindVariableFeatures(obj.seurat)
   # scale
   obj.seurat[["RNA"]]@scale.data = as.matrix(obj.seurat[["RNA"]]@data)
-  obj.seurat = Seurat::RunPCA(obj.seurat , npcs = npcs)
+  obj.seurat = RunPCA(obj.seurat , npcs = npcs)
   
   # run scwgcna
   clusters_scwgcna = run.scWGCNA(p.cells = obj.seurat, 

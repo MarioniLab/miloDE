@@ -17,7 +17,7 @@ plot_DE_gene_set(
 )
 }
 \arguments{
-\item{x}{Milo object}
+\item{x}{A \code{\linkS4class{Milo}} object}
 
 \item{de_stat}{milo-DE stat (output of 'de_stat_neighbourhoods')}
 
@@ -39,7 +39,7 @@ plot_DE_gene_set(
 ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by average logFC across the selected genes; neighbourhood size corresponds to the fraction of genes that are DE in this neighbourhood.
 }
 \description{
-Returns Milo plot, in which colour of nodes correposnd to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (based on pval_corrected_across_nhoods)
+Returns 'neighbourhood' plot, in which colour of nodes correposnd to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (based on pval_corrected_across_nhoods)
 }
 \examples{
 require(SingleCellExperiment)

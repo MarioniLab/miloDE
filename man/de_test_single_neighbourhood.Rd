@@ -18,7 +18,7 @@ de_test_single_neighbourhood(
 )
 }
 \arguments{
-\item{x}{Milo object}
+\item{x}{A \code{\linkS4class{Milo}} object}
 
 \item{nhoods_sce}{Can be extracted from x as nhoods(x) prior to running the function. The reason the argument is passed by itself is to avoid calculating it every time.}
 

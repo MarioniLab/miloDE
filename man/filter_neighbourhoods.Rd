@@ -7,10 +7,10 @@
 filter_neighbourhoods(x)
 }
 \arguments{
-\item{x}{A Milo object (SCE + assigned hoods)}
+\item{x}{A \code{\linkS4class{Milo}} object}
 }
 \value{
-Milo object with refined neighbourhood assignement
+Milo object with refined neighbourhood assignment
 }
 \description{
 Filtering redundant hoods, using the greedy approach to set cover problem

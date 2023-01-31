@@ -16,7 +16,7 @@ plot_DE_single_gene(
 )
 }
 \arguments{
-\item{x}{Milo object}
+\item{x}{A \code{\linkS4class{Milo}} object}
 
 \item{de_stat}{milo-DE stat (output of 'de_stat_all_neighbourhoods')}
 
@@ -36,7 +36,7 @@ plot_DE_single_gene(
 ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by logFC for the selected gene (if significant)
 }
 \description{
-Return Milo-graph plot; each node is coloured by logFC, if p-value corrected across nhoods < alpha
+Returns 'neighbourhood' plot; each node is coloured by logFC, if p-value corrected across nhoods < alpha
 }
 \examples{
 require(SingleCellExperiment)
