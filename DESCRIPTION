@@ -43,7 +43,9 @@ Suggests:
     rmarkdown,
     knitr,
     testthat (>= 3.0.0)
-Collate: 
+Collate:
+    'utils.R' 
+    'sce_mouseEmbryo.R'
     'assign_neighbourhoods.R'
     'filter_neighbourhoods.R'
     'estimate_neighbourhood_sizes.R'
