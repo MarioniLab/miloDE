@@ -49,7 +49,6 @@ Collate:
     'estimate_neighbourhood_sizes.R'
     'calc_AUC_per_neighbourhood.R'
     'de_test_neighbourhoods.R'
-    'de_test_single_neighbourhood.R'
     'convert_de_stat.R'
     'spatial_pval_adjustment.R'
     'rank_neighbourhoods_by_DE_magnitude.R'
