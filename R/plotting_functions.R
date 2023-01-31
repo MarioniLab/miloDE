@@ -4,7 +4,7 @@
 
 #' plot_milo_by_single_metric
 #'
-#' Return Milo-graph plot; each node is coloured by colour_by column from nhood_stat, if significance_by is smaller than alpha. Vetices are ordered by order_by column
+#' Return Milo-graph plot; each node is coloured by colour_by column from nhood_stat, if significance_by is smaller than alpha. Vertices are ordered by order_by column
 #' @param x A \code{\linkS4class{Milo}} object
 #' @param nhood_stat data.frame object, containing columns 'Nhood' (should correspond to neighbourhoods from nhoodGraph(x))
 #' @param colour_by A colname from nhood_stat - nodes will be coloured by the values from this column
@@ -465,7 +465,7 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 ,
 #' plot_beeswarm_gene_set
 #'
 #' Returns beeswarm plot for many genes
-#' @param de_stat milo-DE stat (output of \code{\link{de_stat_neighbourhoods}})
+#' @param de_stat milo-DE stat (output of \link{de_stat_neighbourhoods})
 #' @param genes A character specifying genes ID
 #' @param nhoodGroup A character specifying which column to use for neighbourhood grouping.
 #' @param logFC_correction Boolean specifying whether to perfrom logFC correction. If TRUE (default), logFC will be set to 0 if corrected pvalue (defined by 'correction_by' variable) < alpha

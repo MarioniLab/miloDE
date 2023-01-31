@@ -54,7 +54,7 @@ plot_milo_by_single_metric(
 ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by the provided in colour_by column value
 }
 \description{
-Return Milo-graph plot; each node is coloured by colour_by column from nhood_stat, if significance_by is smaller than alpha. Vetices are ordered by order_by column
+Return Milo-graph plot; each node is coloured by colour_by column from nhood_stat, if significance_by is smaller than alpha. Vertices are ordered by order_by column
 }
 \examples{
 require(SingleCellExperiment)
