@@ -43,18 +43,6 @@ Suggests:
     rmarkdown,
     knitr,
     testthat (>= 3.0.0)
-Collate:
-    'utils.R' 
-    'sce_mouseEmbryo.R'
-    'assign_neighbourhoods.R'
-    'filter_neighbourhoods.R'
-    'estimate_neighbourhood_sizes.R'
-    'calc_AUC_per_neighbourhood.R'
-    'de_test_neighbourhoods.R'
-    'convert_de_stat.R'
-    'spatial_pval_adjustment.R'
-    'rank_neighbourhoods_by_DE_magnitude.R'
-    'plotting_functions.R'
 VignetteBuilder: knitr
 LazyData: true
 Config/testthat/edition: 3
