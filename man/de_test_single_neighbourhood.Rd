@@ -51,7 +51,7 @@ Default \code{min_count = 3}.}
 \code{data.frame} object containing miloDE results for the selected neighbourhood
 }
 \description{
-Tests single hood for DE. Not intended to be used by itself (however possible), but rather as a part of \code{\link{`de_test_neighbourhoods`}}
+Tests single hood for DE. Not intended to be used by itself (however possible), but rather as a part of \code{\link{de_test_neighbourhoods}}
 }
 \examples{
 require(SingleCellExperiment)
