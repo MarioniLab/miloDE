@@ -2,20 +2,22 @@
 #'
 #' For a grid of k (order fixed), return hood size distribution; that will help a user to select appropriate k
 #' @param x A \code{\linkS4class{SingleCellExperiment}} object
-#' @param reducedDim_name defines the slot in reducedDim(x) to use as embedding for graph construction
-#' @param k_grid Vector of positive integers, defines how many neighbours to use for the hood assignment
-#' @param prop Numerical, between 0 and 1, defines fraction of cells from SCE to use for the hoods. Default = 0.1.
-#' @param order In {1,2}, defines which order of neighbours to use
-#' @param filtering In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default = TRUE
-#' @param reducedDim_name defines the slot in reducedDim(x) to use as embedding for graph construction
-#' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells
-#' @param d Positive integer, defines how many dimensions from reducedDim(x) to use
-#' @param cluster_id Character specifying which field in colData(x) to use for 'localised' neighbourhood size estimation. This might be useful in case dataset is
-#' rather big which will result in excessive running time. In case cluster_id is provided, we will calculate neighbourhood size distribution within individual clusters and aggregate results
-#' across clusters in order to speed up the process (note that it might result in slightly biased estimates). Default is NULL, in which case neighbourhood sizes will be estimated for the whole dataset.
-#' @param plot_stat Boolean specifying whether to plot the stat
-#' @param verbose Boolean specifying whether to print intermediate output messages. Default = FALSE.
-#' @return data.frame object, in which each row corresponds to k and 5 columns correspond to min, q25, median, q75 and max of neighbourhood size distributions; also returns a boxplot
+#' @param reducedDim_name defines the slot in \code{reducedDim(x)} to use as embedding for graph construction.
+#' @param k_grid Vector of positive integers, defines how many neighbours to use for the hood assignment.
+#' @param prop Numerical, between 0 and 1, defines fraction of cells from SCE to use for the hoods. Default \code{prop = 0.1}.
+#' @param order In {1,2}, defines which order of neighbours to use. Default \code{order=2}.
+#' @param filtering In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default \code{filtering = TRUE}.
+#' @param reducedDim_name defines the slot in \code{reducedDim(x)} to use as embedding for graph construction.
+#' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells. Default \code{k_init = 50}.
+#' @param d Positive integer, defines how many dimensions from \code{reducedDim(x)} to use. Default \code{d = 30}.
+#' @param cluster_id Character specifying which field in colData(x) to use for 'localised' neighbourhood size estimation.
+#' This might be useful in case dataset is rather big which will result in excessive running time.
+#' In case cluster_id is provided, we will calculate neighbourhood size distribution within individual clusters and aggregate results
+#' across clusters in order to speed up the process (note that it might result in slightly biased estimates).
+#' Default \code{cluster_id = NULL}, in which case neighbourhood sizes will be estimated for the whole dataset.
+#' @param plot_stat Boolean specifying whether to plot the stat. Default \code{plot_stat = TRUE}.
+#' @param verbose Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.
+#' @return \code{data.frame} object, in which each row corresponds to k and 5 columns correspond to min, q25, median, q75 and max of neighbourhood size distributions; also returns a boxplot
 #' @export
 #' @importFrom miloR Milo buildGraph graph<- graph nhoods<- nhoodIndex<- buildNhoodGraph
 #' @importFrom tibble rownames_to_column

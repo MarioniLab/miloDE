@@ -20,29 +20,38 @@ de_test_single_neighbourhood(
 \arguments{
 \item{x}{A \code{\linkS4class{Milo}} object}
 
-\item{nhoods_sce}{Can be extracted from x as nhoods(x) prior to running the function. The reason the argument is passed by itself is to avoid calculating it every time.}
+\item{nhoods_sce}{Can be extracted from x as \code{nhoods(x)} prior to running the function.}
 
-\item{hood_id}{Character specifying for which hood we should perform testing. Should be in colnames(nhoods_sce)}
+\item{hood_id}{Character specifying for which hood we should perform testing. Should be in \code{colnames(nhoods_sce)}.}
 
-\item{sample_id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(x)}
+\item{sample_id}{Character specifying which variable should be used as a replicate ID.
+Should be in \code{colnames(colData(x))}. Default \code{sample_id = "sample"}.}
 
-\item{design}{A \code{formula} object describing the experimental design for DE testing. If contrasts == NULL (default), the last column column of model will be used for testing.}
+\item{design}{A \code{formula} object describing the experimental design for DE testing.
+If \code{contrasts = NULL} (default), the last column column of model will be used for testing.}
 
-\item{covariates}{Vector specifying all covariates that are passed into experimental design.}
+\item{covariates}{Vector specifying all covariates that are passed into experimental design.
+It should contain all columns used in the design formula (except \code{sample_id}).}
 
-\item{contrasts}{NULL or contrast specifying what conditions to test. Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.}
+\item{contrasts}{NULL (default) or character string specifying what comparison to perform.
+If you are unsure regarding the appropriate syntax for the \code{contrasts} in your data,
+check \url{https://www.bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf}.
 
-\item{min_n_cells_per_sample}{positive integer specifying the minimun number of cells per replica to be included in testing. Default = 2}
+\emph{Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.}}
 
-\item{min_count}{Positive integer, specifying min.count for gene selection. Default = 5}
+\item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replicate to be included in testing.
+Default \code{min_n_cells_per_sample = 3}.}
 
-\item{run_separately}{A boolean parameter specifying whether the function is to be run as a part of 'de_test_all_hoods'(F) or as a stand-alone run (T)}
+\item{min_count}{Positive integer, specifying min.count for gene selection.
+Default \code{min_count = 3}.}
+
+\item{run_separately}{A boolean parameter specifying whether the function is to be run as a part of \code{\link{de_test_neighbourhoods}} (FALSE) or as a stand-alone run (TRUE). Default \code{run_separately = TRUE}.}
 }
 \value{
-data.frame object containing milo-DE results for the selected neighbourhood
+\code{data.frame} object containing miloDE results for the selected neighbourhood
 }
 \description{
-Tests single hood for DE. Not intended to be used by itself (however possible), but rather as a part of \code{de_test_neighbourhoods}
+Tests single hood for DE. Not intended to be used by itself (however possible), but rather as a part of \code{\link{`de_test_neighbourhoods`}}
 }
 \examples{
 require(SingleCellExperiment)

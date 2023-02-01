@@ -4,21 +4,27 @@
 
 #' plot_milo_by_single_metric
 #'
-#' Return Milo-graph plot; each node is coloured by colour_by column from nhood_stat, if significance_by is smaller than alpha. Vertices are ordered by order_by column
-#' @param x A \code{\linkS4class{Milo}} object
-#' @param nhood_stat data.frame object, containing columns 'Nhood' (should correspond to neighbourhoods from nhoodGraph(x))
-#' @param colour_by A colname from nhood_stat - nodes will be coloured by the values from this column
-#' @param significance_by A colname from nhood_stat (or NULL) - if values for this column exceed alpha, colour_by will be set to 0. Default = NULL meaning that we will not use any column to define the significance (i.e. no correction for colour_by)
-#' @param order_by A colname from nhood_stat (or NULL) specifying by which column we will order neighbourhoods for plotting. Default = NULL meaning we will use size of the neighbourhoods.
-#' @param order_direction Boolean specifying the direction of ordering neighbourhoods
-#' @param size_by NULL or a character vector - colname from nhood_stat - specifying metric by which we define size for neighbourhoods
-#' @param alpha A scalar (between 0 and 1) specifying the significance level used
-#' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default: 'UMAP')
-#' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted
-#' @param size_range A numeric vector indicating the range (min and max) of node sizes to use for plotting (to avoid overplotting in the graph)
-#' @param node_stroke A numeric indicating the desired thickness of the border around each node
-#' @param edge_width A numeric vector indicating the range (min and max) of edge widths to use for plotting
-#' @param edge_weight.thresh A numeric (or NULL) specifying a threshold for minimum cells in common (between neighbourhoods) required for an edge to be plotted
+#' Return \sQuote{neighbourhood} plot; each node is coloured by \code{colour_by} column from \code{nhood_stat}, if significance_by is smaller than alpha. Vertices are ordered by order_by column
+#' @param x A \code{\linkS4class{Milo}} object.
+#' @param nhood_stat \code{data.frame} object, containing columns \code{Nhood} (should correspond to neighbourhoods from \code{nhoodGraph(x))}.
+#' @param colour_by A character specifying value used for neighbourhood colouring. Should be in \code{colnames(nhood_stat)}.
+#' @param significance_by A character specifying which values to use for \sQuote{thresholding}: if values for this column exceed \code{alpha}, \code{colour_by} will be set to 0.
+#' Should be in \code{colnames(nhood_stat)}. Default \code{significance_by = NULL} and in this case we will not use no correction.
+#' @param order_by A character specifying which values to use to order neighbourhoods for plotting.
+#' Should be in \code{colnames(nhood_stat)}. Default \code{order_by = NULL} and in this case we will order by \code{size_by} values.
+#' @param order_direction Boolean specifying the direction of ordering neighbourhoods. Default \code{order_direction = TRUE}.
+#' @param size_by A character specifying which values to use for neighbourhood sizes.
+#' Should be in \code{colnames(nhood_stat)}. Default \code{size_by = NULL} and in this case we will neighbourhood size (i.e. number of cells in the neighbourhood).
+#' @param alpha A scalar (between 0 and 1) specifying the significance level used. Default \code{alpha = 0.1}.
+#' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout. Default \code{layout = "UMAP"}.
+#' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted.
+#' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
+#' @param size_range A numeric vector indicating the range (min and max) of node sizes to use for plotting (to avoid overplotting in the graph).
+#' Default \code{size_range = c(1,3)}
+#' @param node_stroke A numeric indicating the desired thickness of the border around each node. Default \code{node_stroke = 0.3}.
+#' @param edge_width A numeric vector indicating the range (min and max) of edge widths to use for plotting. Default \code{edge_width = c(0.2,0.5)}.
+#' @param edge_weight.thresh A numeric (or NULL) specifying a threshold for minimum cells in common (between neighbourhoods) required for an edge to be plotted.
+#' Default \code{edge_weight.thresh = NULL} meaning that no minimum threshold is set.
 #' @return ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by the provided in colour_by column value
 #' @importFrom SingleCellExperiment reducedDims reducedDim
 #' @importFrom SummarizedExperiment colData<- colData
@@ -192,15 +198,16 @@ plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , signi
 #
 #' plot_DE_single_gene
 #'
-#' Returns 'neighbourhood' plot; each node is coloured by logFC, if p-value corrected across nhoods < alpha
+#' Returns 'neighbourhood' plot; each node is coloured by logFC, if \code{pval_corrected_across_nhoods < alpha}.
 #' @param x A \code{\linkS4class{Milo}} object
-#' @param de_stat milo-DE stat (output of 'de_stat_all_neighbourhoods')
-#' @param gene A character specifying gene ID
-#' @param alpha A scalar (between 0 and 1) specifying the significance level used
-#' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default: 'UMAP')
-#' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted
-#' @param set_na_to_0 Boolean specifying whether in, nhoods in which gene is not tested, logFC would be set to 0 and pvalues to 1
-#' @param ... Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc))
+#' @param de_stat miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
+#' @param gene A character specifying gene ID.
+#' @param alpha A scalar (between 0 and 1) specifying the significance level used. Default \code{alpha = 0.1}.
+#' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout. Default \code{layout = "UMAP"}.
+#' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
+#' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
+#' @param set_na_to_0 Boolean specifying whether in neighbourhoods in which gene is not tested, logFC would be set to 0 and p-values to 1. Default \code{set_na_to_0 = TRUE}.
+#' @param ... Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc)).
 #' @return ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by logFC for the selected gene (if significant)
 #' @export
 #' @examples
@@ -267,16 +274,18 @@ plot_DE_single_gene = function(x, de_stat , gene , alpha = 0.1, layout = "UMAP" 
 
 #' plot_DE_gene_set
 #'
-#' Returns 'neighbourhood' plot, in which colour of nodes correposnd to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (based on pval_corrected_across_nhoods)
+#' Returns 'neighbourhood' plot, in which colour of nodes correspond to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (based on pval_corrected_across_nhoods)
 #' @param x A \code{\linkS4class{Milo}} object
-#' @param de_stat milo-DE stat (output of 'de_stat_neighbourhoods')
+#' @param de_stat miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
 #' @param genes Character vector, each element corresponds to gene ID
-#' @param logFC_correction Boolean specifying whether to perfrom logFC correction. If TRUE (default), logFC will be set to 0 if corrected pvalue (defined by 'correction_by' variable) < alpha
-#' @param correction_by Character - colname from de_stat - specifying which column to use to decide on significance for logFC. Relevant only if logFC_correction = TRUE.
-#' @param alpha A numeric between 0 and 1 specifying the threshold for correction
-#' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default: 'UMAP')
-#' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted
-#' @param ... Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc))
+#' @param logFC_correction Boolean specifying whether to perform logFC correction. If TRUE (default), logFC will be set to 0 if corrected pvalue (defined by \code{correction_by}) < alpha
+#' @param correction_by Character specifying specifying which column to use to decide on significance for logFC. Relevant only if \code{logFC_correction = TRUE}.
+#' Should be an in \code{assays(de_stat)} or in \code{colnames(de_stat)} (depends on \code{de_stat} format). Default \code{correction_by = "pval_corrected_across_nhoods"}.
+#' @param alpha A scalar (between 0 and 1) specifying the significance level used. Default \code{alpha = 0.1}.
+#' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout. Default \code{layout = "UMAP"}.
+#' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
+#' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
+#' @param ... Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc)).
 #' @return ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by average logFC across the selected genes; neighbourhood size corresponds to the fraction of genes that are DE in this neighbourhood.
 #' @importFrom SummarizedExperiment assay assay<- colData
 #' @export
@@ -377,12 +386,13 @@ plot_DE_gene_set = function(x, de_stat , genes ,
 #' plot_beeswarm_single_gene
 #'
 #' Returns beeswarm plot for a single gene
-#' @param de_stat milo-DE stat (output of 'de_stat_neighbourhoods')
-#' @param gene A character specifying gene ID
-#' @param nhoodGroup A character specifying which column to use for neighbourhood grouping.
-#' @param alpha A numeric between 0 and1 specifying the significance threshold. Default = 0.1.
-#' @param subset_nhoods NULL or numeric vector specifying which Nhoods to use
-#' @param size A positive number specifying size of the dots
+#' @param de_stat miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
+#' @param gene A character specifying gene ID.
+#' @param nhoodGroup A character specifying which values to use for neighbourhood grouping.
+#' @param alpha A numeric between 0 and 1 specifying the significance threshold. Default \code{alpha = 0.1}.
+#' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
+#' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
+#' @param size A positive number specifying size of the dots. Default \code{size = 2}.
 #' @return beeswarm, broke down by cell types; each point is a neighbourhood, colour - logFC for the selected gene
 #' @importFrom dplyr mutate %>% arrange
 #' @importFrom ggbeeswarm geom_quasirandom
@@ -465,14 +475,15 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 ,
 #' plot_beeswarm_gene_set
 #'
 #' Returns beeswarm plot for many genes
-#' @param de_stat milo-DE stat (output of \code{\link{de_test_neighbourhoods}})
-#' @param genes A character specifying genes ID
+#' @param de_stat miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
+#' @param genes A character specifying genes ID.
 #' @param nhoodGroup A character specifying which column to use for neighbourhood grouping.
-#' @param logFC_correction Boolean specifying whether to perfrom logFC correction. If TRUE (default), logFC will be set to 0 if corrected pvalue (defined by 'correction_by' variable) < alpha
-#' @param correction_by Character - colname from de_stat - specifying which column to use to decide on significance for logFC. Relevant only if logFC_correction = TRUE.
-#' @param alpha A numeric between 0 and1 specifying the significance threshold. Default = 0.1.
-#' @param subset_nhoods NULL or numeric vector specifying which Nhoods to use
-#' @param size A positive number specifying size of the dots
+#' @param logFC_correction Boolean specifying whether to perform logFC correction. If TRUE (default), logFC will be set to 0 if corrected pvalue (defined by \code{correction_by}) < alpha
+#' @param correction_by Character specifying which column to use to decide on significance for logFC. Relevant only if \code{logFC_correction = TRUE}.
+#' @param alpha A numeric between 0 and 1 specifying the significance threshold. Default \code{alpha = 0.1}.
+#' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
+#' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
+#' @param size A positive number specifying size of the dots. Default \code{size = 2}.
 #' @return beeswarm, broke down by cell types; each point is a neighbourhood, colour - average logFC across selected genes; x - fraction of genes that are DE
 #' @importFrom dplyr mutate %>% arrange
 #' @importFrom ggbeeswarm geom_quasirandom

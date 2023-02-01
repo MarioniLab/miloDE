@@ -7,17 +7,20 @@
 rank_neighbourhoods_by_DE_magnitude(de_stat, pval.thresh = 0.1, z.thresh = -3)
 }
 \arguments{
-\item{de_stat}{Output of milo-DE, either in data.frame format or SCE}
+\item{de_stat}{Output of miloDE (\code{\link{de_test_neighbourhoods}}), either in \code{data.frame} format or \code{\linkS4class{SingleCellExperiment}}.}
 
-\item{pval.thresh}{A scalar specifying which threshold to use for deciding on significance for gene being DE in a hood. Default = 0.1.}
+\item{pval.thresh}{A scalar specifying which threshold to use for deciding on significance for gene being DE in a hood. Default \code{pval.thresh = 0.1}.}
 
-\item{z.thresh}{A scalar specifying which threshold to use for deciding on which z-normalised p-values are going to be considered specifically DE. Default = -3.}
+\item{z.thresh}{A scalar specifying which threshold to use for deciding on which z-normalised p-values are going to be considered specifically DE. Default \code{z.thresh = -3}.}
 }
 \value{
-data.frame, with calculated n-DE-genes and n-specific-DE-genes for each neighbourhood
+\code{data.frame}, with calculated number-DE-genes and number-specific-DE-genes for each neighbourhood
 }
 \description{
-Ranks neighbourhoods by the magnitude of DE: number of DE genes and number of 'specifically' DE genes. Note that for this analysis we set NaN p-values (raw and corrected) to 1 - interpret accordingly.
+Ranks neighbourhoods by the magnitude of DE: number of DE genes and number of 'specifically' DE genes.
+}
+\details{
+\emph{Note that for this analysis we set NaN p-values (raw and corrected) to 1 - interpret accordingly.}
 }
 \examples{
 de_stat = expand.grid(gene = paste0("gene" , c(1:5)) , Nhood = c(1:10))

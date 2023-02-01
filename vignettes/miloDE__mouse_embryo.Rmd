@@ -33,7 +33,7 @@ library(scran)
 suppressMessages(library(dplyr))
 library(reshape2)
 
-# packages for gene cluster analaysis
+# packages for gene cluster analysis
 library(scWGCNA)
 suppressMessages(library(Seurat))
 
@@ -69,7 +69,7 @@ Tal1-/+ chimer data are processed and directly available within `MouseGastrulati
 
 
 # load chimera Tal1
-sce = suppressMessages(Tal1ChimeraData())
+sce = suppressMessages(MouseGastrulationData::Tal1ChimeraData())
 
 # downsample to few selected cell types
 cts = c("Spinal cord" , "Haematoendothelial progenitors", "Endothelium" , "Blood progenitors 1" , "Blood progenitors 2")
@@ -354,9 +354,9 @@ We can also quantify the relevance of each module for different cell types.
 
 ```{r sc-wgcna-plot-modules-beeswarm, fig.width=10,fig.height=8 , fig.cap = "Co-regulated modules, break down by cell types."}
 
+
 # we first need to assign cell type label to each neighbourhood - we have calculated it previously
 # we will use data.frame format for de-stat; the conversion between SingleCellExperiment and data.frame formats can be done using `convert_de_stat`
-
 de_stat_df = convert_de_stat(de_stat)
 de_stat_df = merge(de_stat_df , nhood_stat_ct , by = c("Nhood" , "Nhood_center"))
 
@@ -426,63 +426,6 @@ p
 
 
 ```
-
-
-
-
-
-
-<!-- ## Get GO -->
-
-<!-- ```{r get-go} -->
-
-
-
-<!-- get_go_terms = function(genes , module , pval.thresh = 0.1){ -->
-
-<!--   require(enrichR) -->
-<!--   require(stringr) -->
-<!--   gos <- as.data.frame( enrichr(genes, 'GO_Biological_Process_2021')[[1]] ) -->
-<!--   gos$n_tested_genes = length(genes) -->
-<!--   gos$n_detected_genes_in_go = NaN -->
-<!--   gos$n_total_genes_in_go = NaN   -->
-
-<!--   gos$Term_id = NaN -->
-<!--   for (i in 1:nrow(gos)){ -->
-<!--     current.overlap = gos$Overlap[i] -->
-<!--     current.overlap = str_split(current.overlap, "/") -->
-<!--     gos$n_detected_genes_in_go[i] = as.numeric(current.overlap[[1]][1]) -->
-<!--     gos$n_total_genes_in_go[i] = as.numeric(current.overlap[[1]][2]) -->
-
-<!--     current.go = gos$Term[i] -->
-<!--     current.go = str_split(current.go, "GO:") -->
-<!--     gos$Term[i] = substring(current.go[[1]][1], 1, nchar(current.go[[1]][1])-2) -->
-<!--     gos$Term_id[i] = substring(current.go[[1]][2], 1, nchar(current.go[[1]][2])-1) -->
-<!--   } -->
-
-<!--   gos = gos[gos$Adjusted.P.value < pval.thresh, ] -->
-
-<!--   if(nrow(gos) > 0){ -->
-<!--     gos = gos[order(gos$Adjusted.P.value) , ] -->
-<!--     p = plotEnrich(gos , numChar = 120) + ggtitle(module) +  -->
-<!--       theme(legend.position = "right") -->
-
-<!--     return(p) -->
-<!--   } -->
-<!--   else { -->
-<!--     return(NULL) -->
-<!--   } -->
-<!-- } -->
-
-
-<!-- plots = lapply(sort(unique(modules_wgcna_all$cluster)) , function(cluster){ -->
-<!--   p = get_go_terms(genes = modules_wgcna_all$SYMBOL[modules_wgcna_all$cluster == cluster], module = cluster)  -->
-<!--   print(p) -->
-<!-- }) -->
-
-
-
-<!-- ``` -->
 
 
 # Session Info

@@ -16,21 +16,22 @@ plot_beeswarm_gene_set(
 )
 }
 \arguments{
-\item{de_stat}{milo-DE stat (output of \code{\link[miloDE]{de_test_neighbourhoods}})}
+\item{de_stat}{miloDE stat (output of \code{\link{de_test_neighbourhoods}}).}
 
-\item{genes}{A character specifying genes ID}
+\item{genes}{A character specifying genes ID.}
 
 \item{nhoodGroup}{A character specifying which column to use for neighbourhood grouping.}
 
-\item{logFC_correction}{Boolean specifying whether to perfrom logFC correction. If TRUE (default), logFC will be set to 0 if corrected pvalue (defined by 'correction_by' variable) < alpha}
+\item{logFC_correction}{Boolean specifying whether to perform logFC correction. If TRUE (default), logFC will be set to 0 if corrected pvalue (defined by \code{correction_by}) < alpha}
 
-\item{correction_by}{Character - colname from de_stat - specifying which column to use to decide on significance for logFC. Relevant only if logFC_correction = TRUE.}
+\item{correction_by}{Character specifying which column to use to decide on significance for logFC. Relevant only if \code{logFC_correction = TRUE}.}
 
-\item{alpha}{A numeric between 0 and1 specifying the significance threshold. Default = 0.1.}
+\item{alpha}{A numeric between 0 and 1 specifying the significance threshold. Default \code{alpha = 0.1}.}
 
-\item{subset_nhoods}{NULL or numeric vector specifying which Nhoods to use}
+\item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
+Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.}
 
-\item{size}{A positive number specifying size of the dots}
+\item{size}{A positive number specifying size of the dots. Default \code{size = 2}.}
 }
 \value{
 beeswarm, broke down by cell types; each point is a neighbourhood, colour - average logFC across selected genes; x - fraction of genes that are DE

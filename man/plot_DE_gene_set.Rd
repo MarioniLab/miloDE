@@ -19,27 +19,29 @@ plot_DE_gene_set(
 \arguments{
 \item{x}{A \code{\linkS4class{Milo}} object}
 
-\item{de_stat}{milo-DE stat (output of 'de_stat_neighbourhoods')}
+\item{de_stat}{miloDE stat (output of \code{\link{de_test_neighbourhoods}}).}
 
 \item{genes}{Character vector, each element corresponds to gene ID}
 
-\item{logFC_correction}{Boolean specifying whether to perfrom logFC correction. If TRUE (default), logFC will be set to 0 if corrected pvalue (defined by 'correction_by' variable) < alpha}
+\item{logFC_correction}{Boolean specifying whether to perform logFC correction. If TRUE (default), logFC will be set to 0 if corrected pvalue (defined by \code{correction_by}) < alpha}
 
-\item{correction_by}{Character - colname from de_stat - specifying which column to use to decide on significance for logFC. Relevant only if logFC_correction = TRUE.}
+\item{correction_by}{Character specifying specifying which column to use to decide on significance for logFC. Relevant only if \code{logFC_correction = TRUE}.
+Should be an in \code{assays(de_stat)} or in \code{colnames(de_stat)} (depends on \code{de_stat} format). Default \code{correction_by = "pval_corrected_across_nhoods"}.}
 
-\item{alpha}{A numeric between 0 and 1 specifying the threshold for correction}
+\item{alpha}{A scalar (between 0 and 1) specifying the significance level used. Default \code{alpha = 0.1}.}
 
-\item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default: 'UMAP')}
+\item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout. Default \code{layout = "UMAP"}.}
 
-\item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted}
+\item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
+Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.}
 
-\item{...}{Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc))}
+\item{...}{Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc)).}
 }
 \value{
 ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by average logFC across the selected genes; neighbourhood size corresponds to the fraction of genes that are DE in this neighbourhood.
 }
 \description{
-Returns 'neighbourhood' plot, in which colour of nodes correposnd to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (based on pval_corrected_across_nhoods)
+Returns 'neighbourhood' plot, in which colour of nodes correspond to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (based on pval_corrected_across_nhoods)
 }
 \examples{
 require(SingleCellExperiment)

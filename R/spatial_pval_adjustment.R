@@ -3,8 +3,8 @@
 #' spatial_pval_adjustment
 #'
 #' Performs p-values multiple testing correction, with accounting for the overlap. This is achieved by using weighted version of BH correction.
-#' @param nhoods_sce nhoods(x)
-#' @param pvalues vector of pvalues
+#' @param nhoods_sce \code{nhoods(x)}
+#' @param pvalues vector of p-values
 #' @return Vector with 'spatially' (i.e. across neighbourhoods) adjusted p-values
 #' @export
 #' @examples

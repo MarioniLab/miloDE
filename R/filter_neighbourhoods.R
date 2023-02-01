@@ -2,9 +2,9 @@
 
 #' filter_neighbourhoods
 #'
-#' Filtering redundant hoods, using the greedy approach to set cover problem
+#' Filtering redundant neighbourhoods, using the greedy approach to set cover problem
 #' @param x A \code{\linkS4class{Milo}} object
-#' @return Milo object with refined neighbourhood assignment
+#' @return \code{Milo} object with refined neighbourhood assignment
 #' @export
 #' @importFrom RcppGreedySetCover greedySetCover
 #' @importFrom miloR buildNhoodGraph nhoodIndex nhoods graph graph<-

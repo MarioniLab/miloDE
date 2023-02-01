@@ -7,9 +7,9 @@
 spatial_pval_adjustment(nhoods_sce, pvalues)
 }
 \arguments{
-\item{nhoods_sce}{nhoods(x)}
+\item{nhoods_sce}{\code{nhoods(x)}}
 
-\item{pvalues}{vector of pvalues}
+\item{pvalues}{vector of p-values}
 }
 \value{
 Vector with 'spatially' (i.e. across neighbourhoods) adjusted p-values

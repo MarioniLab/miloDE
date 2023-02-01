@@ -10,10 +10,10 @@ filter_neighbourhoods(x)
 \item{x}{A \code{\linkS4class{Milo}} object}
 }
 \value{
-Milo object with refined neighbourhood assignment
+\code{Milo} object with refined neighbourhood assignment
 }
 \description{
-Filtering redundant hoods, using the greedy approach to set cover problem
+Filtering redundant neighbourhoods, using the greedy approach to set cover problem
 }
 \examples{
 require(SingleCellExperiment)

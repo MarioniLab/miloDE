@@ -11,7 +11,7 @@ de_test_neighbourhoods(
   covariates,
   contrasts = NULL,
   subset_nhoods = NULL,
-  min_n_cells_per_sample = 2,
+  min_n_cells_per_sample = 3,
   min_count = 3,
   output_type = "data.frame",
   plot_summary_stat = FALSE,
@@ -21,37 +21,50 @@ de_test_neighbourhoods(
 )
 }
 \arguments{
-\item{x}{A \code{\linkS4class{Milo}} object}
+\item{x}{A \code{\linkS4class{Milo}} object.}
 
-\item{sample_id}{Character specifying which variable should be used as a sample/replica id. Should be in colData(x)}
+\item{sample_id}{Character specifying which variable should be used as a sample/replica id.
+Should be in \code{colnames(colData(x))}. Default \code{sample_id = "sample"}.}
 
-\item{design}{A \code{formula} object describing the experimental design for DE testing. If contrasts == NULL (default), the last column column of model will be used for testing.}
+\item{design}{A \code{formula} object describing the experimental design for DE testing.
+If \code{contrasts = NULL} (default), the last column column of model will be used for testing.}
 
-\item{covariates}{Vector specifying all covariates that are passed into experimental design. This should contain all columns used in the design formula.}
+\item{covariates}{Vector specifying all covariates that are passed into experimental design.
+It should contain all columns used in the design formula (except \code{sample_id}).}
 
-\item{contrasts}{NULL or contrast specifying what comparison to perform. Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.}
+\item{contrasts}{NULL (default) or character string specifying what comparison to perform.
+If you are unsure regarding the appropriate syntax for the \code{contrasts} in your data,
+check \url{https://www.bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf}.
 
-\item{subset_nhoods}{NULL or character vector specifying the set of neighbourhoods that will be tested for DE}
+\emph{Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.}}
 
-\item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replica to be included in testing. Default = 1.}
+\item{subset_nhoods}{NULL or character vector specifying the set of neighbourhoods that will be tested for DE.
+Default \code{subset_nhoods = NULL} meaning no subsetting.}
 
-\item{min_count}{Positive integer, specifying min.count for gene selection. Default = 3.}
+\item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replicate to be included in testing.
+Default \code{min_n_cells_per_sample = 3}.}
 
-\item{output_type}{In {"data.frame","SCE"} Specifying the output format - either in data.frame or SingleCellExperiment (with assays corresponding to logFC, pvals (raw and corrected)); columns correspond to neighbourhoods. Note that default is data.frame, but if number of genes x neighbourhoods combinations is > 10^8 -- the output will be SCE.}
+\item{min_count}{Positive integer, specifying min.count for gene selection.
+Default \code{min_count = 3}.}
+
+\item{output_type}{In {"data.frame","SCE"} Specifying the output format - either in \code{data.frame} or \code{\linkS4class{SingleCellExperiment}}
+
+\emph{Note that default is \code{data.frame}, but if number of genes x neighbourhoods combinations is > 10^8 -- the output will be \code{SingleCellExperiment}.}}
 
 \item{plot_summary_stat}{Boolean specifying if we plot Milo neighbourhood plot summarising per neighbourhood whether testing was performed}
 
-\item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default: 'UMAP'). Only relevant if plot_summary_stat == TRUE.}
+\item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default \code{layout = "UMAP"}).
+Only relevant if \code{plot_summary_stat = TRUE}.}
 
-\item{BPPARAM}{NULL or BPPARAM object to use for parallelization}
+\item{BPPARAM}{NULL or BPPARAM object to use for parallelisation.}
 
-\item{verbose}{Boolean specifying whether to print intermediate output messages. Default = TRUE.}
+\item{verbose}{Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.}
 }
 \value{
-data.frame (or SCE) object containing milo-DE results for all supplied neighbourhoods
+\code{data.frame} or \code{SingleCellExperiment} object containing miloDE results for all supplied neighbourhoods
 }
 \description{
-Tests neighbourhoods for DE + performs per gene correction across neighbourhoods
+Performs DE testing within each neighbourhood
 }
 \examples{
 require(SingleCellExperiment)

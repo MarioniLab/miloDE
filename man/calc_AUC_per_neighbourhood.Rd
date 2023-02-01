@@ -18,19 +18,23 @@ calc_AUC_per_neighbourhood(
 \arguments{
 \item{x}{A \code{\linkS4class{Milo}} object.}
 
-\item{genes}{Character vector specifying genes to be passed for the testing.}
+\item{genes}{Character vector specifying genes to be passed for the testing. Default \code{genes = rownames(x)}.}
 
-\item{sample_id}{Character specifying which variable should be used as a replicate ID. Should be in \code{colnames(colData(x))}.}
+\item{sample_id}{Character specifying which variable should be used as a replicate ID.
+Should be in \code{colnames(colData(x))}. Default \code{sample_id = "sample"}.}
 
-\item{condition_id}{Character specifying which variable should be used as a condition ID. Should be in \code{colnames(colData(x))}.}
+\item{condition_id}{Character specifying which variable should be used as a condition ID.
+Should be in \code{colnames(colData(x))}.}
 
 \item{conditions}{In case of multiple comparative groups, character vector specifying which conditions should be tested for separation.
 Default \code{conditions = NULL} that assumes that only 2 groups are present.}
 
-\item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replica to be included in testing. Default \code{min_n_cells_per_sample = 3}.}
+\item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replica to be included in testing.
+Default \code{min_n_cells_per_sample = 3}.}
 
 \item{n_threads}{Positive integer specifying the number of cores to be used to calculate AUC.
-Higher number results in faster calculation, but its feasibility depends on the specs of your machine. Only relevant if BPPARAM = NULL. Default \code{n_threads = 2}.}
+Higher number results in faster calculation, but its feasibility depends on the specs of your machine.
+Only relevant if BPPARAM = NULL. Default \code{n_threads = 2}.}
 
 \item{BPPARAM}{NULL or \code{\link{MulticoreParam}} object. Default \code{BPPARAM = NULL} assuming no parallelisation.}
 }
@@ -39,6 +43,8 @@ Higher number results in faster calculation, but its feasibility depends on the 
 }
 \description{
 Returns per neighbourhood AUC from Augur based classifier (in \code{data.frame} format).
+}
+\details{
 \emph{Note that it is only relevant for \dQuote{simple}, additive models (i.e. no interactions.)}.
 }
 \examples{

@@ -2,11 +2,13 @@
 
 #' rank_neighbourhoods_by_DE_magnitude
 #'
-#' Ranks neighbourhoods by the magnitude of DE: number of DE genes and number of 'specifically' DE genes. Note that for this analysis we set NaN p-values (raw and corrected) to 1 - interpret accordingly.
-#' @param de_stat Output of milo-DE, either in data.frame format or SCE
-#' @param pval.thresh A scalar specifying which threshold to use for deciding on significance for gene being DE in a hood. Default = 0.1.
-#' @param z.thresh A scalar specifying which threshold to use for deciding on which z-normalised p-values are going to be considered specifically DE. Default = -3.
-#' @return data.frame, with calculated n-DE-genes and n-specific-DE-genes for each neighbourhood
+#' Ranks neighbourhoods by the magnitude of DE: number of DE genes and number of 'specifically' DE genes.
+#'
+#' \emph{Note that for this analysis we set NaN p-values (raw and corrected) to 1 - interpret accordingly.}
+#' @param de_stat Output of miloDE (\code{\link{de_test_neighbourhoods}}), either in \code{data.frame} format or \code{\linkS4class{SingleCellExperiment}}.
+#' @param pval.thresh A scalar specifying which threshold to use for deciding on significance for gene being DE in a hood. Default \code{pval.thresh = 0.1}.
+#' @param z.thresh A scalar specifying which threshold to use for deciding on which z-normalised p-values are going to be considered specifically DE. Default \code{z.thresh = -3}.
+#' @return \code{data.frame}, with calculated number-DE-genes and number-specific-DE-genes for each neighbourhood
 #' @export
 #' @importFrom SummarizedExperiment colData
 #' @importFrom stats sd

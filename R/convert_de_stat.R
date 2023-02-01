@@ -2,11 +2,15 @@
 
 #' convert_de_stat
 #'
-#' Converts output of milo-DE between \code{\link[base]{data.frame}} and \code{\linkS4class{SingleCellExperiment}} formats
-#' @param de_stat Output of milo-DE (from \code{de_test_neighbourhoods}), either in \code{data.frame} or \code{SingleCellExperiment}
-#' @param assay_names Character string specifying which fields are treated as assays
-#' @param coldata_names Character string specifying which fields are treated as Nhood metadata. Please note that they have to be an attribute of Nhood and not Nhood-gene (i.e. same across different genes for the same neighbourhood).
-#' @return SCE or data.frame object, containing milo-DE results
+#' Converts output of miloDE between \code{\link[base]{data.frame}} and \code{\linkS4class{SingleCellExperiment}} formats
+#' @param de_stat miloDE results, output of \code{\link{de_test_neighbourhoods}}; either in \code{data.frame} or \code{SingleCellExperiment}
+#' @param assay_names Character string specifying which fields are treated as assays.
+#' Note that \code{logFC}, \code{pval}, \code{pval_corrected_across_genes} and \code{pval_corrected_across_nhoods} are hard-coded to be included.
+#' @param coldata_names Character string specifying which fields are treated as \code{Nhood} metadata.
+#' Note that \code{Nhood}, \code{Nhood_center}, \code{test_performed} are hard-coded to be included.
+#'
+#' \emph{Please note that they have to be the attributes of neighbourhoods (i.e. same across different genes for the same neighbourhood).}
+#' @return A \code{\linkS4class{SingleCellExperiment}} object or \code{data.frame} object, containing miloDE results.
 #' @export
 #' @examples
 #' de_stat = expand.grid(gene = paste0("gene" , c(1:5)) , Nhood = c(1:10))

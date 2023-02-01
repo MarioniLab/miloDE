@@ -22,39 +22,45 @@ plot_milo_by_single_metric(
 )
 }
 \arguments{
-\item{x}{A \code{\linkS4class{Milo}} object}
+\item{x}{A \code{\linkS4class{Milo}} object.}
 
-\item{nhood_stat}{data.frame object, containing columns 'Nhood' (should correspond to neighbourhoods from nhoodGraph(x))}
+\item{nhood_stat}{\code{data.frame} object, containing columns \code{Nhood} (should correspond to neighbourhoods from \code{nhoodGraph(x))}.}
 
-\item{colour_by}{A colname from nhood_stat - nodes will be coloured by the values from this column}
+\item{colour_by}{A character specifying value used for neighbourhood colouring. Should be in \code{colnames(nhood_stat)}.}
 
-\item{significance_by}{A colname from nhood_stat (or NULL) - if values for this column exceed alpha, colour_by will be set to 0. Default = NULL meaning that we will not use any column to define the significance (i.e. no correction for colour_by)}
+\item{significance_by}{A character specifying which values to use for \sQuote{thresholding}: if values for this column exceed \code{alpha}, \code{colour_by} will be set to 0.
+Should be in \code{colnames(nhood_stat)}. Default \code{significance_by = NULL} and in this case we will not use no correction.}
 
-\item{order_by}{A colname from nhood_stat (or NULL) specifying by which column we will order neighbourhoods for plotting. Default = NULL meaning we will use size of the neighbourhoods.}
+\item{order_by}{A character specifying which values to use to order neighbourhoods for plotting.
+Should be in \code{colnames(nhood_stat)}. Default \code{order_by = NULL} and in this case we will order by \code{size_by} values.}
 
-\item{order_direction}{Boolean specifying the direction of ordering neighbourhoods}
+\item{order_direction}{Boolean specifying the direction of ordering neighbourhoods. Default \code{order_direction = TRUE}.}
 
-\item{size_by}{NULL or a character vector - colname from nhood_stat - specifying metric by which we define size for neighbourhoods}
+\item{size_by}{A character specifying which values to use for neighbourhood sizes.
+Should be in \code{colnames(nhood_stat)}. Default \code{size_by = NULL} and in this case we will neighbourhood size (i.e. number of cells in the neighbourhood).}
 
-\item{alpha}{A scalar (between 0 and 1) specifying the significance level used}
+\item{alpha}{A scalar (between 0 and 1) specifying the significance level used. Default \code{alpha = 0.1}.}
 
-\item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default: 'UMAP')}
+\item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout. Default \code{layout = "UMAP"}.}
 
-\item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted}
+\item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted.
+Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.}
 
-\item{size_range}{A numeric vector indicating the range (min and max) of node sizes to use for plotting (to avoid overplotting in the graph)}
+\item{size_range}{A numeric vector indicating the range (min and max) of node sizes to use for plotting (to avoid overplotting in the graph).
+Default \code{size_range = c(1,3)}}
 
-\item{node_stroke}{A numeric indicating the desired thickness of the border around each node}
+\item{node_stroke}{A numeric indicating the desired thickness of the border around each node. Default \code{node_stroke = 0.3}.}
 
-\item{edge_width}{A numeric vector indicating the range (min and max) of edge widths to use for plotting}
+\item{edge_width}{A numeric vector indicating the range (min and max) of edge widths to use for plotting. Default \code{edge_width = c(0.2,0.5)}.}
 
-\item{edge_weight.thresh}{A numeric (or NULL) specifying a threshold for minimum cells in common (between neighbourhoods) required for an edge to be plotted}
+\item{edge_weight.thresh}{A numeric (or NULL) specifying a threshold for minimum cells in common (between neighbourhoods) required for an edge to be plotted.
+Default \code{edge_weight.thresh = NULL} meaning that no minimum threshold is set.}
 }
 \value{
 ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by the provided in colour_by column value
 }
 \description{
-Return Milo-graph plot; each node is coloured by colour_by column from nhood_stat, if significance_by is smaller than alpha. Vertices are ordered by order_by column
+Return \sQuote{neighbourhood} plot; each node is coloured by \code{colour_by} column from \code{nhood_stat}, if significance_by is smaller than alpha. Vertices are ordered by order_by column
 }
 \examples{
 require(SingleCellExperiment)
