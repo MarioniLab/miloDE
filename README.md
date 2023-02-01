@@ -17,16 +17,19 @@ library(devtools)
 devtools::install_github("MarioniLab/miloDE") 
 library(miloDE)
 
-## If you plan to use parallelisation (desired for big datasets), please load `BiocParallel` and enable milticore parallel evaluation.  
+## If you plan to use parallelisation (desired for big datasets), 
+please load `BiocParallel` and enable milticore parallel evaluation.  
+
 library(BiocParallel)
 ncores = MY_NCORES
 mcparam = MulticoreParam(workers = ncores)
 register(mcparam)
 
 
-## Not an immediate functionality of miloDE, but we illustrate in our vignette how to adapt WGCNA approach to discover DE patterns and co-regulated gene modules. 
-
+## Not an immediate functionality of miloDE, but we illustrate in our vignette how to adapt WGCNA 
+approach to discover DE patterns and co-regulated gene modules. 
 If you want to perform similar analysis, please install Seurat and scWGCNA:
+
 install.packages('Seurat')
 devtools::install_github("cferegrino/scWGCNA", ref="main")
 
