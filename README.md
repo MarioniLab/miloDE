@@ -14,14 +14,19 @@ In addition to DE testing, we provide functionality to rank neighbourhoods by de
 ```
 # Install development version:
 library(devtools)
-library(SingleCellExperiment)
 devtools::install_github("MarioniLab/miloDE") 
 library(miloDE)
 
-## If you plan to use parallelisation (desired for big datasets), please install BiocParallel:
-BiocManager::install("BiocParallel")
+## If you plan to use parallelisation (desired for big datasets), please load `BiocParallel` and enable milticore parallel evaluation.  
+library(BiocParallel)
+ncores = MY_NCORES
+mcparam = MulticoreParam(workers = ncores)
+register(mcparam)
 
-## Not an immediate functionality of miloDE, but we illustrate in our vignette how to adapt WGCNA approach to discover DE patterns and co-regulated gene modules. If you want to perform similar analysis, please install Seurat and scWGCNA:
+
+## Not an immediate functionality of miloDE, but we illustrate in our vignette how to adapt WGCNA approach to discover DE patterns and co-regulated gene modules. 
+
+If you want to perform similar analysis, please install Seurat and scWGCNA:
 install.packages('Seurat')
 devtools::install_github("cferegrino/scWGCNA", ref="main")
 
