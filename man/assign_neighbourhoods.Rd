@@ -19,17 +19,17 @@ assign_neighbourhoods(
 \arguments{
 \item{x}{A \code{\linkS4class{SingleCellExperiment}} object.}
 
-\item{reducedDim_name}{defines the assay in \code{reducedDim(x)} to use as embedding for graph construction.}
+\item{reducedDim_name}{Defines the assay in \code{reducedDim(x)} to use as embedding for graph construction.}
 
-\item{k}{Positive integer, defines how many neighbours to use for the hood assignment. Default \code{k = 25}.}
+\item{k}{Positive integer, defines how many neighbours to use for the neighbourhood assignment. Default \code{k = 25}.}
 
-\item{prop}{Numerical, between 0 and 1, defines fraction of cells from SCE to use for the hoods. Default \code{prop = 0.2}.}
+\item{prop}{Numerical, between 0 and 1, defines which fraction of cells to use as neighbourhood centres. Default \code{prop = 0.2}.}
 
-\item{order}{In {1,2}, defines which order of neighbours to use. Default \code{order = 2}.}
+\item{order}{In \code{c(1,2)}, defines which order of neighbours to use. Default \code{order = 2}.}
 
-\item{filtering}{In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default \code{filtering = TRUE}.}
+\item{filtering}{In \code{c(TRUE,FALSE)}, defines whether to refine the assignment. Default \code{filtering = TRUE}.}
 
-\item{k_init}{Positive integer, defines how many neighbours to use for identifying anchor cells. Default \code{k_init = 25}.}
+\item{k_init}{Positive integer, defines how many neighbours to use for identifying anchor cells (for this we use 1st-order kNN). Default \code{k_init = 50}.}
 
 \item{d}{Positive integer, defines how many dimensions from \code{reducedDim(x)} to use. Default \code{d = 30}.}
 

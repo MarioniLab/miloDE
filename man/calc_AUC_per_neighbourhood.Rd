@@ -27,7 +27,7 @@ Should be in \code{colnames(colData(x))}. Default \code{sample_id = "sample"}.}
 Should be in \code{colnames(colData(x))}.}
 
 \item{conditions}{In case of multiple comparative groups, character vector specifying which conditions should be tested for separation.
-Default \code{conditions = NULL} that assumes that only 2 groups are present.}
+Default \code{conditions = NULL} that assumes that only 2 different conditions are present.}
 
 \item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replica to be included in testing.
 Default \code{min_n_cells_per_sample = 3}.}
@@ -39,13 +39,11 @@ Only relevant if BPPARAM = NULL. Default \code{n_threads = 2}.}
 \item{BPPARAM}{NULL or \code{\link{MulticoreParam}} object. Default \code{BPPARAM = NULL} assuming no parallelisation.}
 }
 \value{
-\code{data.frame object}, with AUC calculated for each neighbourhood.
+\code{data.frame} object, with AUC calculated for each neighbourhood.
 }
 \description{
-Returns per neighbourhood AUC from Augur based classifier (in \code{data.frame} format).
-}
-\details{
-\emph{Note that it is only relevant for \dQuote{simple}, additive models (i.e. no interactions.)}.
+Returns per neighbourhood AUC from Augur based classifier (in \code{data.frame} format).\n
+\emph{Note that it is only relevant for \dQuote{simple} models (i.e. no interactions.)}.
 }
 \examples{
 require(SingleCellExperiment)

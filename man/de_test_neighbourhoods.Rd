@@ -23,11 +23,11 @@ de_test_neighbourhoods(
 \arguments{
 \item{x}{A \code{\linkS4class{Milo}} object.}
 
-\item{sample_id}{Character specifying which variable should be used as a sample/replica id.
+\item{sample_id}{Character specifying which variable should be used as a replicate ID.
 Should be in \code{colnames(colData(x))}. Default \code{sample_id = "sample"}.}
 
 \item{design}{A \code{formula} object describing the experimental design for DE testing.
-If \code{contrasts = NULL} (default), the last column column of model will be used for testing.}
+Note that if \code{contrasts = NULL} (default), the last column column of model will be used for testing.}
 
 \item{covariates}{Vector specifying all covariates that are passed into experimental design.
 It should contain all columns used in the design formula (except \code{sample_id}).}
@@ -36,7 +36,7 @@ It should contain all columns used in the design formula (except \code{sample_id
 If you are unsure regarding the appropriate syntax for the \code{contrasts} in your data,
 check \url{https://www.bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf}.
 
-\emph{Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.}}
+\emph{Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{\link{de_test_neighbourhoods}} for each comparison separately.}}
 
 \item{subset_nhoods}{NULL or character vector specifying the set of neighbourhoods that will be tested for DE.
 Default \code{subset_nhoods = NULL} meaning no subsetting.}
@@ -47,16 +47,14 @@ Default \code{min_n_cells_per_sample = 3}.}
 \item{min_count}{Positive integer, specifying min.count for gene selection.
 Default \code{min_count = 3}.}
 
-\item{output_type}{In {"data.frame","SCE"} Specifying the output format - either in \code{data.frame} or \code{\linkS4class{SingleCellExperiment}}
-
-\emph{Note that default is \code{data.frame}, but if number of genes x neighbourhoods combinations is > 10^8 -- the output will be \code{SingleCellExperiment}.}}
+\item{output_type}{In \code{c("data.frame","SCE")} Specifying the output format - either in \code{data.frame} or \code{\linkS4class{SingleCellExperiment}}.}
 
 \item{plot_summary_stat}{Boolean specifying if we plot Milo neighbourhood plot summarising per neighbourhood whether testing was performed}
 
 \item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default \code{layout = "UMAP"}).
 Only relevant if \code{plot_summary_stat = TRUE}.}
 
-\item{BPPARAM}{NULL or BPPARAM object to use for parallelisation.}
+\item{BPPARAM}{NULL or BPPARAM object to use for parallelisation. Default \code{BPPARAM = NULL}.}
 
 \item{verbose}{Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.}
 }

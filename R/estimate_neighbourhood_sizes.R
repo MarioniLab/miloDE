@@ -5,14 +5,14 @@
 #' @param reducedDim_name defines the slot in \code{reducedDim(x)} to use as embedding for graph construction.
 #' @param k_grid Vector of positive integers, defines how many neighbours to use for the hood assignment.
 #' @param prop Numerical, between 0 and 1, defines fraction of cells from SCE to use for the hoods. Default \code{prop = 0.1}.
-#' @param order In {1,2}, defines which order of neighbours to use. Default \code{order=2}.
-#' @param filtering In {TRUE,FALSE}, defines whether to filter hoods (reduces computing time greatly). Default \code{filtering = TRUE}.
+#' @param order In \code{c(1,2)}, defines which order of neighbours to use. Default \code{order = 2}.
+#' @param filtering In \code{c(TRUE,FALSE)}, defines whether to filter hoods (reduces computing time greatly). Default \code{filtering = TRUE}.
 #' @param reducedDim_name defines the slot in \code{reducedDim(x)} to use as embedding for graph construction.
 #' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells. Default \code{k_init = 50}.
 #' @param d Positive integer, defines how many dimensions from \code{reducedDim(x)} to use. Default \code{d = 30}.
 #' @param cluster_id Character specifying which field in colData(x) to use for 'localised' neighbourhood size estimation.
-#' This might be useful in case dataset is rather big which will result in excessive running time.
-#' In case cluster_id is provided, we will calculate neighbourhood size distribution within individual clusters and aggregate results
+#' This might be useful if dataset is rather big which will result in an excessive running time.
+#' In case \code{cluster_id} is provided, we will calculate neighbourhood size distribution within individual clusters and aggregate results
 #' across clusters in order to speed up the process (note that it might result in slightly biased estimates).
 #' Default \code{cluster_id = NULL}, in which case neighbourhood sizes will be estimated for the whole dataset.
 #' @param plot_stat Boolean specifying whether to plot the stat. Default \code{plot_stat = TRUE}.
