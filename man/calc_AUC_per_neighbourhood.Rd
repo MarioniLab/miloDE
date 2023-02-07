@@ -42,8 +42,17 @@ Only relevant if BPPARAM = NULL. Default \code{n_threads = 2}.}
 \code{data.frame} object, with AUC calculated for each neighbourhood.
 }
 \description{
-Returns per neighbourhood AUC from Augur based classifier (in \code{data.frame} format).\n
+Returns per neighbourhood AUC from Augur based classifier (in \code{data.frame} format).
+}
+\details{
 \emph{Note that it is only relevant for \dQuote{simple} models (i.e. no interactions.)}.
+
+This function calculates for each neighbourhood whether cells between 2 conditions can be separated
+with Random Forest based classifiers (adapted from \code{\link[Augur]{calculate_auc}}).
+Accordingly, AUCs of the classifiers represent how well we can separate 2 conditions.
+
+We suggest that neighbourhoods with AUC > 0.5 suggest a certain degree of perturbation between 2 conditions that can further be examined
+with DE testing. You also can set your own AUC threshold if desired as well as use AUCs to rank neighbourhoods.
 }
 \examples{
 require(SingleCellExperiment)
