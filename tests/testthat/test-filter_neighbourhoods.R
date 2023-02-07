@@ -33,9 +33,20 @@ test_that("Return is the correct class", {
 })
 
 
+# filtering returns less nhoods
+test_that("Filtering returns less nhoods", {
+  set.seed(15)
+  sce_milo = assign_neighbourhoods(sce_mouseEmbryo , k = 25, filtering = FALSE, reducedDim_name = "pca.corrected")
+  sce_milo_filtered = filter_neighbourhoods(sce_milo)
+
+  # sce should be of the right format
+  expect_gt(ncol(nhoods(sce_milo)) , ncol(nhoods(sce_milo_filtered)))
+  expect_equal(nrow(nhoods(sce_milo)) , nrow(nhoods(sce_milo_filtered)))
+})
+
 
 # filtering filtered data gives same result
-test_that("Filtering filtered data is futile", {
+test_that("Filtering filtered data is futile_1", {
   set.seed(15)
   sce_milo = assign_neighbourhoods(sce_mouseEmbryo , k = 25, filtering = TRUE, reducedDim_name = "pca.corrected")
   sce_milo_filtered = filter_neighbourhoods(sce_milo)
@@ -48,7 +59,7 @@ test_that("Filtering filtered data is futile", {
 
 
 # initial filtering = post hoc filtering
-test_that("Filtering filtered data is futile", {
+test_that("Filtering filtered data is futile_2", {
   set.seed(32)
   sce_milo_1 = assign_neighbourhoods(sce_mouseEmbryo , k = 25, filtering = TRUE, reducedDim_name = "pca.corrected")
 
