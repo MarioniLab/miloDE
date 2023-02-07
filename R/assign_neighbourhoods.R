@@ -37,7 +37,7 @@ assign_neighbourhoods = function(x , reducedDim_name , k = 25, prop = 0.2, order
 
   #args = c(as.list(environment()))
   #out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim_name)
-  out = .check_argument_correct(x, .check_sce, "Check x - something is wrong (gene names unique? reducedDim.name is not present?)") &
+  out = .check_argument_correct(x, .check_sce, "Check x - something is wrong (gene names unique?)") &
         .check_argument_correct(k, .check_positive_integer, "Check k - should be positive integer") &
         .check_argument_correct(prop, .check_prop, "Check prop - should be positive number between 0 and 1") &
         .check_argument_correct(order, function(x) .check_arg_within_options(x, c(1,2)),
