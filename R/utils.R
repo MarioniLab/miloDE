@@ -121,20 +121,23 @@
 
 #' @importFrom SummarizedExperiment colData
 .check_sample_and_condition_id_valid = function(x , condition_id , sample_id){
-  out = TRUE
-  meta = as.data.frame(colData(x))
-  tab = table(meta[, sample_id] , meta[, condition_id])
-  tab = sapply(1:nrow(tab) , function(i) sum(tab[i,] == 0))
 
-  if (mean(tab == 1) < 1){
-    stop("Each sample_id should be associated with one condition")
-    out = FALSE
-  }
   if (condition_id == sample_id){
     stop("'sample_id' and 'condition_id' can not be the same")
-    out = FALSE
+    return(FALSE)
   }
-  return(out)
+  else {
+    meta = as.data.frame(colData(x))
+    tab = table(meta[, sample_id] , meta[, condition_id])
+    tab = sapply(1:nrow(tab) , function(i) sum(tab[i,] > 0))
+    if (mean(tab == 1) < 1){
+      stop("Each sample_id should be associated with one condition")
+      return(FALSE)
+    }
+    else {
+      return(TRUE)
+    }
+  }
 }
 
 #' @importFrom SummarizedExperiment colData
