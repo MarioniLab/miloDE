@@ -2,7 +2,8 @@
 
 #' calc_AUC_per_neighbourhood
 #'
-#' Returns per neighbourhood AUC from Augur based classifier (in \code{data.frame} format).\n
+#' Returns per neighbourhood AUC from Augur based classifier (in \code{data.frame} format).
+#'
 #' \emph{Note that it is only relevant for \dQuote{simple} models (i.e. no interactions.)}.
 #'
 #' @param x A \code{\linkS4class{Milo}} object.
@@ -19,6 +20,14 @@
 #' Higher number results in faster calculation, but its feasibility depends on the specs of your machine.
 #' Only relevant if BPPARAM = NULL. Default \code{n_threads = 2}.
 #' @param BPPARAM NULL or \code{\link{MulticoreParam}} object. Default \code{BPPARAM = NULL} assuming no parallelisation.
+#' @details
+#' This function calculates for each neighbourhood whether cells between 2 conditions can be separated
+#' with Random Forest based classifiers (adapted from \code{\link[Augur]{calculate_auc}}).
+#' Accordingly, AUCs of the classifiers represent how well we can separate 2 conditions.
+#'
+#' We suggest that neighbourhoods with AUC > 0.5 suggest a certain degree of perturbation between 2 conditions that can further be examined
+#' with DE testing. You also can set your own AUC threshold if desired as well as use AUCs to rank neighbourhoods.
+#'
 #' @return \code{data.frame} object, with AUC calculated for each neighbourhood.
 #' @export
 #' @importFrom SummarizedExperiment colData assayNames
@@ -42,16 +51,14 @@
 #' ncol=n_latent)
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
 #' sce = calc_AUC_per_neighbourhood(sce, condition_id = "type")
-#' @name calc_AUC_per_neighbourhood
 calc_AUC_per_neighbourhood <- function(x , genes = rownames(x) , sample_id = "sample" ,
                                        condition_id , conditions = NULL,
                                        min_n_cells_per_sample = 3, n_threads = 2 , BPPARAM = NULL){
 
-  out = .check_argument_correct(x, .check_sce, "Check x - something is wrong (gene names unique? reducedDim.name is not present?)") &
+  out = .check_argument_correct(x, .check_sce, "Check x - something is wrong (are gene names unique?)") &
     .check_sce_milo(x) &
     .check_argument_correct(sample_id, is.character, "Check sample_id - should be character vector") &
     .check_argument_correct(condition_id, is.character, "Check condition_id - should be character vector") &
-    .check_argument_correct(conditions, .check_string_or_null, "Check conditions - should be NULL or character vector") &
     .check_argument_correct(min_n_cells_per_sample, .check_positive_integer, "Check min_n_cells_per_sample - should be positive integer") &
     .check_argument_correct(n_threads , .check_positive_integer , "Check n_threads - should be positive integer") &
     .check_var_in_coldata_sce(x , sample_id , "sample_id") & .check_condition_in_coldata_sce(x , condition_id) &
@@ -80,6 +87,9 @@ calc_AUC_per_neighbourhood <- function(x , genes = rownames(x) , sample_id = "sa
   } else {
     if (mean(conditions %in% unique(x$milo_condition_id)) < 1){
       stop("All specified conditions should be present.")
+    }
+    if (!length(conditions) == 2){
+      stop("Conditions should be a vector of 2 elements.")
     }
     x = x[, x$milo_condition_id %in% conditions]
   }
@@ -129,11 +139,10 @@ calc_AUC_per_neighbourhood <- function(x , genes = rownames(x) , sample_id = "sa
   current.sce = x[,colnames(x) %in% current.cells]
   current.sce = .filter_samples_with_low_n_cells_in_hood(current.sce , min_n_cells_per_sample = min_n_cells_per_sample)
 
-  current.sce$celltype.dummy = "dummy"
-  meta = as.data.frame(colData(current.sce))
-
   if (ncol(current.sce) > 0){
-    tab = table(current.sce$milo_condition_id)
+    current.sce$celltype.dummy = "dummy"
+    meta = as.data.frame(colData(current.sce))
+    tab = table(as.character(current.sce$milo_condition_id))
     if (length(tab) == 2 & tab[1] >= min_cells & tab[2] >= min_cells){
       auc = calculate_auc(logcounts(current.sce), meta, cell_type_col = "celltype.dummy",
                           label_col = "milo_condition_id" , n_subsamples = 0 ,
@@ -141,6 +150,7 @@ calc_AUC_per_neighbourhood <- function(x , genes = rownames(x) , sample_id = "sa
                           feature_perc = 1 , n_threads = n_threads , show_progress = FALSE)
       out = as.data.frame(auc$AUC)
       out$auc_calculated = TRUE
+
     } else {
       out = data.frame(cell_type = "dummy" , auc = NaN , auc_calculated = FALSE)
     }
@@ -150,4 +160,7 @@ calc_AUC_per_neighbourhood <- function(x , genes = rownames(x) , sample_id = "sa
   out$Nhood_center = hood_id
   return(out)
 }
+
+
+
 
