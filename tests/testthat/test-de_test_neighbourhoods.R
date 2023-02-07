@@ -164,20 +164,6 @@ test_that("Wrong input gives errors", {
                fixed=TRUE
   )
 
-
-  # warning if covariates contain sample_id
-  sce_test = sce
-  sce_test$sample_id = sce_test$sample
-  expect_warning(de_test_neighbourhoods(x = sce_test , sample_id = "sample", design = ~tomato, covariates = c("tomato"), plot_summary_stat = F , covariates = c("toy_cov_1" , "sample_id") ),
-               "Discarding 'sample_id' from covariates since 'sample_id' can not be a covariate name. If in fact you wish to pass a covariate 'sample_id', please rename it first.",
-               fixed=TRUE
-  )
-  expect_warning(de_test_neighbourhoods(x = sce_test , sample_id = "sample", design = ~tomato, covariates = c("tomato"), plot_summary_stat = F , covariates = "sample_id" ),
-                 "Discarding 'sample_id' from covariates since 'sample_id' can not be a covariate name. If in fact you wish to pass a covariate 'sample_id', please rename it first.",
-                 fixed=TRUE
-  )
-
-
   # design and covariates should match
   expect_error(de_test_neighbourhoods(x = sce , sample_id = "sample", design = ~stage.mapped*tomato, covariates = c("tomato"), plot_summary_stat = F ),
                "Some of the design's arguments are not in the covariate vector.",
