@@ -104,10 +104,10 @@ de_test_neighbourhoods = function(x ,
     }
   }
 
-  nhoods_sce = nhoods(x)
+  nhoods_x = nhoods(x)
 
   if (!is.null(subset_nhoods)){
-    out = .check_subset_nhoods(subset_nhoods , nhoods_sce)
+    out = .check_subset_nhoods(subset_nhoods , nhoods_x)
   }
 
   # assign sample_id
@@ -154,7 +154,7 @@ de_test_neighbourhoods = function(x ,
 
   # select hoods for testing
   if (is.null(subset_nhoods)){
-    subset_nhoods = c(1:ncol(nhoods_sce))
+    subset_nhoods = c(1:ncol(nhoods_x))
   }
   else {
     if (is.logical(subset_nhoods)){
@@ -167,7 +167,7 @@ de_test_neighbourhoods = function(x ,
   # get DE for each hood
   if (length(subset_nhoods) == 1){
     warning("You are testing only one neighbourhood. If this is really the intended case, we recommend to run 'de_test_single_neighbourhood' directly.")
-    out = de_test_single_neighbourhood(x , nhoods_sce = nhoods_sce, hood_id = subset_nhoods,
+    out = de_test_single_neighbourhood(x , nhoods_x = nhoods_x, hood_id = subset_nhoods,
                                        sample_id = sample_id, design = design, covariates = covariates, contrasts = contrasts,
                                        min_n_cells_per_sample = min_n_cells_per_sample ,
                                        min_count = min_count , run_separately = F)
@@ -182,7 +182,7 @@ de_test_neighbourhoods = function(x ,
       }
       de_stat = lapply(seq(length(subset_nhoods)) , function(i){
         hood_id = subset_nhoods[i]
-        out = de_test_single_neighbourhood(x , nhoods_sce = nhoods_sce, hood_id = hood_id,
+        out = de_test_single_neighbourhood(x , nhoods_x = nhoods_x, hood_id = hood_id,
                                            sample_id = sample_id, design = design, covariates = covariates, contrasts = contrasts,
                                            min_n_cells_per_sample = min_n_cells_per_sample ,
                                            min_count = min_count , run_separately = F)
@@ -201,7 +201,7 @@ de_test_neighbourhoods = function(x ,
       }
       de_stat = bplapply(seq(length(subset_nhoods)) , function(i){
         hood_id = subset_nhoods[i]
-        out = de_test_single_neighbourhood(x , nhoods_sce = nhoods_sce, hood_id = hood_id,
+        out = de_test_single_neighbourhood(x , nhoods_x = nhoods_x, hood_id = hood_id,
                                            sample_id = sample_id, design = design, covariates = covariates, contrasts = contrasts,
                                            min_n_cells_per_sample = min_n_cells_per_sample ,
                                            min_count = min_count , run_separately = F)
@@ -253,13 +253,13 @@ de_test_neighbourhoods = function(x ,
       if (is.null(BPPARAM)){
         pval_corrected = lapply(rownames(de_stat_sce) , function(gene){
           pvals = assay(de_stat_sce , "pval")[gene , ]
-          out = spatial_pval_adjustment(nhoods_sce = as.matrix(nhoods_sce[,subset_nhoods]) , pvalues = pvals)
+          out = spatial_pval_adjustment(nhoods_x = as.matrix(nhoods_x[,subset_nhoods]) , pvalues = pvals)
           return(out)
         })
       } else {
         pval_corrected = bplapply(rownames(de_stat_sce) , function(gene){
           pvals = assay(de_stat_sce , "pval")[gene , ]
-          out = spatial_pval_adjustment(nhoods_sce = as.matrix(nhoods_sce[,subset_nhoods]) , pvalues = pvals)
+          out = spatial_pval_adjustment(nhoods_x = as.matrix(nhoods_x[,subset_nhoods]) , pvalues = pvals)
           return(out)
         }, BPPARAM = BPPARAM)
       }
@@ -303,8 +303,8 @@ de_test_neighbourhoods = function(x ,
 #'
 #' Tests single neighbourhood for DE; not intended to be used by itself (however allowed to), but rather as a part of \code{\link{de_test_neighbourhoods}}
 #' @param x A \code{\linkS4class{Milo}} object
-#' @param nhoods_sce Should be extracted from x as \code{nhoods(x)} prior to running the function.
-#' @param hood_id Numeric specifying for which neighbourhood we should perform testing. Should be in \code{1:ncol(nhoods_sce)}.
+#' @param nhoods_x Should be extracted from x as \code{nhoods(x)} prior to running the function.
+#' @param hood_id Numeric specifying for which neighbourhood we should perform testing. Should be in \code{1:ncol(nhoods_x)}.
 #' @param sample_id Character specifying which variable should be used as a replicate ID.
 #' Should be in \code{colnames(colData(x))}. Default \code{sample_id = "sample"}.
 #' @param design A \code{formula} object describing the experimental design for DE testing.
@@ -349,17 +349,17 @@ de_test_neighbourhoods = function(x ,
 #' reducedDim(sce , "reduced_dim") =
 #' matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-#' nhoods_sce = nhoods(sce)
-#' de_stat = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce,
+#' nhoods_x = nhoods(sce)
+#' de_stat = de_test_single_neighbourhood(sce , nhoods_x = nhoods_x,
 #' hood_id = 1 , sample_id = "sample" ,
 #' design = ~type, covariates = c("type"))
 #'
-de_test_single_neighbourhood = function(x , nhoods_sce , hood_id , sample_id ,
+de_test_single_neighbourhood = function(x , nhoods_x , hood_id , sample_id ,
                                         design , covariates, contrasts = NULL,
                                         min_n_cells_per_sample = 1 ,
                                         min_count = 3 , run_separately = TRUE ){
 
-  if (!hood_id %in% 1:ncol(nhoods_sce)){
+  if (!hood_id %in% 1:ncol(nhoods_x)){
     stop("'hood_id' should be in 1:ncol(nhoods(x))")
     return(FALSE)
   }
@@ -397,7 +397,7 @@ de_test_single_neighbourhood = function(x , nhoods_sce , hood_id , sample_id ,
 
 
   # select cells in the hood
-  current.cells = which(nhoods_sce[,hood_id] == 1)
+  current.cells = which(nhoods_x[,hood_id] == 1)
   current.sce = x[,current.cells]
   current.sce = .filter_samples_with_low_n_cells_in_hood(current.sce , min_n_cells_per_sample = min_n_cells_per_sample)
 
@@ -446,7 +446,7 @@ de_test_single_neighbourhood = function(x , nhoods_sce , hood_id , sample_id ,
       }
     )
     stat$Nhood = hood_id
-    stat$Nhood_center = colnames(nhoods_sce)[hood_id]
+    stat$Nhood_center = colnames(nhoods_x)[hood_id]
 
     # clean output
     stat = stat[, c("Nhood", "Nhood_center", "gene", "logFC" , "PValue" , "FDR" , "test_performed")]
@@ -465,7 +465,7 @@ de_test_single_neighbourhood = function(x , nhoods_sce , hood_id , sample_id ,
 
     # clean output
     stat$Nhood = hood_id
-    stat$Nhood_center = colnames(nhoods_sce)[hood_id]
+    stat$Nhood_center = colnames(nhoods_x)[hood_id]
     stat = stat[, c("Nhood", "Nhood_center", "gene", "logFC" , "PValue" , "FDR" , "test_performed")]
     colnames(stat)[colnames(stat) == "PValue"] = "pval"
     colnames(stat)[colnames(stat) == "FDR"] = "pval_corrected_across_genes"

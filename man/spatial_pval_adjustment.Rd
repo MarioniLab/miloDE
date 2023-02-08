@@ -4,10 +4,10 @@
 \alias{spatial_pval_adjustment}
 \title{spatial_pval_adjustment}
 \usage{
-spatial_pval_adjustment(nhoods_sce, pvalues)
+spatial_pval_adjustment(nhoods_x, pvalues)
 }
 \arguments{
-\item{nhoods_sce}{\code{nhoods(x)}}
+\item{nhoods_x}{\code{nhoods(x)}}
 
 \item{pvalues}{vector of p-values}
 }
@@ -32,7 +32,7 @@ reducedDim(sce , "reduced_dim") =
 matrix(rnorm(n_col*n_latent), ncol=n_latent)
 sce = assign_neighbourhoods(sce,
 reducedDim_name = "reduced_dim" , k = 10 , order = 1)
-nhoods_sce = nhoods(sce)
-pvalues = runif(n = ncol(nhoods_sce) , min = 0 , max = 1)
-out = spatial_pval_adjustment(nhoods_sce = nhoods_sce, pvalues = pvalues)
+nhoods_x = nhoods(sce)
+pvalues = runif(n = ncol(nhoods_x) , min = 0 , max = 1)
+out = spatial_pval_adjustment(nhoods_x, pvalues = pvalues)
 }

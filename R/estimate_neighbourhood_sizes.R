@@ -96,7 +96,7 @@ estimate_neighbourhood_sizes = function(x, reducedDim_name , k_grid = seq(10,100
     # select only big clusters
     clusters = names(clusters)[clusters > 2*max(k_grid)]
     if (length(clusters) == 0){
-      stop("All specified clusters have # cells < 2*max(k). We recommed to provide higher clustering resolution, decreasing max(k) or set cluster_id = NULL.")
+      stop("All specified clusters have # cells < 2*max(k). We recommed to provide lower clustering resolution, decreasing max(k) or set cluster_id = NULL.")
     }
     else {
       stat = lapply(k_grid , function(k){

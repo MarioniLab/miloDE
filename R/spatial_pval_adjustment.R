@@ -3,7 +3,7 @@
 #' spatial_pval_adjustment
 #'
 #' Performs p-values multiple testing correction, with accounting for the overlap. This is achieved by using weighted version of BH correction.
-#' @param nhoods_sce \code{nhoods(x)}
+#' @param nhoods_x \code{nhoods(x)}
 #' @param pvalues vector of p-values
 #' @return Vector with 'spatially' (i.e. across neighbourhoods) adjusted p-values
 #' @export
@@ -22,17 +22,17 @@
 #' matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' sce = assign_neighbourhoods(sce,
 #' reducedDim_name = "reduced_dim" , k = 10 , order = 1)
-#' nhoods_sce = nhoods(sce)
-#' pvalues = runif(n = ncol(nhoods_sce) , min = 0 , max = 1)
-#' out = spatial_pval_adjustment(nhoods_sce = nhoods_sce, pvalues = pvalues)
-spatial_pval_adjustment = function(nhoods_sce , pvalues){
+#' nhoods_x = nhoods(sce)
+#' pvalues = runif(n = ncol(nhoods_x) , min = 0 , max = 1)
+#' out = spatial_pval_adjustment(nhoods_x, pvalues = pvalues)
+spatial_pval_adjustment = function(nhoods_x , pvalues){
 
   # we will only calculate weights for neighbourhoods in which we are testing
   idx_not_nan = which(!is.na(pvalues))
   if (length(idx_not_nan) > 1){
-    weights = .get_weights(as.matrix(nhoods_sce[,idx_not_nan]))
+    weights = .get_weights(as.matrix(nhoods_x[,idx_not_nan]))
 
-    out = .check_weights_and_pvals(weights , pvalues[idx_not_nan] , as.matrix(nhoods_sce[,idx_not_nan])) & .check_nhoods_matrix(nhoods_sce)
+    out = .check_weights_and_pvals(weights , pvalues[idx_not_nan] , as.matrix(nhoods_x[,idx_not_nan])) & .check_nhoods_matrix(nhoods_x)
 
     n_comparisons = length(pvalues)
     #n_nans = sum(is.na(pvalues))
@@ -57,9 +57,9 @@ spatial_pval_adjustment = function(nhoods_sce , pvalues){
 
 
 
-.get_weights = function(nhoods_sce){
-  out = .check_nhoods_matrix(nhoods_sce)
-  intersect_mat <- crossprod(nhoods_sce)
+.get_weights = function(nhoods_x){
+  out = .check_nhoods_matrix(nhoods_x)
+  intersect_mat <- crossprod(nhoods_x)
   t.connect <- unname(rowSums(intersect_mat))
   weights<- 1/unlist(t.connect)
   return(weights)

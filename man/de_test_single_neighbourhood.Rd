@@ -6,7 +6,7 @@
 \usage{
 de_test_single_neighbourhood(
   x,
-  nhoods_sce,
+  nhoods_x,
   hood_id,
   sample_id,
   design,
@@ -20,9 +20,9 @@ de_test_single_neighbourhood(
 \arguments{
 \item{x}{A \code{\linkS4class{Milo}} object}
 
-\item{nhoods_sce}{Should be extracted from x as \code{nhoods(x)} prior to running the function.}
+\item{nhoods_x}{Should be extracted from x as \code{nhoods(x)} prior to running the function.}
 
-\item{hood_id}{Numeric specifying for which neighbourhood we should perform testing. Should be in \code{1:ncol(nhoods_sce)}.}
+\item{hood_id}{Numeric specifying for which neighbourhood we should perform testing. Should be in \code{1:ncol(nhoods_x)}.}
 
 \item{sample_id}{Character specifying which variable should be used as a replicate ID.
 Should be in \code{colnames(colData(x))}. Default \code{sample_id = "sample"}.}
@@ -73,8 +73,8 @@ sce$type = ifelse(sce$sample \%in\% c(1,2) , "ref" , "query")
 reducedDim(sce , "reduced_dim") =
 matrix(rnorm(n_col*n_latent), ncol=n_latent)
 sce = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-nhoods_sce = nhoods(sce)
-de_stat = de_test_single_neighbourhood(sce , nhoods_sce = nhoods_sce,
+nhoods_x = nhoods(sce)
+de_stat = de_test_single_neighbourhood(sce , nhoods_x = nhoods_x,
 hood_id = 1 , sample_id = "sample" ,
 design = ~type, covariates = c("type"))
 
