@@ -142,9 +142,16 @@ test_that("Wrong input gives errors", {
 
 # return of the correct output
 test_that("Return is the correct class", {
+  require(miloR)
   # right class
   out = assign_neighbourhoods(x = sce_mouseEmbryo , k = 10, prop = 0.2, order = 2, filtering = T, reducedDim_name = "pca.corrected", k_init = 50, d = 30)
   expect_s4_class(out, "Milo")
+
+  # nhoods have data for all the cells
+  nhoods_out = nhoods(out)
+  expect_equal(nrow(nhoods_out) , ncol(out))
+  expect_identical(sort(rownames(nhoods_out)) , sort(colnames(out)))
+
 })
 
 
