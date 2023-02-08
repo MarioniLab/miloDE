@@ -318,7 +318,7 @@ de_test_neighbourhoods = function(x ,
 #' \emph{Note that at the moment we only support one comparison (i.e. one contrast), if you wish to perform several comparisons, please run \code{de_test_neighbourhoods} for each comparison separately.}
 #' @param min_n_cells_per_sample Positive integer specifying the minimum number of cells per replicate to be included in testing.
 #' Default \code{min_n_cells_per_sample = 3}.
-#' @param min_count Positive integer, specifying \code{min.count} for gene selection.
+#' @param min_count Positive integer, specifying \code{min.count} for gene selection (employes \code{\link[edgeR]{filterByExpr}}).
 #' Default \code{min_count = 3}.
 #' @param run_separately A boolean parameter specifying whether the function is to be run as a part of \code{\link{de_test_neighbourhoods}} (FALSE) or as a stand-alone run (TRUE). Default \code{run_separately = TRUE}.
 #' @details

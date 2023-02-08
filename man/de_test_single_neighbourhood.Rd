@@ -42,7 +42,7 @@ check \url{https://www.bioconductor.org/packages/release/bioc/vignettes/edgeR/in
 \item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replicate to be included in testing.
 Default \code{min_n_cells_per_sample = 3}.}
 
-\item{min_count}{Positive integer, specifying \code{min.count} for gene selection.
+\item{min_count}{Positive integer, specifying \code{min.count} for gene selection (employes \code{\link[edgeR]{filterByExpr}}).
 Default \code{min_count = 3}.}
 
 \item{run_separately}{A boolean parameter specifying whether the function is to be run as a part of \code{\link{de_test_neighbourhoods}} (FALSE) or as a stand-alone run (TRUE). Default \code{run_separately = TRUE}.}
