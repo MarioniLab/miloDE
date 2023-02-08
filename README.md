@@ -6,7 +6,7 @@ miloDE builds on an existing framework for DA testing called [Milo](https://pubm
 It exploits the notion of overlapping neighborhoods of homogeneous cells, constructed from graph-representation of scRNA-seq data, and performs testing within each neighborhood. Multiple testing correction is performed either across neighborhoods or across genes. 
 
 <p align="center">
-  <img src="miloDE_cartoon.png" width="500">
+  <img src="miloDE_cartoon.png" width="750">
 </p>
 
 In addition to DE testing, we provide functionality to rank neighbourhoods by degree of the DE as well as plotting functions to visualise results. In the vignette, we showcase how you can carry out clustering analysis to group genes in co-regulated transcriptional modules.
