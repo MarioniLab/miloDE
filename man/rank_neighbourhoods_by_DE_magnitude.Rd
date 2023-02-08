@@ -7,9 +7,9 @@
 rank_neighbourhoods_by_DE_magnitude(de_stat, pval.thresh = 0.1, z.thresh = -3)
 }
 \arguments{
-\item{de_stat}{Output of miloDE (\code{\link{de_test_neighbourhoods}}), either in \code{data.frame} format or \code{\linkS4class{SingleCellExperiment}}.}
+\item{de_stat}{Output of miloDE (\code{\link{de_test_neighbourhoods}}), either in \code{data.frame} or \code{SingleCellExperiment} format.}
 
-\item{pval.thresh}{A scalar specifying which threshold to use for deciding on significance for gene being DE in a hood. Default \code{pval.thresh = 0.1}.}
+\item{pval.thresh}{A scalar specifying which threshold to use for deciding on significance for gene being DE in a neighbourhood. Default \code{pval.thresh = 0.1}.}
 
 \item{z.thresh}{A scalar specifying which threshold to use for deciding on which z-normalised p-values are going to be considered specifically DE. Default \code{z.thresh = -3}.}
 }
@@ -17,12 +17,13 @@ rank_neighbourhoods_by_DE_magnitude(de_stat, pval.thresh = 0.1, z.thresh = -3)
 \code{data.frame}, with calculated number-DE-genes and number-specific-DE-genes for each neighbourhood
 }
 \description{
-Ranks neighbourhoods by the magnitude of DE: number of DE genes and number of \sQuote{specifically} DE genes.
+Ranks neighbourhoods by the magnitude of DE: number of DE genes and number of \sQuote{specifically} DE genes
 }
 \details{
 To calculate number of DE genes per neighbourhood, we use \code{pval_corrected_across_genes}.
+Accordingly, for each neighbourhood we calculate how many genes has p-values lower than designated threshold.
 
-To calculate number of \sQuote{specifically} DE genes, we first z-normalise \code{pval_corrected_across_nhoods} and them for each
+To calculate number of \sQuote{specifically} DE genes, we first z-normalise \code{pval_corrected_across_nhoods} (for each gene) and then for each
 neighbourhood, calculate how many genes have z-normalised p-values lower than designated threshold.
 
 \emph{Note that for this analysis we set NaN p-values (raw and corrected) to 1 - interpret accordingly.}

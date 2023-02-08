@@ -19,7 +19,7 @@ assign_neighbourhoods(
 \arguments{
 \item{x}{A \code{\linkS4class{SingleCellExperiment}} object.}
 
-\item{reducedDim_name}{Defines the assay in \code{reducedDim(x)} to use as embedding for graph construction.}
+\item{reducedDim_name}{Defines the assay in \code{reducedDim(x)} to use as the embedding for graph construction.}
 
 \item{k}{Positive integer, defines how many neighbours to use for the neighbourhood assignment. Default \code{k = 25}.}
 
@@ -29,7 +29,7 @@ assign_neighbourhoods(
 
 \item{filtering}{In \code{c(TRUE,FALSE)}, defines whether to refine the assignment. Default \code{filtering = TRUE}.}
 
-\item{k_init}{Positive integer, defines how many neighbours to use for identifying anchor cells (for this we use 1st-order kNN). Default \code{k_init = 50}.}
+\item{k_init}{Positive integer, defines how many neighbours to use for identifying anchor cells (for this step we use 1st-order kNN). Default \code{k_init = 50}.}
 
 \item{d}{Positive integer, defines how many dimensions from \code{reducedDim(x)} to use. Default \code{d = 30}.}
 
@@ -42,11 +42,11 @@ Milo object containing cell-neighbourhood matrix in \code{nhoods(out)} slot.
 Assign neighbourhoods to \code{SingleCellExperiment} object
 }
 \details{
-This function assigns neighbourhoods to single cell data. This includes assigning graph representation, selecting \sQuote{index} cells and, finally, for each index cell, assigning it along with its neighbourhoors to one neighbourhood.
+This function assigns neighbourhoods to single-cell data. This includes assigning graph representation, selecting \sQuote{index} cells and, finally, for each index cell, assigning it along with its neighbourhoors to one neighbourhood.
 
 Specifically, algorithm goes as follows:
 \enumerate{
-\item Assigning \sQuote{loose} graph (i.e. ~low k, 1st-order kNN) to select index cells for the selected \code{prop} (greatly reduces computational time).
+\item Assigning \sQuote{loose} graph (i.e. ~low k, 1st-order kNN) to select index cells for the selected \code{prop} (greatly reduces computational time to look for \sQuote{index} cells in a loose graph).
 \item Reassigning graph following entered by the user \code{order} and \code{k}.
 \item Assigning neighbourhoods.
 \item (Optional but recommended) Refining the neighbourhood assignment (check \code{\link{filter_neighbourhoods}}).

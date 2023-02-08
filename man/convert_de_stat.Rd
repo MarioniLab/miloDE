@@ -9,13 +9,13 @@ convert_de_stat(de_stat, assay_names = NULL, coldata_names = NULL)
 \arguments{
 \item{de_stat}{miloDE results, output of \code{\link{de_test_neighbourhoods}}; either in \code{data.frame} or \code{SingleCellExperiment}.}
 
-\item{assay_names}{Character string specifying which fields are treated as assays.
-Note that \code{logFC}, \code{pval}, \code{pval_corrected_across_genes} and \code{pval_corrected_across_nhoods} are hard-coded to be included.}
+\item{assay_names}{Character string specifying which fields should be treated as assays.
+Note that \code{logFC}, \code{pval}, \code{pval_corrected_across_genes} and \code{pval_corrected_across_nhoods} are hard-coded to be included in assays.}
 
-\item{coldata_names}{Character string specifying which fields are treated as \code{Nhood} metadata.
-Note that \code{Nhood}, \code{Nhood_center}, \code{test_performed} are hard-coded to be included.
+\item{coldata_names}{Character string specifying which fields should be treated as neighbourhood metadata.
+Note that \code{Nhood}, \code{Nhood_center}, \code{test_performed} are hard-coded to be included in coldata.
 
-\emph{Please note that \code{coldata_names} have to be the attributes of neighbourhoods (i.e. same across different genes for the same neighbourhood).}}
+\emph{Please note that \code{coldata_names} have to be the attributes of neighbourhoods (i.e. same values across different genes for the same neighbourhood).}}
 }
 \value{
 A \code{\linkS4class{SingleCellExperiment}} object or \code{data.frame} object, containing miloDE results.
@@ -25,8 +25,9 @@ Converts output of miloDE between \code{\link[base]{data.frame}} and \code{\link
 }
 \details{
 This function converts results of \code{\link{de_test_neighbourhoods}} between \code{data.frame} object and \code{SingleCellExperiment}.
+
 \code{data.frame} object is more commonly used and might be easier to navigate, however, if total number of tests (i.e. gene x neighboourhoods)
-is overwhelmingly large, \code{SingleCellExperiment} might be more suitable.
+is overwhelmingly large, \code{SingleCellExperiment} might be more suitable and faster to work with.
 }
 \examples{
 de_stat = expand.grid(gene = paste0("gene" , c(1:5)) , Nhood = c(1:10))

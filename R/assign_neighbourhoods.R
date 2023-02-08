@@ -4,19 +4,19 @@
 #'
 #' Assign neighbourhoods to \code{SingleCellExperiment} object
 #' @param x A \code{\linkS4class{SingleCellExperiment}} object.
-#' @param reducedDim_name Defines the assay in \code{reducedDim(x)} to use as embedding for graph construction.
+#' @param reducedDim_name Defines the assay in \code{reducedDim(x)} to use as the embedding for graph construction.
 #' @param k Positive integer, defines how many neighbours to use for the neighbourhood assignment. Default \code{k = 25}.
 #' @param prop Numerical, between 0 and 1, defines which fraction of cells to use as neighbourhood centres. Default \code{prop = 0.2}.
 #' @param order In \code{c(1,2)}, defines which order of neighbours to use. Default \code{order = 2}.
 #' @param filtering In \code{c(TRUE,FALSE)}, defines whether to refine the assignment. Default \code{filtering = TRUE}.
-#' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells (for this we use 1st-order kNN). Default \code{k_init = 50}.
+#' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells (for this step we use 1st-order kNN). Default \code{k_init = 50}.
 #' @param d Positive integer, defines how many dimensions from \code{reducedDim(x)} to use. Default \code{d = 30}.
 #' @param verbose Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.
 #' @details
-#' This function assigns neighbourhoods to single cell data. This includes assigning graph representation, selecting \sQuote{index} cells and, finally, for each index cell, assigning it along with its neighbourhoors to one neighbourhood.
+#' This function assigns neighbourhoods to single-cell data. This includes assigning graph representation, selecting \sQuote{index} cells and, finally, for each index cell, assigning it along with its neighbourhoors to one neighbourhood.
 #'
 #' Specifically, algorithm goes as follows:
-#' 1. Assigning \sQuote{loose} graph (i.e. ~low k, 1st-order kNN) to select index cells for the selected \code{prop} (greatly reduces computational time).
+#' 1. Assigning \sQuote{loose} graph (i.e. ~low k, 1st-order kNN) to select index cells for the selected \code{prop} (greatly reduces computational time to look for \sQuote{index} cells in a loose graph).
 #' 2. Reassigning graph following entered by the user \code{order} and \code{k}.
 #' 3. Assigning neighbourhoods.
 #' 4. (Optional but recommended) Refining the neighbourhood assignment (check \code{\link{filter_neighbourhoods}}).

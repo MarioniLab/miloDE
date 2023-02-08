@@ -27,16 +27,16 @@ de_test_neighbourhoods(
 Should be in \code{colnames(colData(x))}. Default \code{sample_id = "sample"}.}
 
 \item{design}{A \code{formula} object describing the experimental design for DE testing.
-Note that if \code{contrasts = NULL} (default), the last column column of model will be used for testing.}
+Note that if \code{contrasts = NULL} (default), the last column column of model matrix will be used for testing.}
 
 \item{covariates}{Vector specifying all covariates that are passed into experimental design.
-It should contain all columns used in the design formula (except \code{sample_id}).}
+\emph{It should contain all columns used in the design formula (except \code{sample_id})}.}
 
 \item{contrasts}{NULL (default) or character string specifying what comparison to perform.
 If you are unsure regarding the appropriate syntax for the \code{contrasts} in your data,
 check \url{https://www.bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf}.
 
-\emph{Note that at the moment we only support one comparison, if you wish to perform several comparisons, please run \code{\link{de_test_neighbourhoods}} for each comparison separately.}}
+\emph{Note that at the moment we only support one comparison (i.e. one contrast); if you wish to perform several comparisons, please run \code{\link{de_test_neighbourhoods}} for each comparison separately.}}
 
 \item{subset_nhoods}{NULL or character vector specifying the set of neighbourhoods that will be tested for DE.
 Default \code{subset_nhoods = NULL} meaning no subsetting.}
@@ -44,27 +44,34 @@ Default \code{subset_nhoods = NULL} meaning no subsetting.}
 \item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replicate to be included in testing.
 Default \code{min_n_cells_per_sample = 3}.}
 
-\item{min_count}{Positive integer, specifying min.count for gene selection.
+\item{min_count}{Positive integer, specifying \code{min.count} for gene selection (employes \code{\link[edgeR]{filterByExpr}}).
 Default \code{min_count = 3}.}
 
-\item{output_type}{In \code{c("data.frame","SCE")} Specifying the output format - either in \code{data.frame} or \code{\linkS4class{SingleCellExperiment}}.}
+\item{output_type}{In \code{c("data.frame","SCE")} Specifying the output format - either in \code{data.frame} or \code{\linkS4class{SingleCellExperiment}}.
+Default \code{output_type = "data.frame"}.}
 
-\item{plot_summary_stat}{Boolean specifying if we plot Milo neighbourhood plot summarising per neighbourhood whether testing was performed}
+\item{plot_summary_stat}{Boolean specifying if we plot Milo neighbourhood plot summarising per neighbourhood whether testing was performed.
+Default \code{plot_summary_stat = FALSE}.}
 
 \item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default \code{layout = "UMAP"}).
 Only relevant if \code{plot_summary_stat = TRUE}.}
 
-\item{BPPARAM}{NULL or BPPARAM object to use for parallelisation. Default \code{BPPARAM = NULL}.}
+\item{BPPARAM}{NULL or \code{\link{MulticoreParam}} object to use for parallelisation (see \code{README} for the usage). Default \code{BPPARAM = NULL} meaning no parallelisation.
+Note that if possible we recommend to parallel this in order to reduce computational time.}
 
 \item{verbose}{Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.}
 }
 \value{
-\code{data.frame} or \code{SingleCellExperiment} object containing miloDE results for all supplied neighbourhoods (per gene-neighbourhood).
-This includes logFC and p-values (raw and corrected across genes or neighbourhoods).
+\code{data.frame} or \code{SingleCellExperiment} object containing miloDE results for all supplied neighbourhoods.
+For each tested gene-neighbourhood pair, we return logFC and p-values (raw and corrected across genes or neighbourhoods).
 }
 \description{
-Performs DE testing within each neighbourhood + post hoc p-value correction across neighbourhoods. If for a \link{gene-neighbourhood} pair test is not performed
-(for example, gene is not expressed in this neighbourhood), we returns NaNs.
+Performs DE testing within each neighbourhood + post hoc p-value correction across neighbourhoods. If a test for a gene x neighbourhood pair is not performed
+(i.e. gene is not expressed in this neighbourhood and therefore discarded), we returns NaNs.
+}
+\details{
+We employ edgeR testing (using \code{glmQLFit}) within each neighbourhood.
+We allow user to submit the desired experimental design and incorporate various covariates, which is beneficial in the context of large cohort studies.
 }
 \examples{
 require(SingleCellExperiment)

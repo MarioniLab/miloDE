@@ -2,9 +2,9 @@
 
 #' rank_neighbourhoods_by_DE_magnitude
 #'
-#' Ranks neighbourhoods by the magnitude of DE: number of DE genes and number of \sQuote{specifically} DE genes.
-#' @param de_stat Output of miloDE (\code{\link{de_test_neighbourhoods}}), either in \code{data.frame} format or \code{\linkS4class{SingleCellExperiment}}.
-#' @param pval.thresh A scalar specifying which threshold to use for deciding on significance for gene being DE in a hood. Default \code{pval.thresh = 0.1}.
+#' Ranks neighbourhoods by the magnitude of DE: number of DE genes and number of \sQuote{specifically} DE genes
+#' @param de_stat Output of miloDE (\code{\link{de_test_neighbourhoods}}), either in \code{data.frame} or \code{SingleCellExperiment} format.
+#' @param pval.thresh A scalar specifying which threshold to use for deciding on significance for gene being DE in a neighbourhood. Default \code{pval.thresh = 0.1}.
 #' @param z.thresh A scalar specifying which threshold to use for deciding on which z-normalised p-values are going to be considered specifically DE. Default \code{z.thresh = -3}.
 #' @details
 #' To calculate number of DE genes per neighbourhood, we use \code{pval_corrected_across_genes}.

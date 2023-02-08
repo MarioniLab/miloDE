@@ -26,15 +26,15 @@ Should be in \code{colnames(colData(x))}. Default \code{sample_id = "sample"}.}
 \item{condition_id}{Character specifying which variable should be used as a condition ID.
 Should be in \code{colnames(colData(x))}.}
 
-\item{conditions}{In case of multiple comparative groups, character vector specifying which conditions should be tested for separation.
-Default \code{conditions = NULL} that assumes that only 2 different conditions are present.}
+\item{conditions}{In case of multiple comparable groups, character vector specifying which conditions should be tested for separation.
+Default \code{conditions = NULL} and assumes that only 2 different conditions are present.}
 
 \item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replicate to be included in testing.
 Default \code{min_n_cells_per_sample = 3}.}
 
 \item{n_threads}{Positive integer specifying the number of cores to be used to calculate AUC.
 Higher number results in faster calculation, but its feasibility depends on the specs of your machine.
-Only relevant if BPPARAM = NULL. Default \code{n_threads = 2}.}
+Only relevant if \code{BPPARAM = NULL}. Default \code{n_threads = 2}.}
 
 \item{BPPARAM}{NULL or \code{\link{MulticoreParam}} object. Default \code{BPPARAM = NULL} assuming no parallelisation.}
 }
@@ -42,7 +42,7 @@ Only relevant if BPPARAM = NULL. Default \code{n_threads = 2}.}
 \code{data.frame} object, with AUC calculated for each neighbourhood.
 }
 \description{
-Returns per neighbourhood AUC from Augur based classifier (in \code{data.frame} format).
+Returns per neighbourhood AUC from Augur based (RF) classifier
 }
 \details{
 This function calculates for each neighbourhood whether cells between 2 conditions can be separated

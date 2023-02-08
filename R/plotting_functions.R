@@ -385,11 +385,11 @@ plot_DE_gene_set = function(x, de_stat , genes ,
 
 #' plot_beeswarm_single_gene
 #'
-#' Returns beeswarm plot for a single gene
+#' For the selected gene, returns a beeswarm plot, in which the DE statistics for the gene is binned by provided cell groupping (i.e. cell types)
 #' @param de_stat miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
-#' @param gene A character specifying gene ID.
-#' @param nhoodGroup A character specifying which values to use for neighbourhood grouping.
-#' @param alpha A numeric between 0 and 1 specifying the significance threshold. Default \code{alpha = 0.1}.
+#' @param gene A character specifying the gene.
+#' @param nhoodGroup A character specifying which values to use for neighbourhood grouping. Should be an assay in \code{de_stat} (or in \code{colnames(de_stat)} if \code{class(de_stat) == "data.frame"}).
+#' @param alpha A numeric between 0 and 1 specifying the significance threshold. All neighbourhoods that are defined as not significant, will be not coloured. Default \code{alpha = 0.1}.
 #' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
 #' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
 #' @param size A positive number specifying size of the dots. Default \code{size = 2}.

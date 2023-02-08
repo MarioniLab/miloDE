@@ -16,11 +16,11 @@ plot_beeswarm_single_gene(
 \arguments{
 \item{de_stat}{miloDE stat (output of \code{\link{de_test_neighbourhoods}}).}
 
-\item{gene}{A character specifying gene ID.}
+\item{gene}{A character specifying the gene.}
 
-\item{nhoodGroup}{A character specifying which values to use for neighbourhood grouping.}
+\item{nhoodGroup}{A character specifying which values to use for neighbourhood grouping. Should be an assay in \code{de_stat} (or in \code{colnames(de_stat)} if \code{class(de_stat) == "data.frame"}).}
 
-\item{alpha}{A numeric between 0 and 1 specifying the significance threshold. Default \code{alpha = 0.1}.}
+\item{alpha}{A numeric between 0 and 1 specifying the significance threshold. All neighbourhoods that are defined as not significant, will be not coloured. Default \code{alpha = 0.1}.}
 
 \item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
 Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.}
@@ -31,7 +31,7 @@ Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.}
 beeswarm, broke down by cell types; each point is a neighbourhood, colour - logFC for the selected gene
 }
 \description{
-Returns beeswarm plot for a single gene
+For the selected gene, returns a beeswarm plot, in which the DE statistics for the gene is binned by provided cell groupping (i.e. cell types)
 }
 \examples{
 
