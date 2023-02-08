@@ -1,7 +1,7 @@
 
 #' de_test_neighbourhoods
 #'
-#' Performs DE testing within each neighbourhood + post hoc p-value correction across neighbourhoods. If for a [gene-neighbourhood] pair test is not performed
+#' Performs DE testing within each neighbourhood + post hoc p-value correction across neighbourhoods. If for a gene-neighbourhood pair test is not performed
 #' (for example, gene is not expressed in this neighbourhood), we returns NaNs.
 #' @param x A \code{\linkS4class{Milo}} object.
 #' @param sample_id Character specifying which variable should be used as a replicate ID.
