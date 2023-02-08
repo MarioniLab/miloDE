@@ -49,6 +49,7 @@ We will also show how we can parallel `de_test_neighbourhoods`. For this we need
 ```{r setup-parallel}
 
 library(BiocParallel)
+
 ncores = 4
 mcparam = MulticoreParam(workers = ncores)
 register(mcparam)
@@ -138,7 +139,7 @@ We will use k=20, order=2 --> that returns an average neighbourhood size ~400 ce
 
 ## Assign neighbourhoods
 
-To assign neighbourhoods, use `assign_neighbourhoods`. Note that under the hood, there is a probabilistic sampling of index cells --> if you want to ensure the same neighbourhood assignment, please set seed prior to running this function.
+To assign neighbourhoods, use `assign_neighbourhoods`. Note that under the hood, there is a random sampling of index cells --> if you want to ensure the same neighbourhood assignment, please set seed prior to running this function.
 
 Note that we set `filtering = TRUE` to achieve a refined assignment in which redundant neighbourhoods are discarded. Alternatively this can be done post hoc, using `filter_neighbourhoods`. 
 
@@ -241,7 +242,7 @@ Reassuringly, we observe that same regions show both higher AUC and number of DE
 
 The fine neighbourhood resolution allows to cluster genes based on logFC vectors (across the neighbourhoods). One way is to employ WGCNA approach, originally designed to finding co-expressed genes. Instead of gene counts we will use corrected logFC (logFC set to 0 in the neighbourhoods in which it is not DE).
 
-Below we outline a custom script to detect gene modules using WGCNA approach.
+Below we outline a custom script to detect gene modules using WGCNA approach. We will use [scWGCNA](https://github.com/CFeregrino/scWGCNA), specifically designed to handle single-cell data.
 
 Note that WGCNA algorithm is exclusive and sensitive to input parameters - nevertheless, we suggest it is useful to explore what DE patterns exist in your data.
 
