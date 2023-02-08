@@ -148,6 +148,14 @@ test_that("Wrong input gives errors", {
                fixed=TRUE
   )
 
+
+  # cluster_id -- NULL or in the columns of colData
+  expect_error(estimate_neighbourhood_sizes(x = sce_mouseEmbryo , k_grid = c(10,30,50), prop = 0.2, order = 2, filtering = T,
+                                            reducedDim_name = "pca.corrected", k_init = 50, d = 30 , cluster_id = "ct"),
+               "If cluster_id not NULL, it should be in colnames(colData(x))",
+               fixed=TRUE
+  )
+
 })
 
 
@@ -178,3 +186,27 @@ test_that("Values increase as expected", {
   expect_gt(stat$q25[2] , stat$min[3])
 
 })
+
+
+test_that("Finishes for diff cluster_id", {
+  out_null = estimate_neighbourhood_sizes(x = sce_mouseEmbryo , k_grid = c(10,30), prop = 0.2, order = 2, filtering = T,
+                                         reducedDim_name = "pca.corrected", k_init = 50, d = 30 , cluster_id = NULL)
+  out_ct = estimate_neighbourhood_sizes(x = sce_mouseEmbryo , k_grid = c(10,30), prop = 0.2, order = 2, filtering = T,
+                                          reducedDim_name = "pca.corrected", k_init = 50, d = 30 , cluster_id = "celltype.mapped")
+
+  expect_s3_class(out_null, "data.frame")
+  expect_s3_class(out_ct, "data.frame")
+
+})
+
+
+test_that("CT grid should be reasonable", {
+  expect_error(estimate_neighbourhood_sizes(x = sce_mouseEmbryo , k_grid = c(10,30,1000), prop = 0.2, order = 2, filtering = T,
+                                            reducedDim_name = "pca.corrected", k_init = 50, d = 30 , cluster_id = "ct"),
+               "All specified clusters have # cells < 2*max(k). We recommed to provide lower clustering resolution, decreasing max(k) or set cluster_id = NULL.",
+               fixed=TRUE
+  )
+})
+
+
+
