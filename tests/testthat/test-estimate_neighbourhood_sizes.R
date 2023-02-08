@@ -202,7 +202,7 @@ test_that("Finishes for diff cluster_id", {
 
 test_that("CT grid should be reasonable", {
   expect_error(estimate_neighbourhood_sizes(x = sce_mouseEmbryo , k_grid = c(10,30,1000), prop = 0.2, order = 2, filtering = T,
-                                            reducedDim_name = "pca.corrected", k_init = 50, d = 30 , cluster_id = "ct"),
+                                            reducedDim_name = "pca.corrected", k_init = 50, d = 30 , cluster_id = "celltype.mapped"),
                "All specified clusters have # cells < 2*max(k). We recommed to provide lower clustering resolution, decreasing max(k) or set cluster_id = NULL.",
                fixed=TRUE
   )
