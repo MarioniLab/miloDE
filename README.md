@@ -1,9 +1,13 @@
 
-# milo_DE
+# miloDE
 Framework for sensitive DE testing (using neighbourhoods).
 
 miloDE builds on an existing framework for DA testing called [Milo](https://pubmed.ncbi.nlm.nih.gov/34594043/). 
 It exploits the notion of overlapping neighborhoods of homogeneous cells, constructed from graph-representation of scRNA-seq data, and performs testing within each neighborhood. Multiple testing correction is performed either across neighborhoods or across genes. 
+
+<p align="center">
+  <img src="miloDE_cartoon.png" width="500">
+</p>
 
 In addition to DE testing, we provide functionality to rank neighbourhoods by degree of the DE as well as plotting functions to visualise results. In the vignette, we showcase how you can carry out clustering analysis to group genes in co-regulated transcriptional modules.
 
@@ -17,6 +21,8 @@ library(devtools)
 devtools::install_github("MarioniLab/miloDE") 
 library(miloDE)
 
+*Note*: if you have troubles installing miloDE directly, try first to install miloR:
+BiocManager::install('miloR')
 
 ## If you plan to use parallelisation (desired for big datasets), 
 please load `BiocParallel` and enable milticore parallel evaluation:
@@ -83,7 +89,7 @@ de_stat = de_test_neighbourhoods(sce_mouseEmbryo , sample_id = "sample",
 
 Please check the vignette to grasp additional functions aiding interpretation and analysis of miloDE output.
 
-[Effect of Tal1 knock out on mouse development](https://www.dropbox.com/sh/1hrqf0wiffeo12c/AAAdCwAtKgvQ53L1aHdd6ccqa?dl=0). 
+[Effect of Tal1 knock out on mouse development](https://rawcdn.githack.com/MarioniLab/miloDE_tutorials/ba0d569cfb17b3fef1da12518f50af79ce8307a1/miloDE__mouse_embryo.html). 
 
 
 

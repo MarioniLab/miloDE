@@ -1,5 +1,5 @@
 ---
-title: "miloDE__mouse_embryo"
+title: "miloDE: chimera mouse embryo, Tal1-"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{miloDE__mouse_embryo}
