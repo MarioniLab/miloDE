@@ -51,6 +51,14 @@ Default \code{cluster_id = NULL}, in which case neighbourhood sizes will be esti
 \description{
 For a grid of k (order fixed), return hood size distribution; that will help a user to select appropriate k
 }
+\details{
+This function returns an estimated distribution of neighbourhood sizes for different \code{k} values
+(if you want to estimate this for both 1st and 2nd \code{order}, run this twice with changing \code{order}).
+This is useful to gauge whether the neighbourhood size distribution is appropriate, since \code{\link{de_test_neighbourhoods}} takes a while to complete.
+
+Note that this function also might take a while to complete on big datasets (> 70k cells), and in this case we provide an option to estimate neighbourhood
+sizes within annotated clusters (passed in \code{cluster_id}), which will be considerably faster, however, might result in slightly biased estimates.
+}
 \examples{
 require(SingleCellExperiment)
 n_row = 500

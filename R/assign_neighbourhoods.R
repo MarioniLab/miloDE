@@ -12,6 +12,15 @@
 #' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells (for this we use 1st-order kNN). Default \code{k_init = 50}.
 #' @param d Positive integer, defines how many dimensions from \code{reducedDim(x)} to use. Default \code{d = 30}.
 #' @param verbose Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.
+#' @details
+#' This function assigns neighbourhoods to single cell data. This includes assigning graph representation, selecting \sQuote{index} cells and, finally, for each index cell, assigning it along with its neighbourhoors to one neighbourhood.
+#'
+#' Specifically, algorithm goes as follows:
+#' 1. Assigning \sQuote{loose} graph (i.e. ~low k, 1st-order kNN) to select index cells for the selected \code{prop} (greatly reduces computational time).
+#' 2. Reassigning graph following entered by the user \code{order} and \code{k}.
+#' 3. Assigning neighbourhoods.
+#' 4. (Optional but recommended) Refining the neighbourhood assignment (check \code{\link{filter_neighbourhoods}}).
+#'
 #' @return Milo object containing cell-neighbourhood matrix in \code{nhoods(out)} slot.
 #' @export
 #' @importFrom miloR Milo buildGraph graph<- graph nhoods<- nhoodIndex<- buildNhoodGraph

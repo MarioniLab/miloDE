@@ -41,6 +41,17 @@ Milo object containing cell-neighbourhood matrix in \code{nhoods(out)} slot.
 \description{
 Assign neighbourhoods to \code{SingleCellExperiment} object
 }
+\details{
+This function assigns neighbourhoods to single cell data. This includes assigning graph representation, selecting \sQuote{index} cells and, finally, for each index cell, assigning it along with its neighbourhoors to one neighbourhood.
+
+Specifically, algorithm goes as follows:
+\enumerate{
+\item Assigning \sQuote{loose} graph (i.e. ~low k, 1st-order kNN) to select index cells for the selected \code{prop} (greatly reduces computational time).
+\item Reassigning graph following entered by the user \code{order} and \code{k}.
+\item Assigning neighbourhoods.
+\item (Optional but recommended) Refining the neighbourhood assignment (check \code{\link{filter_neighbourhoods}}).
+}
+}
 \examples{
 require(SingleCellExperiment)
 n_row = 500

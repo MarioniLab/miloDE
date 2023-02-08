@@ -59,10 +59,12 @@ Only relevant if \code{plot_summary_stat = TRUE}.}
 \item{verbose}{Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.}
 }
 \value{
-\code{data.frame} or \code{SingleCellExperiment} object containing miloDE results for all supplied neighbourhoods
+\code{data.frame} or \code{SingleCellExperiment} object containing miloDE results for all supplied neighbourhoods (per gene-neighbourhood).
+This includes logFC and p-values (raw and corrected across genes or neighbourhoods).
 }
 \description{
-Performs DE testing within each neighbourhood
+Performs DE testing within each neighbourhood + post hoc p-value correction across neighbourhoods. If for a \link{gene-neighbourhood} pair test is not performed
+(for example, gene is not expressed in this neighbourhood), we returns NaNs.
 }
 \examples{
 require(SingleCellExperiment)

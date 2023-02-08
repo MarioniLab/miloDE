@@ -8,9 +8,9 @@
 #' This function refines neighbourhood assignment and discards redundant neighbourhoods. This call is highly recommended since it reduces computational time greatly.
 #' It is called directly in \code{\link{assign_neighbourhoods}} if \code{filtering=TRUE}, and also can be called independently post hoc.
 #'
-#' Under the hood, it adapts \code{\link[RcppGreedySetCover]{greedySetCover}} function, which implements greedy solution to NP-hard cover set problem.
+#' Under the hood, it adapts \code{\link[RcppGreedySetCover]{greedySetCover}} function, which implements greedy solution to NP-hard \sQuote{set cover} problem.
 #' In this solution, all neighbourhoods are sorted in the decreasing order of their size (i.e. number of cells),
-#' and neighbourhoods are iteratively added to the final set if they cover at least one cell not covered by previously added neighbourhoods.
+#' and neighbourhoods are iteratively added to the final neighbourhood set if they contain at least one cell not \sQuote{covered} by previously added neighbourhoods.
 #' @return \code{Milo} object with refined neighbourhood assignment
 #' @export
 #' @importFrom RcppGreedySetCover greedySetCover

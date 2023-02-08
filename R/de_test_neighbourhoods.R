@@ -1,7 +1,8 @@
 
 #' de_test_neighbourhoods
 #'
-#' Performs DE testing within each neighbourhood
+#' Performs DE testing within each neighbourhood + post hoc p-value correction across neighbourhoods. If for a [gene-neighbourhood] pair test is not performed
+#' (for example, gene is not expressed in this neighbourhood), we returns NaNs.
 #' @param x A \code{\linkS4class{Milo}} object.
 #' @param sample_id Character specifying which variable should be used as a replicate ID.
 #' Should be in \code{colnames(colData(x))}. Default \code{sample_id = "sample"}.
@@ -26,7 +27,8 @@
 #' Only relevant if \code{plot_summary_stat = TRUE}.
 #' @param BPPARAM NULL or BPPARAM object to use for parallelisation. Default \code{BPPARAM = NULL}.
 #' @param verbose Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.
-#' @return \code{data.frame} or \code{SingleCellExperiment} object containing miloDE results for all supplied neighbourhoods
+#' @return \code{data.frame} or \code{SingleCellExperiment} object containing miloDE results for all supplied neighbourhoods (per gene-neighbourhood).
+#' This includes logFC and p-values (raw and corrected across genes or neighbourhoods).
 #' @export
 #' @importFrom SingleCellExperiment SingleCellExperiment counts
 #' @importFrom SummarizedExperiment assay colData
@@ -313,7 +315,7 @@ de_test_neighbourhoods = function(x ,
 #' @param min_count Positive integer, specifying min.count for gene selection.
 #' Default \code{min_count = 3}.
 #' @param run_separately A boolean parameter specifying whether the function is to be run as a part of \code{\link{de_test_neighbourhoods}} (FALSE) or as a stand-alone run (TRUE). Default \code{run_separately = TRUE}.
-#' @return \code{data.frame} object containing miloDE results for the selected neighbourhood
+#' @return \code{data.frame} object containing miloDE results for the selected neighbourhood.
 #' @export
 #' @importFrom SingleCellExperiment SingleCellExperiment counts
 #' @importFrom SummarizedExperiment assay colData

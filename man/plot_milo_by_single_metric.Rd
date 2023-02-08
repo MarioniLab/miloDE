@@ -60,7 +60,7 @@ Default \code{edge_weight.thresh = NULL} meaning that no minimum threshold is se
 ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by the provided in colour_by column value
 }
 \description{
-Return \sQuote{neighbourhood} plot; each node is coloured by \code{colour_by} column from \code{nhood_stat}, if significance_by is smaller than alpha. Vertices are ordered by order_by column
+Returns \sQuote{neighbourhood} plot; each node is coloured by \code{colour_by} column from \code{nhood_stat}, if significance_by is smaller than alpha. Vertices are ordered by order_by column
 }
 \examples{
 require(SingleCellExperiment)

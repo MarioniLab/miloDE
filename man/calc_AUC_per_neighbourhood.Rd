@@ -29,7 +29,7 @@ Should be in \code{colnames(colData(x))}.}
 \item{conditions}{In case of multiple comparative groups, character vector specifying which conditions should be tested for separation.
 Default \code{conditions = NULL} that assumes that only 2 different conditions are present.}
 
-\item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replica to be included in testing.
+\item{min_n_cells_per_sample}{Positive integer specifying the minimum number of cells per replicate to be included in testing.
 Default \code{min_n_cells_per_sample = 3}.}
 
 \item{n_threads}{Positive integer specifying the number of cores to be used to calculate AUC.
@@ -45,14 +45,14 @@ Only relevant if BPPARAM = NULL. Default \code{n_threads = 2}.}
 Returns per neighbourhood AUC from Augur based classifier (in \code{data.frame} format).
 }
 \details{
-\emph{Note that it is only relevant for \dQuote{simple} models (i.e. no interactions.)}.
-
 This function calculates for each neighbourhood whether cells between 2 conditions can be separated
 with Random Forest based classifiers (adapted from \code{\link[Augur]{calculate_auc}}).
 Accordingly, AUCs of the classifiers represent how well we can separate 2 conditions.
 
 We suggest that neighbourhoods with AUC > 0.5 suggest a certain degree of perturbation between 2 conditions that can further be examined
 with DE testing. You also can set your own AUC threshold if desired as well as use AUCs to rank neighbourhoods.
+
+\emph{Note that this function is only relevant for \dQuote{simple} models (i.e. no interactions.)}.
 }
 \examples{
 require(SingleCellExperiment)

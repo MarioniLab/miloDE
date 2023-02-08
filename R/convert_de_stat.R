@@ -10,6 +10,10 @@
 #' Note that \code{Nhood}, \code{Nhood_center}, \code{test_performed} are hard-coded to be included.
 #'
 #' \emph{Please note that \code{coldata_names} have to be the attributes of neighbourhoods (i.e. same across different genes for the same neighbourhood).}
+#' @details
+#' This function converts results of \code{\link{de_test_neighbourhoods}} between \code{data.frame} object and \code{SingleCellExperiment}.
+#' \code{data.frame} object is more commonly used and might be easier to navigate, however, if total number of tests (i.e. gene x neighboourhoods)
+#' is overwhelmingly large, \code{SingleCellExperiment} might be more suitable.
 #' @return A \code{\linkS4class{SingleCellExperiment}} object or \code{data.frame} object, containing miloDE results.
 #' @export
 #' @examples

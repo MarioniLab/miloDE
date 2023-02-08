@@ -4,8 +4,6 @@
 #'
 #' Returns per neighbourhood AUC from Augur based classifier (in \code{data.frame} format).
 #'
-#' \emph{Note that it is only relevant for \dQuote{simple} models (i.e. no interactions.)}.
-#'
 #' @param x A \code{\linkS4class{Milo}} object.
 #' @param genes Character vector specifying genes to be passed for the testing. Default \code{genes = rownames(x)}.
 #' @param sample_id Character specifying which variable should be used as a replicate ID.
@@ -14,7 +12,7 @@
 #' Should be in \code{colnames(colData(x))}.
 #' @param conditions In case of multiple comparative groups, character vector specifying which conditions should be tested for separation.
 #' Default \code{conditions = NULL} that assumes that only 2 different conditions are present.
-#' @param min_n_cells_per_sample Positive integer specifying the minimum number of cells per replica to be included in testing.
+#' @param min_n_cells_per_sample Positive integer specifying the minimum number of cells per replicate to be included in testing.
 #' Default \code{min_n_cells_per_sample = 3}.
 #' @param n_threads Positive integer specifying the number of cores to be used to calculate AUC.
 #' Higher number results in faster calculation, but its feasibility depends on the specs of your machine.
@@ -27,6 +25,8 @@
 #'
 #' We suggest that neighbourhoods with AUC > 0.5 suggest a certain degree of perturbation between 2 conditions that can further be examined
 #' with DE testing. You also can set your own AUC threshold if desired as well as use AUCs to rank neighbourhoods.
+#'
+#' \emph{Note that this function is only relevant for \dQuote{simple} models (i.e. no interactions.)}.
 #'
 #' @return \code{data.frame} object, with AUC calculated for each neighbourhood.
 #' @export

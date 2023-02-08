@@ -48,7 +48,7 @@ Default \code{min_count = 3}.}
 \item{run_separately}{A boolean parameter specifying whether the function is to be run as a part of \code{\link{de_test_neighbourhoods}} (FALSE) or as a stand-alone run (TRUE). Default \code{run_separately = TRUE}.}
 }
 \value{
-\code{data.frame} object containing miloDE results for the selected neighbourhood
+\code{data.frame} object containing miloDE results for the selected neighbourhood.
 }
 \description{
 Tests single hood for DE. Not intended to be used by itself (however possible), but rather as a part of \code{\link{de_test_neighbourhoods}}

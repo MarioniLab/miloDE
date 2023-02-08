@@ -17,6 +17,13 @@
 #' Default \code{cluster_id = NULL}, in which case neighbourhood sizes will be estimated for the whole dataset.
 #' @param plot_stat Boolean specifying whether to plot the stat. Default \code{plot_stat = TRUE}.
 #' @param verbose Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.
+#' @details
+#' This function returns an estimated distribution of neighbourhood sizes for different \code{k} values
+#' (if you want to estimate this for both 1st and 2nd \code{order}, run this twice with changing \code{order}).
+#' This is useful to gauge whether the neighbourhood size distribution is appropriate, since \code{\link{de_test_neighbourhoods}} takes a while to complete.
+#'
+#' Note that this function also might take a while to complete on big datasets (> 70k cells), and in this case we provide an option to estimate neighbourhood
+#' sizes within annotated clusters (passed in \code{cluster_id}), which will be considerably faster, however, might result in slightly biased estimates.
 #' @return \code{data.frame} object, in which each row corresponds to k and 5 columns correspond to min, q25, median, q75 and max of neighbourhood size distributions; also returns a boxplot
 #' @export
 #' @importFrom miloR Milo buildGraph graph<- graph nhoods<- nhoodIndex<- buildNhoodGraph

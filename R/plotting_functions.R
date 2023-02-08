@@ -4,7 +4,7 @@
 
 #' plot_milo_by_single_metric
 #'
-#' Return \sQuote{neighbourhood} plot; each node is coloured by \code{colour_by} column from \code{nhood_stat}, if significance_by is smaller than alpha. Vertices are ordered by order_by column
+#' Returns \sQuote{neighbourhood} plot; each node is coloured by \code{colour_by} column from \code{nhood_stat}, if significance_by is smaller than alpha. Vertices are ordered by order_by column
 #' @param x A \code{\linkS4class{Milo}} object.
 #' @param nhood_stat \code{data.frame} object, containing columns \code{Nhood} (should correspond to neighbourhoods from \code{nhoodGraph(x))}.
 #' @param colour_by A character specifying value used for neighbourhood colouring. Should be in \code{colnames(nhood_stat)}.
