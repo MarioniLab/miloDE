@@ -334,7 +334,7 @@
         stop("de_stat missing some of the coldata_names")
         return(FALSE)
       } else if (!is.numeric(de_stat$Nhood)) {
-        stop("colData field Nhood should be numeric. To get valid de_stat object, please run 'de_test_neighbourhoods.R'")
+        stop("colData field 'Nhood' should be numeric. To get valid de_stat object, please run 'de_test_neighbourhoods.R'")
         return(FALSE)
       }
     }

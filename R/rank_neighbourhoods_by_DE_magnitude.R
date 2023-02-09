@@ -30,7 +30,9 @@
 #'
 rank_neighbourhoods_by_DE_magnitude = function(de_stat, pval.thresh = 0.1, z.thresh = -3 ){
 
-  out = .check_de_stat_valid(de_stat , assay_names = c("logFC" , "pval" , "pval_corrected_across_nhoods" , "pval_corrected_across_genes") , coldata_names = c("Nhood" , "Nhood_center")) &
+  out = .check_de_stat_valid(de_stat ,
+                             assay_names = c("logFC" , "pval" , "pval_corrected_across_nhoods" , "pval_corrected_across_genes") ,
+                             coldata_names = c("Nhood" , "Nhood_center")) &
     .check_pval_thresh(pval.thresh) & .check_z_thresh(z.thresh)
 
   if (is(de_stat , "data.frame")){
