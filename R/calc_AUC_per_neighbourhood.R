@@ -28,7 +28,7 @@
 #'
 #' \emph{Note that this function is only relevant for \dQuote{simple} models (e.g. not nested or no interactions.)}.
 #'
-#' @return \code{data.frame} object, with AUC calculated for each neighbourhood.
+#' @return \code{data.frame} object, with AUC calculated for each neighbourhood
 #' @export
 #' @importFrom SummarizedExperiment colData assayNames
 #' @importFrom miloR nhoods

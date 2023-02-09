@@ -21,7 +21,7 @@
 #' 3. Assigning neighbourhoods.
 #' 4. (Optional but recommended) Refining the neighbourhood assignment (check \code{\link{filter_neighbourhoods}}).
 #'
-#' @return Milo object containing cell-neighbourhood matrix in \code{nhoods(out)} slot.
+#' @return \code{\linkS4class{Milo}} object containing cell-neighbourhood matrix in \code{nhoods(out)} slot
 #' @export
 #' @importFrom miloR Milo buildGraph graph<- graph nhoods<- nhoodIndex<- buildNhoodGraph
 #' @importFrom SingleCellExperiment reducedDim

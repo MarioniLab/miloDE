@@ -36,7 +36,7 @@ assign_neighbourhoods(
 \item{verbose}{Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.}
 }
 \value{
-Milo object containing cell-neighbourhood matrix in \code{nhoods(out)} slot.
+\code{\linkS4class{Milo}} object containing cell-neighbourhood matrix in \code{nhoods(out)} slot
 }
 \description{
 Assign neighbourhoods to single-cell RNA-seq data (in \code{SingleCellExperiment} format)

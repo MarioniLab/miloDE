@@ -39,7 +39,7 @@ Only relevant if \code{BPPARAM = NULL}. Default \code{n_threads = 2}.}
 \item{BPPARAM}{NULL or \code{\link{MulticoreParam}} object. Default \code{BPPARAM = NULL} assuming no parallelisation.}
 }
 \value{
-\code{data.frame} object, with AUC calculated for each neighbourhood.
+\code{data.frame} object, with AUC calculated for each neighbourhood
 }
 \description{
 Returns per neighbourhood AUC from Augur based (RF) classifier
