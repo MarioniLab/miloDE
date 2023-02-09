@@ -23,7 +23,7 @@ plot_DE_gene_set(
 
 \item{genes}{Character vector, each element corresponds to gene ID}
 
-\item{logFC_correction}{Boolean specifying whether to perform logFC correction. If TRUE (default), logFC will be set to 0 if corrected pvalue (defined by \code{correction_by}) < alpha}
+\item{logFC_correction}{Boolean specifying whether to perform logFC correction. If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{correction_by}) < alpha}
 
 \item{correction_by}{Character specifying specifying which column to use to decide on significance for logFC. Relevant only if \code{logFC_correction = TRUE}.
 Should be an in \code{assays(de_stat)} or in \code{colnames(de_stat)} (depends on \code{de_stat} format). Default \code{correction_by = "pval_corrected_across_nhoods"}.}
@@ -38,10 +38,10 @@ Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.}
 \item{...}{Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc)).}
 }
 \value{
-ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by average logFC across the selected genes; neighbourhood size corresponds to the fraction of genes that are DE in this neighbourhood.
+\sQuote{Neighbourhood} plot (\code{ggplot} object), in which each neighbourhood is coloured by average logFC across the selected genes; neighbourhood size corresponds to the fraction of genes that are DE in this neighbourhood (based on pval_corrected_across_nhoods).
 }
 \description{
-Returns 'neighbourhood' plot, in which colour of nodes correspond to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (based on pval_corrected_across_nhoods)
+Returns \sQuote{neighbourhood} plot, in which colour of nodes correspond to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood
 }
 \examples{
 require(SingleCellExperiment)

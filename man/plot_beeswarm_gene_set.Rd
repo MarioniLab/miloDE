@@ -18,26 +18,27 @@ plot_beeswarm_gene_set(
 \arguments{
 \item{de_stat}{miloDE stat (output of \code{\link{de_test_neighbourhoods}}).}
 
-\item{genes}{A character specifying genes ID.}
+\item{genes}{A character vector specifying genes of interest.}
 
-\item{nhoodGroup}{A character specifying which column to use for neighbourhood grouping.}
+\item{nhoodGroup}{A character specifying which column to use for neighbourhood grouping. Should be an assay in \code{de_stat} (or in \code{colnames(de_stat)} if \code{class(de_stat) == "data.frame"}).}
 
-\item{logFC_correction}{Boolean specifying whether to perform logFC correction. If TRUE (default), logFC will be set to 0 if corrected pvalue (defined by \code{correction_by}) < alpha}
+\item{logFC_correction}{Boolean specifying whether to perform logFC correction.
+If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{correction_by} < alpha).}
 
-\item{correction_by}{Character specifying which column to use to decide on significance for logFC. Relevant only if \code{logFC_correction = TRUE}.}
+\item{correction_by}{Character specifying which column to use to decide on the significance. Relevant only if \code{logFC_correction = TRUE}.}
 
 \item{alpha}{A numeric between 0 and 1 specifying the significance threshold. Default \code{alpha = 0.1}.}
 
-\item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
+\item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted.
 Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.}
 
 \item{size}{A positive number specifying size of the dots. Default \code{size = 2}.}
 }
 \value{
-beeswarm, broke down by cell types; each point is a neighbourhood, colour - average logFC across selected genes; x - fraction of genes that are DE
+Beeswarm plot, broke down by provided grouppings; each point is a neighbourhood, colour - average logFC across selected genes; x-axis - fraction of genes that are DE in the neighbourhood
 }
 \description{
-Returns beeswarm plot for many genes
+For the selected genes, returns a beeswarm plot, in which the aggregated DE statistics is binned by provided cell groupping (i.e. cell types)
 }
 \examples{
 

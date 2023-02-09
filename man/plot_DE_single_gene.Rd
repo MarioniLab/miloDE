@@ -34,10 +34,10 @@ Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.}
 \item{...}{Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc)).}
 }
 \value{
-ggplot object - 'neighbourhood' plot, in which each neighbourhood is coloured by logFC for the selected gene (if significant)
+\sQuote{Neighbourhood} plot (\code{ggplot} object), in which each neighbourhood is coloured by logFC for the selected gene (if significant)
 }
 \description{
-Returns 'neighbourhood' plot; each node is coloured by logFC, if \code{pval_corrected_across_nhoods < alpha}.
+Returns \sQuote{neighbourhood} plot; each node is coloured by logFC, if \code{pval_corrected_across_nhoods < alpha}.
 }
 \examples{
 require(SingleCellExperiment)

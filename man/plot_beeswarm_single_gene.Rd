@@ -20,15 +20,15 @@ plot_beeswarm_single_gene(
 
 \item{nhoodGroup}{A character specifying which values to use for neighbourhood grouping. Should be an assay in \code{de_stat} (or in \code{colnames(de_stat)} if \code{class(de_stat) == "data.frame"}).}
 
-\item{alpha}{A numeric between 0 and 1 specifying the significance threshold. All neighbourhoods that are defined as not significant, will be not coloured. Default \code{alpha = 0.1}.}
+\item{alpha}{A numeric between 0 and 1 specifying the significance threshold. All neighbourhoods that are defined as not significant, will coloured in gray. Default \code{alpha = 0.1}.}
 
-\item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
+\item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted.
 Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.}
 
 \item{size}{A positive number specifying size of the dots. Default \code{size = 2}.}
 }
 \value{
-beeswarm, broke down by cell types; each point is a neighbourhood, colour - logFC for the selected gene
+Beeswarm plot, broke down by cell types; each point is a neighbourhood, colour - logFC for the selected gene
 }
 \description{
 For the selected gene, returns a beeswarm plot, in which the DE statistics for the gene is binned by provided cell groupping (i.e. cell types)

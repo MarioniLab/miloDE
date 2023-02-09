@@ -322,8 +322,6 @@ get_wgcna_modules = function(de_stat , subset_hoods = NULL ,
 modules_wgcna = suppressMessages(get_wgcna_modules(convert_de_stat(de_stat) , n_hoods_sig.thresh = 4))
 
 
-
-
 ```
 
 
