@@ -3,7 +3,7 @@
 #' convert_de_stat
 #'
 #' Converts output of miloDE between \code{\link[base]{data.frame}} and \code{\linkS4class{SingleCellExperiment}} formats
-#' @param de_stat miloDE results, output of \code{\link{de_test_neighbourhoods}}; either in \code{data.frame} or \code{SingleCellExperiment}.
+#' @param de_stat miloDE results, output of \code{\link{de_test_neighbourhoods}}; either in \code{data.frame} or \code{SingleCellExperiment} format.
 #' @param assay_names Character string specifying which fields should be treated as assays.
 #' Note that \code{logFC}, \code{pval}, \code{pval_corrected_across_genes} and \code{pval_corrected_across_nhoods} are hard-coded to be included in assays.
 #' @param coldata_names Character string specifying which fields should be treated as neighbourhood metadata.
@@ -15,7 +15,7 @@
 #'
 #' \code{data.frame} object is more commonly used and might be easier to navigate, however, if total number of tests (i.e. gene x neighboourhoods)
 #' is overwhelmingly large, \code{SingleCellExperiment} might be more suitable and faster to work with.
-#' @return A \code{\linkS4class{SingleCellExperiment}} object or \code{data.frame} object, containing miloDE results.
+#' @return A \code{SingleCellExperiment} object or \code{data.frame} object, containing miloDE results
 #' @export
 #' @examples
 #' de_stat = expand.grid(gene = paste0("gene" , c(1:5)) , Nhood = c(1:10))

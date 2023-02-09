@@ -30,6 +30,7 @@ Should be in \code{colnames(colData(x))}. Default \code{sample_id = "sample"}.}
 Note that if \code{contrasts = NULL} (default), the last column column of model matrix will be used for testing.}
 
 \item{covariates}{Vector specifying all covariates that are passed into experimental design.
+
 \emph{It should contain all columns used in the design formula (except \code{sample_id})}.}
 
 \item{contrasts}{NULL (default) or character string specifying what comparison to perform.
@@ -50,10 +51,10 @@ Default \code{min_count = 3}.}
 \item{output_type}{In \code{c("data.frame","SCE")} Specifying the output format - either in \code{data.frame} or \code{\linkS4class{SingleCellExperiment}}.
 Default \code{output_type = "data.frame"}.}
 
-\item{plot_summary_stat}{Boolean specifying if we plot Milo neighbourhood plot summarising per neighbourhood whether testing was performed.
+\item{plot_summary_stat}{Boolean specifying if we plot Milo neighbourhood plot summarising (per neighbourhood) whether testing was performed.
 Default \code{plot_summary_stat = FALSE}.}
 
-\item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout (default \code{layout = "UMAP"}).
+\item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for the layout of the plot(default \code{layout = "UMAP"}).
 Only relevant if \code{plot_summary_stat = TRUE}.}
 
 \item{BPPARAM}{NULL or \code{\link{MulticoreParam}} object to use for parallelisation (see \code{README} for the usage). Default \code{BPPARAM = NULL} meaning no parallelisation.
@@ -67,11 +68,11 @@ For each tested gene-neighbourhood pair, we return logFC and p-values (raw and c
 }
 \description{
 Performs DE testing within each neighbourhood + post hoc p-value correction across neighbourhoods. If a test for a gene x neighbourhood pair is not performed
-(i.e. gene is not expressed in this neighbourhood and therefore discarded), we returns NaNs.
+(i.e. gene is not expressed in this neighbourhood and filtered out prior to testing), we returns NaNs.
 }
 \details{
-We employ edgeR testing (using \code{glmQLFit}) within each neighbourhood.
-We allow user to submit the desired experimental design and incorporate various covariates, which is beneficial in the context of large cohort studies.
+We employ edgeR testing (using \code{\link[edgeR]{glmQLFit}}) within each neighbourhood.
+We allow the user to submit the desired experimental design and incorporate various covariates, which is beneficial in the context of large cohort studies.
 }
 \examples{
 require(SingleCellExperiment)

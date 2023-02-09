@@ -7,7 +7,7 @@
 convert_de_stat(de_stat, assay_names = NULL, coldata_names = NULL)
 }
 \arguments{
-\item{de_stat}{miloDE results, output of \code{\link{de_test_neighbourhoods}}; either in \code{data.frame} or \code{SingleCellExperiment}.}
+\item{de_stat}{miloDE results, output of \code{\link{de_test_neighbourhoods}}; either in \code{data.frame} or \code{SingleCellExperiment} format.}
 
 \item{assay_names}{Character string specifying which fields should be treated as assays.
 Note that \code{logFC}, \code{pval}, \code{pval_corrected_across_genes} and \code{pval_corrected_across_nhoods} are hard-coded to be included in assays.}
@@ -18,7 +18,7 @@ Note that \code{Nhood}, \code{Nhood_center}, \code{test_performed} are hard-code
 \emph{Please note that \code{coldata_names} have to be the attributes of neighbourhoods (i.e. same values across different genes for the same neighbourhood).}}
 }
 \value{
-A \code{\linkS4class{SingleCellExperiment}} object or \code{data.frame} object, containing miloDE results.
+A \code{SingleCellExperiment} object or \code{data.frame} object, containing miloDE results
 }
 \description{
 Converts output of miloDE between \code{\link[base]{data.frame}} and \code{\linkS4class{SingleCellExperiment}} formats

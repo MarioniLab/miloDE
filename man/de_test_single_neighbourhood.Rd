@@ -22,7 +22,7 @@ de_test_single_neighbourhood(
 
 \item{nhoods_x}{Should be extracted from x as \code{nhoods(x)} prior to running the function.}
 
-\item{hood_id}{Numeric specifying for which neighbourhood we should perform testing. Should be in \code{1:ncol(nhoods_x)}.}
+\item{hood_id}{Numeric specifying for which neighbourhood we should perform testing. Should be in \code{c(1:ncol(nhoods_x))}.}
 
 \item{sample_id}{Character specifying which variable should be used as a replicate ID.
 Should be in \code{colnames(colData(x))}. Default \code{sample_id = "sample"}.}
@@ -31,6 +31,7 @@ Should be in \code{colnames(colData(x))}. Default \code{sample_id = "sample"}.}
 If \code{contrasts = NULL} (default), the last column column of model matrix will be used for testing.}
 
 \item{covariates}{Vector specifying all covariates that should be passed into experimental design.
+
 \emph{It should contain all columns used in the design formula (except \code{sample_id}).}}
 
 \item{contrasts}{NULL (default) or character string specifying what comparison to perform.
@@ -48,13 +49,13 @@ Default \code{min_count = 3}.}
 \item{run_separately}{A boolean parameter specifying whether the function is to be run as a part of \code{\link{de_test_neighbourhoods}} (FALSE) or as a stand-alone run (TRUE). Default \code{run_separately = TRUE}.}
 }
 \value{
-\code{data.frame} object containing miloDE results for the selected neighbourhood.
+\code{data.frame} object containing miloDE results for the selected neighbourhood
 }
 \description{
 Tests single neighbourhood for DE; not intended to be used by itself (however allowed to), but rather as a part of \code{\link{de_test_neighbourhoods}}
 }
 \details{
-We employ edgeR testing (using \code{glmQLFit}) within the selected neighbourhood (using numeric \code{hood_id} which corresponds to which column in \code{nhoods(x)} to use).
+We employ edgeR testing (using \code{\link[edgeR]{glmQLFit}}) within the selected neighbourhood (using numeric \code{hood_id} which corresponds to which column of \code{nhoods(x)} to use).
 We allow user to submit the desired experimental design and incorporate various covariates, which is beneficial in the context of large cohort studies.
 }
 \examples{
