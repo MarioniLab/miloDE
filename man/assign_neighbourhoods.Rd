@@ -39,7 +39,7 @@ assign_neighbourhoods(
 Milo object containing cell-neighbourhood matrix in \code{nhoods(out)} slot.
 }
 \description{
-Assign neighbourhoods to \code{SingleCellExperiment} object
+Assign neighbourhoods to single-cell RNA-seq data (in \code{SingleCellExperiment} format)
 }
 \details{
 This function assigns neighbourhoods to single-cell data. This includes assigning graph representation, selecting \sQuote{index} cells and, finally, for each index cell, assigning it along with its neighbourhoors to one neighbourhood.

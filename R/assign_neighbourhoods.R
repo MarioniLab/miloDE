@@ -2,7 +2,7 @@
 
 #' assign_neighbourhoods
 #'
-#' Assign neighbourhoods to \code{SingleCellExperiment} object
+#' Assign neighbourhoods to single-cell RNA-seq data (in \code{SingleCellExperiment} format)
 #' @param x A \code{\linkS4class{SingleCellExperiment}} object.
 #' @param reducedDim_name Defines the assay in \code{reducedDim(x)} to use as the embedding for graph construction.
 #' @param k Positive integer, defines how many neighbours to use for the neighbourhood assignment. Default \code{k = 25}.
