@@ -1,7 +1,7 @@
 #' estimate_neighbourhood_sizes
 #'
-#' For a grid of \code{k}, returns neighbourhood size distribution; that will help a user to select appropriate \code{k}
-#' @param x A \code{\linkS4class{SingleCellExperiment}} object
+#' For a grid of \code{k}, returns neighbourhood size distribution; this will help a user to select an appropriate \code{k}
+#' @param x A \code{\linkS4class{SingleCellExperiment}} object.
 #' @param reducedDim_name Defines the slot in \code{reducedDim(x)} to use as the embedding for graph construction.
 #' @param k_grid Vector of positive integers, defines how many neighbours to use for the neighbourhood assignment.
 #' @param prop Numerical, between 0 and 1, defines which fraction of cells to use as neighbourhood centres. Default \code{prop = 0.2}.
@@ -19,11 +19,11 @@
 #' @details
 #' This function returns an estimated distribution of neighbourhood sizes for different \code{k} values
 #' (for the selected by user \code{order}; if you want to estimates for both 1st and 2nd \code{order}, run this twice with changing \code{order}).
-#' This is useful to gauge whether the neighbourhood size distribution is appropriate for the selected \code{k}, since \code{\link{de_test_neighbourhoods}} takes a while to complete.
+#' This can help to gauge whether the neighbourhood size distribution is appropriate for the selected \code{k}, since \code{\link{de_test_neighbourhoods}} takes a while to complete.
 #'
 #' Note that this function also might take a while to complete on big datasets (> 70k cells), and in this case we provide an option to estimate neighbourhood
 #' sizes within annotated clusters (passed in \code{cluster_id}), which will be considerably faster, however, might result in slightly biased estimates.
-#' @return \code{data.frame} object, in which each row corresponds to k and 5 columns correspond to min, q25, median, q75 and max of neighbourhood size distributions; also returns a boxplot
+#' @return \code{data.frame} object, in which each row corresponds to \code{k} and 5 columns correspond to min, q25, median, q75 and max of neighbourhood size distributions; also returns a boxplot
 #' @export
 #' @importFrom miloR Milo buildGraph graph<- graph nhoods<- nhoodIndex<- buildNhoodGraph
 #' @importFrom tibble rownames_to_column

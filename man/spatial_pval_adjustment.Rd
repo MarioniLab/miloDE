@@ -15,13 +15,13 @@ spatial_pval_adjustment(nhoods_x, pvalues)
 Vector with \sQuote{spatially} (i.e. across neighbourhoods) adjusted p-values
 }
 \description{
-Performs p-values multiple testing correction, with accounting for the overlap
+Performs p-values multiple testing correction across neighbourhoods, with accounting for the overlap
 }
 \details{
 This function is not intended to be run by itself, but can be useful if the user wants to perform \sQuote{spatially aware} multiple testing correction.
 
 Under the hood it performs weighted version of BH correction, where weights are reciprocal to the local desnity of a neighbourhood.
-Accordingly, big and/or highly connected neighbourhoods will have lower weight.
+Accordingly, big and/or highly connected neighbourhoods will have lower weights.
 }
 \examples{
 require(SingleCellExperiment)

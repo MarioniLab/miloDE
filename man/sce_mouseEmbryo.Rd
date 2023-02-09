@@ -3,10 +3,9 @@
 \docType{data}
 \name{sce_mouseEmbryo}
 \alias{sce_mouseEmbryo}
-\title{MouseEmbryo, E8.5
-Counts matrix for mouse embryo, E8.5 (data extracted from Pijuan-Sala et al., 2019): WT and chimera}
+\title{Chimeric mouse embryo, Tal1- (Pijuan-Sala et al., 2019)}
 \format{
-SCE object
+\code{\linkS4class{SingleCellExperiment}} object
 }
 \source{
 MouseGastrulationData package
@@ -15,6 +14,14 @@ MouseGastrulationData package
 data(sce_mouseEmbryo)
 }
 \description{
-SCE object with log-normalised counts matrix strored in assay logcounts.
-colData contains information about sample (i.e. batch), type (WT or chimera), tal1 (plus or minus).
+\code{SingleCellExperiment} object, containing counts
+(raw are pulled using \code{\link[MouseGastrulationData]{Tal1ChimeraData}}
+and log-normalised are estimated using \code{\link[scuttle]{logNormCounts}}) matrices
+for chimeric mouse embryos (both Tal1+ and Tal1-).
+}
+\details{
+Additionally, we subselected only 3 cell types (Endothelium , Blood progenitors 2, Neural crest)
+and 300 HVGs.
+
+\code{colData(sce_mouseEmbryo)} contains information about replicate (\code{sample}) and Tal1 status (\code{tomato = TRUE} means Tal1-).
 }

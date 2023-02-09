@@ -7,7 +7,7 @@
 filter_neighbourhoods(x)
 }
 \arguments{
-\item{x}{A \code{\linkS4class{Milo}} object}
+\item{x}{A \code{\linkS4class{Milo}} object.}
 }
 \value{
 \code{Milo} object with refined neighbourhood assignment

@@ -3,7 +3,7 @@
 #' filter_neighbourhoods
 #'
 #' Filtering redundant neighbourhoods, using the greedy approach to set cover problem
-#' @param x A \code{\linkS4class{Milo}} object
+#' @param x A \code{\linkS4class{Milo}} object.
 #' @details
 #' This function refines neighbourhood assignment and discards redundant neighbourhoods. This call is highly recommended since it reduces computational time greatly.
 #' It is called directly in \code{\link{assign_neighbourhoods}} if \code{filtering=TRUE}, and also can be called independently post hoc.
