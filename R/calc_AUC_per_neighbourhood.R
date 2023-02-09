@@ -2,7 +2,7 @@
 
 #' calc_AUC_per_neighbourhood
 #'
-#' Returns per neighbourhood AUC from Augur based (RF) classifier
+#' Returns per neighbourhood AUC from Augur based (RF) classifiers
 #'
 #' @param x A \code{\linkS4class{Milo}} object.
 #' @param genes Character vector specifying genes to be passed for the testing. Default \code{genes = rownames(x)}.

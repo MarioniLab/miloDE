@@ -42,7 +42,7 @@ Only relevant if \code{BPPARAM = NULL}. Default \code{n_threads = 2}.}
 \code{data.frame} object, with AUC calculated for each neighbourhood
 }
 \description{
-Returns per neighbourhood AUC from Augur based (RF) classifier
+Returns per neighbourhood AUC from Augur based (RF) classifiers
 }
 \details{
 This function calculates for each neighbourhood whether cells between 2 conditions can be separated
