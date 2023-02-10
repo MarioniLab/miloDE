@@ -1,4 +1,4 @@
-# context("Testing filter_neighbourhoods")
+# context("Testing de_test_neighbourhoods")
 library(miloDE)
 library(miloR)
 library(SingleCellExperiment)

@@ -32,8 +32,7 @@
 #' pvalues = runif(n = ncol(nhoods_x) , min = 0 , max = 1)
 #' out = spatial_pval_adjustment(nhoods_x, pvalues = pvalues)
 spatial_pval_adjustment = function(nhoods_x , pvalues){
-
-  # we will only calculate weights for neighbourhoods in which we are testing
+  # we will only calculate weights for neighbourhoods in which we are testing (not NaNs)
   idx_not_nan = which(!is.na(pvalues))
   if (length(idx_not_nan) > 1){
     weights = .get_weights(as.matrix(nhoods_x[,idx_not_nan]))
@@ -41,7 +40,6 @@ spatial_pval_adjustment = function(nhoods_x , pvalues){
     out = .check_weights_and_pvals(weights , pvalues[idx_not_nan] , as.matrix(nhoods_x[,idx_not_nan])) & .check_nhoods_matrix(nhoods_x)
 
     n_comparisons = length(pvalues)
-    #n_nans = sum(is.na(pvalues))
     pvalues = pvalues[idx_not_nan]
 
     # calc correction
@@ -52,7 +50,7 @@ spatial_pval_adjustment = function(nhoods_x , pvalues){
     adjp[o] <- rev(cummin(rev(sum(weights)*pvalues/cumsum(weights))))
     adjp <- pmin(adjp, 1)
 
-    # add nans back
+    # put eveyrhting together
     adjp_total = rep(NaN, 1,n_comparisons)
     adjp_total[idx_not_nan] = adjp
   } else {
