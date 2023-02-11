@@ -47,7 +47,7 @@ Should be in \code{colnames(nhood_stat)}. Default \code{size_by = NULL} and in t
 Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.}
 
 \item{size_range}{A numeric vector indicating the range (min and max) of node sizes to use for plotting (to avoid overplotting in the graph).
-Default \code{size_range = c(1,3)}}
+Default \code{size_range = c(1,3)}.}
 
 \item{node_stroke}{A numeric indicating the desired thickness of the border around each node. Default \code{node_stroke = 0.3}.}
 

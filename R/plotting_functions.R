@@ -20,7 +20,7 @@
 #' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted.
 #' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
 #' @param size_range A numeric vector indicating the range (min and max) of node sizes to use for plotting (to avoid overplotting in the graph).
-#' Default \code{size_range = c(1,3)}
+#' Default \code{size_range = c(1,3)}.
 #' @param node_stroke A numeric indicating the desired thickness of the border around each node. Default \code{node_stroke = 0.3}.
 #' @param edge_width A numeric vector indicating the range (min and max) of edge widths to use for plotting. Default \code{edge_width = c(0.2,0.5)}.
 #' @param edge_weight.thresh A numeric (or NULL) specifying a threshold for minimum cells in common (between neighbourhoods) required for an edge to be plotted.
@@ -90,8 +90,8 @@ plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , signi
   }
 
   if (!is.null(subset_nhoods)){
-    nhoods_sce = nhoods(x)
-    out = .check_subset_nhoods(subset_nhoods , nhoods_sce)
+    nhoods_x = nhoods(x)
+    out = .check_subset_nhoods(subset_nhoods , nhoods_x)
   }
 
 
@@ -145,7 +145,7 @@ plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , signi
 
   # assign edges lower than some thresh to 0
   if (!is.null(edge_weight.thresh)){
-    nh_graph <- delete.edges(nh_graph, which(E(nh_graph)$weight <= edge_weight.thresh)-1)
+    nh_graph <- delete.edges(nh_graph, which(E(nh_graph)$weight <= edge_weight.thresh))
   }
 
   ## define layout
