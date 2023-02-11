@@ -145,7 +145,7 @@ de_test_neighbourhoods = function(x ,
           TRUE
         },
         error=function(err){
-          stop(paste0("contrasts are not right. All variables in the formula should be the colnames from model matrix:\n" , paste(colnames(dummy.design),collapse=", ")))
+          stop(paste0("contrasts are not right. All variables in the formula should be the colnames from model matrix: " , paste(colnames(dummy.design),collapse=", ")))
           return(FALSE)
         }
       )

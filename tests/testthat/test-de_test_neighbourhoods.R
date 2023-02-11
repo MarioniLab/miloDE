@@ -196,59 +196,6 @@ test_that("Return is the correct class", {
 
 
 
-# convert_de_stat
-## expect identical output if conversion is done post-hoc
-test_that("Conversion ad hoc is equal to conversion post hoc", {
-
-  expect_identical(de_stat_df , convert_de_stat(de_stat_sce))
-
-  de_stat_sce_2 = convert_de_stat(de_stat_df)
-  de_stat_sce = de_stat_sce[order(rownames(de_stat_sce)) , ]
-  de_stat_sce_2 = de_stat_sce_2[order(rownames(de_stat_sce_2)) , ]
-
-  expect_identical(assay(de_stat_sce, "logFC") , assay(de_stat_sce_2 , "logFC"))
-  expect_identical(assay(de_stat_sce, "pval") , assay(de_stat_sce_2 , "pval"))
-  expect_identical(assay(de_stat_sce, "pval_corrected_across_genes") , assay(de_stat_sce_2, "pval_corrected_across_genes"))
-  expect_identical(assay(de_stat_sce, "pval_corrected_across_nhoods") , assay(de_stat_sce_2 , "pval_corrected_across_nhoods"))
-  expect_identical(as.data.frame(colData(de_stat_sce)) , as.data.frame(colData(de_stat_sce_2)))
-
-})
-
-
-## expect conversion of right variables (coldata and assays) to the right format
-test_that("Conversion of additional metadata", {
-
-  de_stat_df_test = de_stat_df
-  de_stat_df_test$celltype = 0
-  de_stat_df_test$celltype[de_stat_df_test$Nhood %in% c(1,2,5)] = 1
-
-  de_stat_sce_test = convert_de_stat(de_stat_df_test , coldata_names = "celltype")
-  meta_test = as.data.frame(colData(de_stat_sce_test))
-
-  out = rep(0,1,ncol(de_stat_sce_test))
-  out[c(1,2,5)] = 1
-  expect_identical(meta_test$celltype , out)
-
-})
-
-
-## expect error if coldata is not legit
-test_that("Conversion of additional metadata legit only if metadata is legit", {
-
-  de_stat_df_test = de_stat_df
-  de_stat_df_test$celltype = 0
-  unq_genes = unique(de_stat_df_test$gene)
-  de_stat_df_test$celltype[de_stat_df_test$gene == unq_genes[1]] = 1
-
-  expect_error(convert_de_stat(de_stat_df_test , coldata_names = "celltype"))
-  expect_error(convert_de_stat(de_stat_df_test , assay_names = "celltype") , NA)
-
-})
-
-
-
-
-
 # subset hoods
 ## returns right hoods/colnames
 test_that("Subset hoods returns right nhoods", {
@@ -319,6 +266,27 @@ test_that("Covariate check - wrong covariate matrix will give NULL", {
   de_stat = de_test_neighbourhoods(sce , design = ~toy_cov_1+tomato, covariates = c("tomato","toy_cov_1"), output_type = "SCE" , min_count = 3 )
   meta = as.data.frame(colData(de_stat))
   expect_gt(sum(meta$test_performed) , 0)
+})
+
+# contrast check
+test_that("Contrasts check -- has to be formula colnames of model matrix", {
+  expect_error(de_test_neighbourhoods(sce , design = ~0+tomato, covariates = c("tomato") , contrasts = c("tomatoT-tomatoF")),
+               "contrasts are not right. All variables in the formula should be the colnames from model matrix: tomatoFALSE, tomatoTRUE",
+               fixed=TRUE
+  )
+  expect_error(de_test_neighbourhoods(sce , design = ~0+tomato, covariates = c("tomato") , contrasts = c("tomatoTRUE-tomatoFALSE")),
+               NA
+  )
+  expect_error(de_test_neighbourhoods(sce , design = ~0+tomato, covariates = c("tomato") ,
+                                      contrasts = c("tomatoTRUE-tomatoFALSE" , "tomatoTRUE+tomatoFALSE")),
+               "At the moment we only support one comparison - contrasts should be of length 1. If you wish to perform several comparisons, please run separately for each of them.",
+               fixed=TRUE
+  )
+  # covariate as last model matrice's col (NULL) give same results
+  out_1 = de_test_neighbourhoods(sce , design = ~tomato, covariates = c("tomato") ,
+                                 contrasts = c("tomatoTRUE") , output_type = "data.frame")
+  out_2 = de_test_neighbourhoods(sce , design = ~tomato, covariates = c("tomato") , output_type = "data.frame")
+  expect_identical(out_1 , out_2)
 })
 
 
