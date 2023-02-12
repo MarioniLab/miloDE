@@ -10,7 +10,7 @@ plot_milo_by_single_metric(
   colour_by = "logFC",
   significance_by = NULL,
   order_by = NULL,
-  order_direction = TRUE,
+  order_direction = FALSE,
   size_by = NULL,
   alpha = 0.1,
   layout = "UMAP",
@@ -26,18 +26,20 @@ plot_milo_by_single_metric(
 
 \item{nhood_stat}{\code{data.frame} object, containing columns \code{Nhood} (should correspond to neighbourhoods from \code{nhoodGraph(x))}.}
 
-\item{colour_by}{A character specifying value used for neighbourhood colouring. Should be in \code{colnames(nhood_stat)}.}
+\item{colour_by}{A character specifying value used for neighbourhood colouring. Should be in \code{colnames(nhood_stat)}. Can be both numeric and categorical.}
 
 \item{significance_by}{A character specifying which values to use for \sQuote{thresholding}: if values for this column exceed \code{alpha}, \code{colour_by} will be set to 0.
-Should be in \code{colnames(nhood_stat)}. Default \code{significance_by = NULL} and in this case we will not use no correction.}
+Should be in \code{colnames(nhood_stat)}. Default \code{significance_by = NULL} and in this case we will not use no correction.
+Please ensure that its values are numeric.}
 
 \item{order_by}{A character specifying which values to use to order neighbourhoods for plotting.
-Should be in \code{colnames(nhood_stat)}. Default \code{order_by = NULL} and in this case we will order by \code{size_by} values.}
+Should be in \code{colnames(nhood_stat)} (or NULL). Default \code{order_by = NULL} and in this case we will order by \code{size_by} values.}
 
-\item{order_direction}{Boolean specifying the direction of ordering neighbourhoods. Default \code{order_direction = TRUE}.}
+\item{order_direction}{Boolean specifying the direction of neighbourhood ordering. Default \code{order_direction = FALSE}.}
 
 \item{size_by}{A character specifying which values to use for neighbourhood sizes.
-Should be in \code{colnames(nhood_stat)}. Default \code{size_by = NULL} and in this case we will neighbourhood size (i.e. number of cells in the neighbourhood).}
+Should be in \code{colnames(nhood_stat)} (or NULL). Default \code{size_by = NULL} and in this case we will use neighbourhood size (i.e. number of cells in the neighbourhood).
+Please ensure that its values are numeric.}
 
 \item{alpha}{A scalar (between 0 and 1) specifying the significance level used. Default \code{alpha = 0.1}.}
 

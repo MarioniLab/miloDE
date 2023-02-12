@@ -1,20 +1,21 @@
 
 # plotting functions
 
-
 #' plot_milo_by_single_metric
 #'
 #' Returns \sQuote{neighbourhood} plot; each node is coloured by \code{colour_by} column from \code{nhood_stat}, if \code{significance_by < alpha}
 #' @param x A \code{\linkS4class{Milo}} object.
 #' @param nhood_stat \code{data.frame} object, containing columns \code{Nhood} (should correspond to neighbourhoods from \code{nhoodGraph(x))}.
-#' @param colour_by A character specifying value used for neighbourhood colouring. Should be in \code{colnames(nhood_stat)}.
+#' @param colour_by A character specifying value used for neighbourhood colouring. Should be in \code{colnames(nhood_stat)}. Can be both numeric and categorical.
 #' @param significance_by A character specifying which values to use for \sQuote{thresholding}: if values for this column exceed \code{alpha}, \code{colour_by} will be set to 0.
 #' Should be in \code{colnames(nhood_stat)}. Default \code{significance_by = NULL} and in this case we will not use no correction.
+#' Please ensure that its values are numeric.
 #' @param order_by A character specifying which values to use to order neighbourhoods for plotting.
-#' Should be in \code{colnames(nhood_stat)}. Default \code{order_by = NULL} and in this case we will order by \code{size_by} values.
-#' @param order_direction Boolean specifying the direction of ordering neighbourhoods. Default \code{order_direction = TRUE}.
+#' Should be in \code{colnames(nhood_stat)} (or NULL). Default \code{order_by = NULL} and in this case we will order by \code{size_by} values.
+#' @param order_direction Boolean specifying the direction of neighbourhood ordering. Default \code{order_direction = FALSE}.
 #' @param size_by A character specifying which values to use for neighbourhood sizes.
-#' Should be in \code{colnames(nhood_stat)}. Default \code{size_by = NULL} and in this case we will neighbourhood size (i.e. number of cells in the neighbourhood).
+#' Should be in \code{colnames(nhood_stat)} (or NULL). Default \code{size_by = NULL} and in this case we will use neighbourhood size (i.e. number of cells in the neighbourhood).
+#' Please ensure that its values are numeric.
 #' @param alpha A scalar (between 0 and 1) specifying the significance level used. Default \code{alpha = 0.1}.
 #' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout. Default \code{layout = "UMAP"}.
 #' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted.
@@ -59,7 +60,7 @@
 #' reducedDim(sce , "UMAP") = umaps
 #' p = plot_milo_by_single_metric(sce, de_stat)
 #'
-plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , significance_by = NULL , order_by = NULL , order_direction = TRUE,
+plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , significance_by = NULL , order_by = NULL , order_direction = FALSE,
                                       size_by = NULL ,
                                       alpha = 0.1, layout = "UMAP" , subset_nhoods = NULL , size_range = c(1,3) ,
                                       node_stroke = 0.3, edge_width = c(0.2,0.5), edge_weight.thresh = NULL){
@@ -108,7 +109,8 @@ plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , signi
   nhood_stat = nhood_stat[order(nhood_stat$Nhood) , ]
   # for hoods that exceed alpha for significance_by -- set colour_by to 0
   if (!is.null(significance_by)){
-    nhood_stat[nhood_stat[, significance_by] > alpha, colour_by] <- 0
+    idx = which(!is.na(nhood_stat[, significance_by]) & nhood_stat[, significance_by] > alpha)
+    nhood_stat[idx, colour_by] <- 0
   }
 
   # assign colour_by to x
@@ -137,7 +139,7 @@ plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , signi
     vertex_attr(nh_graph)$order_by_rearrange = order(vertex_attr(nh_graph)$order_by , decreasing = order_direction, na.last = FALSE)
   }
   else {
-    vertex_attr(nh_graph)$order_by_rearrange = order(vertex_attr(nh_graph)$size , decreasing = FALSE , na.last = FALSE)
+    vertex_attr(nh_graph)$order_by_rearrange = order(vertex_attr(nh_graph)$size , decreasing = order_direction , na.last = FALSE)
   }
   nh_graph <- permute(nh_graph, match( 1:length(vertex_attr(nh_graph)$order_by_rearrange) ,
                                                  vertex_attr(nh_graph)$order_by_rearrange))
@@ -191,8 +193,6 @@ plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , signi
   }
   return(pl)
 }
-
-
 
 
 #
@@ -267,9 +267,6 @@ plot_DE_single_gene = function(x, de_stat , gene , alpha = 0.1, layout = "UMAP" 
   return(p)
 
 }
-
-
-
 
 
 #' plot_DE_gene_set
