@@ -19,7 +19,7 @@
 #' @param alpha A scalar (between 0 and 1) specifying the significance level used. Default \code{alpha = 0.1}.
 #' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout. Default \code{layout = "UMAP"}.
 #' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted.
-#' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
+#' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed. If not NULL, should be a numeric vector, which values lie within \code{c(1:ncol(nhoods(x)))}.
 #' @param size_range A numeric vector indicating the range (min and max) of node sizes to use for plotting (to avoid overplotting in the graph).
 #' Default \code{size_range = c(1,3)}.
 #' @param node_stroke A numeric indicating the desired thickness of the border around each node. Default \code{node_stroke = 0.3}.
@@ -120,11 +120,6 @@ plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , signi
   # pull the graph from x
   nh_graph <- nhoodGraph(x)
 
-  ## subset for hoods we will plot
-  if (!is.null(subset_nhoods)) {
-    nh_graph <- induced_subgraph(nh_graph, vids = which(as.numeric(V(nh_graph)$name) %in% unlist(nhoodIndex(x)[subset_nhoods])))
-  }
-
   if (!is.null(size_by)){
     vertex_attr(nh_graph)$size = rep(0 , 1 , length(vertex_attr(nh_graph)$name) )
     vertex_attr(nh_graph)$size[nhood_stat$Nhood] = nhood_stat[,size_by]
@@ -144,6 +139,10 @@ plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , signi
   nh_graph <- permute(nh_graph, match( 1:length(vertex_attr(nh_graph)$order_by_rearrange) ,
                                                  vertex_attr(nh_graph)$order_by_rearrange))
 
+  ## subset for hoods we will plot
+  if (!is.null(subset_nhoods)) {
+    nh_graph <- induced_subgraph(nh_graph, vids = which(as.numeric(V(nh_graph)$name) %in% unlist(nhoodIndex(x)[subset_nhoods])))
+  }
 
   # assign edges lower than some thresh to 0
   if (!is.null(edge_weight.thresh)){
@@ -199,14 +198,17 @@ plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , signi
 #' plot_DE_single_gene
 #'
 #' Returns \sQuote{neighbourhood} plot; each node is coloured by logFC, if \code{pval_corrected_across_nhoods < alpha}.
-#' @param x A \code{\linkS4class{Milo}} object
+#' @param x A \code{\linkS4class{Milo}} object.
 #' @param de_stat miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
-#' @param gene A character specifying gene ID.
+#' It does not have to be direct output of \code{\link{de_test_neighbourhoods}} i.e. it is allowed if \code{de_stat} has some additional assays/columns (e.g. calculated post hoc metrics on neighbourhoods/genes).
+#' @param gene A character specifying gene.
 #' @param alpha A scalar (between 0 and 1) specifying the significance level used. Default \code{alpha = 0.1}.
 #' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout. Default \code{layout = "UMAP"}.
-#' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
+#' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted.
 #' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
-#' @param set_na_to_0 Boolean specifying whether in neighbourhoods in which gene is not tested, logFC would be set to 0 and p-values to 1. Default \code{set_na_to_0 = TRUE}.
+#' If not NULL, should be a numeric vector, which values lie within \code{c(1:ncol(nhoods(x)))}.
+#' @param set_na_to_0 Boolean specifying whether in neighbourhoods in which gene is not tested, logFC would be set to 0 and p-values to 1.
+#' Default \code{set_na_to_0 = TRUE}, and in this case, they will be coloured in white (otherwise gray).
 #' @param ... Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc)).
 #' @return \sQuote{Neighbourhood} plot (\code{ggplot} object), in which each neighbourhood is coloured by logFC for the selected gene (if significant)
 #' @export
@@ -259,8 +261,11 @@ plot_DE_single_gene = function(x, de_stat , gene , alpha = 0.1, layout = "UMAP" 
     de_stat$pval_corrected_across_genes[idx] = 1
     de_stat$pval_corrected_across_nhoods[idx] = 1
   }
-  nhood_stat = de_stat[de_stat$test_performed == TRUE & !is.na(de_stat$logFC), ]
-
+  #nhood_stat = de_stat[de_stat$test_performed == TRUE & !is.na(de_stat$logFC), ]
+  nhood_stat = de_stat
+  if (!is.null(subset_nhoods)){
+    subset_nhoods = intersect(subset_nhoods , nhood_stat$Nhood)
+  }
   p = plot_milo_by_single_metric(x, nhood_stat = nhood_stat, colour_by = "logFC" , significance_by = "pval_corrected_across_nhoods" ,
                              order_by = "pval_corrected_across_nhoods" , order_direction = TRUE, size_by = NULL,
                              alpha = alpha, layout = layout , subset_nhoods = subset_nhoods  , ...)
@@ -271,17 +276,19 @@ plot_DE_single_gene = function(x, de_stat , gene , alpha = 0.1, layout = "UMAP" 
 
 #' plot_DE_gene_set
 #'
-#' Returns \sQuote{neighbourhood} plot, in which colour of nodes correspond to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood
-#' @param x A \code{\linkS4class{Milo}} object
+#' Returns \sQuote{neighbourhood} plot, in which colour of nodes correspond to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (using \code{correction_by})
+#' @param x A \code{\linkS4class{Milo}} object.
 #' @param de_stat miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
-#' @param genes Character vector, each element corresponds to gene ID
-#' @param logFC_correction Boolean specifying whether to perform logFC correction. If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{correction_by}) < alpha
-#' @param correction_by Character specifying specifying which column to use to decide on significance for logFC. Relevant only if \code{logFC_correction = TRUE}.
+#' @param genes Character vector, each element corresponds to a gene from the set.
+#' @param logFC_correction Boolean specifying whether to perform logFC correction. If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{correction_by}) < alpha.
+#' @param correction_by Character specifying specifying which column to use to decide on significance for logFC.
 #' Should be an in \code{assays(de_stat)} or in \code{colnames(de_stat)} (depends on \code{de_stat} format). Default \code{correction_by = "pval_corrected_across_nhoods"}.
+#' Expected to be in \code{c("pval", "pval_corrected_across_nhoods", "pval_corrected_across_genes")}.
 #' @param alpha A scalar (between 0 and 1) specifying the significance level used. Default \code{alpha = 0.1}.
 #' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout. Default \code{layout = "UMAP"}.
 #' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
 #' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
+#' If not NULL, should be a numeric vector, which values lie within \code{c(1:ncol(nhoods(x)))}.
 #' @param ... Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc)).
 #' @return \sQuote{Neighbourhood} plot (\code{ggplot} object), in which each neighbourhood is coloured by average logFC across the selected genes; neighbourhood size corresponds to the fraction of genes that are DE in this neighbourhood (based on pval_corrected_across_nhoods).
 #' @importFrom SummarizedExperiment assay assay<- colData
@@ -340,7 +347,7 @@ plot_DE_gene_set = function(x, de_stat , genes ,
     }
   }
 
-  # update pvalues for nans to 1 -- so they will not get
+  # update pvalues for nans to 1
   idx_nans = which(is.na(assay(de_stat , "pval_corrected_across_nhoods")))
   assay(de_stat , "logFC")[idx_nans] = 0
   assay(de_stat , "pval_corrected_across_nhoods")[idx_nans] = 1
@@ -367,7 +374,7 @@ plot_DE_gene_set = function(x, de_stat , genes ,
   # get stat - average logFC and fraction of genes for which this neighbourhood is significant
   nhood_stat = as.data.frame(colData(de_stat))
   nhood_stat$avg_logFC = colMeans(assay(de_stat , "logFC_corrected"))
-  nhood_stat$frac_DE_genes = colMeans(assay(de_stat , "pval_corrected_across_nhoods") < alpha)
+  nhood_stat$frac_DE_genes = colMeans(assay(de_stat , correction_by) < alpha)
 
   p = plot_milo_by_single_metric(x, nhood_stat, colour_by = "avg_logFC" , significance_by = NULL ,
                                  order_by = "frac_DE_genes" , order_direction = FALSE, size_by = "frac_DE_genes",

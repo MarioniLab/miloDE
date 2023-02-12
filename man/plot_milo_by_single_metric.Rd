@@ -46,7 +46,7 @@ Please ensure that its values are numeric.}
 \item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout. Default \code{layout = "UMAP"}.}
 
 \item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted.
-Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.}
+Default \code{subset_nhoods = NULL} meaning that no subsetting is performed. If not NULL, should be a numeric vector, which values lie within \code{c(1:ncol(nhoods(x)))}.}
 
 \item{size_range}{A numeric vector indicating the range (min and max) of node sizes to use for plotting (to avoid overplotting in the graph).
 Default \code{size_range = c(1,3)}.}

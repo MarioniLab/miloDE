@@ -16,20 +16,23 @@ plot_DE_single_gene(
 )
 }
 \arguments{
-\item{x}{A \code{\linkS4class{Milo}} object}
+\item{x}{A \code{\linkS4class{Milo}} object.}
 
-\item{de_stat}{miloDE stat (output of \code{\link{de_test_neighbourhoods}}).}
+\item{de_stat}{miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
+It does not have to be direct output of \code{\link{de_test_neighbourhoods}} i.e. it is allowed if \code{de_stat} has some additional assays/columns (e.g. calculated post hoc metrics on neighbourhoods/genes).}
 
-\item{gene}{A character specifying gene ID.}
+\item{gene}{A character specifying gene.}
 
 \item{alpha}{A scalar (between 0 and 1) specifying the significance level used. Default \code{alpha = 0.1}.}
 
 \item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout. Default \code{layout = "UMAP"}.}
 
-\item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
-Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.}
+\item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted.
+Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
+If not NULL, should be a numeric vector, which values lie within \code{c(1:ncol(nhoods(x)))}.}
 
-\item{set_na_to_0}{Boolean specifying whether in neighbourhoods in which gene is not tested, logFC would be set to 0 and p-values to 1. Default \code{set_na_to_0 = TRUE}.}
+\item{set_na_to_0}{Boolean specifying whether in neighbourhoods in which gene is not tested, logFC would be set to 0 and p-values to 1.
+Default \code{set_na_to_0 = TRUE}, and in this case, they will be coloured in white (otherwise gray).}
 
 \item{...}{Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc)).}
 }
