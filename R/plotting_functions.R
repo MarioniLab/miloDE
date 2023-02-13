@@ -26,7 +26,7 @@
 #' @param edge_width A numeric vector indicating the range (min and max) of edge widths to use for plotting. Default \code{edge_width = c(0.2,0.5)}.
 #' @param edge_weight.thresh A numeric (or NULL) specifying a threshold for minimum cells in common (between neighbourhoods) required for an edge to be plotted.
 #' Default \code{edge_weight.thresh = NULL} meaning that no minimum threshold is set.
-#' @return \sQuote{Neighbourhood} plot (\code{ggplot} object), in which each neighbourhood is coloured by the provided in \code{colour_by} column value
+#' @return \sQuote{Neighbourhood} plot, in which each neighbourhood is coloured by the provided in \code{colour_by} column value
 #' @importFrom SingleCellExperiment reducedDims reducedDim
 #' @importFrom SummarizedExperiment colData<- colData
 #' @importFrom miloR nhoodIndex nhoodIndex<- nhoodGraph nhoodGraph<-
@@ -209,8 +209,8 @@ plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , signi
 #' If not NULL, should be a numeric vector, which values lie within \code{c(1:ncol(nhoods(x)))}.
 #' @param set_na_to_0 Boolean specifying whether in neighbourhoods in which gene is not tested, logFC would be set to 0 and p-values to 1.
 #' Default \code{set_na_to_0 = TRUE}, and in this case, they will be coloured in white (otherwise gray).
-#' @param ... Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc)).
-#' @return \sQuote{Neighbourhood} plot (\code{ggplot} object), in which each neighbourhood is coloured by logFC for the selected gene (if significant)
+#' @param ... Arguments to pass to \code{plot_milo_by_single_metric} (e.g. \code{size_range}, \code{node_stroke} etc)).
+#' @return \sQuote{Neighbourhood} plot, in which each neighbourhood is coloured by logFC for the selected gene (if significant)
 #' @export
 #' @examples
 #' require(SingleCellExperiment)
@@ -276,16 +276,16 @@ plot_DE_single_gene = function(x, de_stat , gene , alpha = 0.1, layout = "UMAP" 
 
 #' plot_DE_gene_set
 #'
-#' Returns \sQuote{neighbourhood} plot, in which colour of nodes correspond to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (using \code{correction_by})
+#' Returns \sQuote{neighbourhood} plot, in which colour of nodes correspond to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (using \code{significance_by})
 #'
 #' Note that for this plot, in untested gene-neighbourhood pairs, we set logFC to 0 and p-values to 1.
 #' @param x A \code{\linkS4class{Milo}} object.
 #' @param de_stat miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
 #' It does not have to be direct output of \code{\link{de_test_neighbourhoods}} i.e. it is allowed if \code{de_stat} has some additional assays/columns (e.g. calculated post hoc metrics on neighbourhoods/genes).
-#' @param genes Character vector, each element corresponds to a gene from the set.
+#' @param genes A character vector specifying genes.
 #' @param logFC_correction Boolean specifying whether to perform logFC correction.
 #' If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{significance_by}) < alpha.
-#' @param significance_by Character specifying specifying which column to use to decide on significance for logFC.
+#' @param significance_by Character specifying which column to use to decide on significance for logFC.
 #' Should be an in \code{assays(de_stat)} or in \code{colnames(de_stat)} (depends on \code{de_stat} format). Default \code{significance_by = "pval_corrected_across_nhoods"}.
 #' Expected to be in \code{c("pval", "pval_corrected_across_nhoods", "pval_corrected_across_genes")}.
 #' @param alpha A scalar (between 0 and 1) specifying the significance level used. Default \code{alpha = 0.1}.
@@ -293,8 +293,8 @@ plot_DE_single_gene = function(x, de_stat , gene , alpha = 0.1, layout = "UMAP" 
 #' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted.
 #' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
 #' If not NULL, should be a numeric vector, which values lie within \code{c(1:ncol(nhoods(x)))}.
-#' @param ... Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc)).
-#' @return \sQuote{Neighbourhood} plot (\code{ggplot} object), in which each neighbourhood is coloured by average logFC across the selected genes; neighbourhood size corresponds to the fraction of genes that are DE in this neighbourhood (based on pval_corrected_across_nhoods).
+#' @param ... Arguments to pass to \code{plot_milo_by_single_metric} (e.g. \code{size_range}, \code{node_stroke} etc)).
+#' @return \sQuote{Neighbourhood} plot, in which each neighbourhood is coloured by average logFC across the selected genes; neighbourhood size corresponds to the fraction of genes that are DE in this neighbourhood (based on \code{pval_corrected_across_nhoods}).
 #' @importFrom SummarizedExperiment assay assay<- colData
 #' @export
 #' @examples
@@ -500,7 +500,7 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , levels = NULL
 #' @param nhoodGroup A character specifying which column to use for neighbourhood grouping. Should be an assay in \code{de_stat} (or in \code{colnames(de_stat)} if \code{class(de_stat) == "data.frame"}).
 #' @param levels NULL (default) or character vector specifying order for \code{nhoodGroup} values, in which they are to be plotted.
 #' @param logFC_correction Boolean specifying whether to perform logFC correction.
-#' If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{significance_by} < alpha).
+#' If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{significance_by < alpha}).
 #' @param significance_by Character specifying which column to use to decide on the significance.
 #' @param alpha A numeric between 0 and 1 specifying the significance threshold. Default \code{alpha = 0.1}.
 #' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted.

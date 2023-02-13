@@ -34,10 +34,10 @@ If not NULL, should be a numeric vector, which values lie within \code{c(1:ncol(
 \item{set_na_to_0}{Boolean specifying whether in neighbourhoods in which gene is not tested, logFC would be set to 0 and p-values to 1.
 Default \code{set_na_to_0 = TRUE}, and in this case, they will be coloured in white (otherwise gray).}
 
-\item{...}{Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc)).}
+\item{...}{Arguments to pass to \code{plot_milo_by_single_metric} (e.g. \code{size_range}, \code{node_stroke} etc)).}
 }
 \value{
-\sQuote{Neighbourhood} plot (\code{ggplot} object), in which each neighbourhood is coloured by logFC for the selected gene (if significant)
+\sQuote{Neighbourhood} plot, in which each neighbourhood is coloured by logFC for the selected gene (if significant)
 }
 \description{
 Returns \sQuote{neighbourhood} plot; each node is coloured by logFC, if \code{pval_corrected_across_nhoods < alpha}.

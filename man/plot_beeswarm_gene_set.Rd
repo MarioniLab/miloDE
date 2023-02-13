@@ -27,7 +27,7 @@ It does not have to be direct output of \code{\link{de_test_neighbourhoods}} i.e
 \item{levels}{NULL (default) or character vector specifying order for \code{nhoodGroup} values, in which they are to be plotted.}
 
 \item{logFC_correction}{Boolean specifying whether to perform logFC correction.
-If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{significance_by} < alpha).}
+If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{significance_by < alpha}).}
 
 \item{significance_by}{Character specifying which column to use to decide on the significance.}
 

@@ -22,12 +22,12 @@ plot_DE_gene_set(
 \item{de_stat}{miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
 It does not have to be direct output of \code{\link{de_test_neighbourhoods}} i.e. it is allowed if \code{de_stat} has some additional assays/columns (e.g. calculated post hoc metrics on neighbourhoods/genes).}
 
-\item{genes}{Character vector, each element corresponds to a gene from the set.}
+\item{genes}{A character vector specifying genes.}
 
 \item{logFC_correction}{Boolean specifying whether to perform logFC correction.
 If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{significance_by}) < alpha.}
 
-\item{significance_by}{Character specifying specifying which column to use to decide on significance for logFC.
+\item{significance_by}{Character specifying which column to use to decide on significance for logFC.
 Should be an in \code{assays(de_stat)} or in \code{colnames(de_stat)} (depends on \code{de_stat} format). Default \code{significance_by = "pval_corrected_across_nhoods"}.
 Expected to be in \code{c("pval", "pval_corrected_across_nhoods", "pval_corrected_across_genes")}.}
 
@@ -39,13 +39,13 @@ Expected to be in \code{c("pval", "pval_corrected_across_nhoods", "pval_correcte
 Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
 If not NULL, should be a numeric vector, which values lie within \code{c(1:ncol(nhoods(x)))}.}
 
-\item{...}{Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc)).}
+\item{...}{Arguments to pass to \code{plot_milo_by_single_metric} (e.g. \code{size_range}, \code{node_stroke} etc)).}
 }
 \value{
-\sQuote{Neighbourhood} plot (\code{ggplot} object), in which each neighbourhood is coloured by average logFC across the selected genes; neighbourhood size corresponds to the fraction of genes that are DE in this neighbourhood (based on pval_corrected_across_nhoods).
+\sQuote{Neighbourhood} plot, in which each neighbourhood is coloured by average logFC across the selected genes; neighbourhood size corresponds to the fraction of genes that are DE in this neighbourhood (based on \code{pval_corrected_across_nhoods}).
 }
 \description{
-Returns \sQuote{neighbourhood} plot, in which colour of nodes correspond to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (using \code{correction_by})
+Returns \sQuote{neighbourhood} plot, in which colour of nodes correspond to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (using \code{significance_by})
 }
 \details{
 Note that for this plot, in untested gene-neighbourhood pairs, we set logFC to 0 and p-values to 1.
