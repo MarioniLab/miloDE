@@ -8,17 +8,22 @@ plot_beeswarm_single_gene(
   de_stat,
   gene,
   nhoodGroup,
+  levels = NULL,
   alpha = 0.1,
   subset_nhoods = NULL,
   size = 2
 )
 }
 \arguments{
-\item{de_stat}{miloDE stat (output of \code{\link{de_test_neighbourhoods}}).}
+\item{de_stat}{miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
+It does not have to be direct output of \code{\link{de_test_neighbourhoods}} i.e. it is allowed if \code{de_stat} has some additional assays/columns (e.g. calculated post hoc metrics on neighbourhoods/genes).}
 
 \item{gene}{A character specifying the gene.}
 
 \item{nhoodGroup}{A character specifying which values to use for neighbourhood grouping. Should be an assay in \code{de_stat} (or in \code{colnames(de_stat)} if \code{class(de_stat) == "data.frame"}).}
+
+\item{levels}{NULL (default) or character vector specifying order for \code{nhoodGroup} values, in which they are to be plotted.
+If \code{levels = NULL}, default order will be supplied.}
 
 \item{alpha}{A numeric between 0 and 1 specifying the significance threshold. All neighbourhoods that are defined as not significant, will coloured in gray. Default \code{alpha = 0.1}.}
 
@@ -28,10 +33,10 @@ Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.}
 \item{size}{A positive number specifying size of the dots. Default \code{size = 2}.}
 }
 \value{
-Beeswarm plot, broke down by cell types; each point is a neighbourhood, colour - logFC for the selected gene
+Beeswarm plot, broke down by cell types; each point is a neighbourhood, colours and x-axis correspond to logFC (points are coloured if significant, based on \code{pval_corrected_across_nhoods}; otherwise in grey)
 }
 \description{
-For the selected gene, returns a beeswarm plot, in which the DE statistics for the gene is binned by provided cell groupping (i.e. cell types)
+For the selected gene, returns a beeswarm plot, in which the DE statistics for the gene is binned by provided cell grouping (e.g. cell types);
 }
 \examples{
 

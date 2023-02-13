@@ -277,16 +277,20 @@ plot_DE_single_gene = function(x, de_stat , gene , alpha = 0.1, layout = "UMAP" 
 #' plot_DE_gene_set
 #'
 #' Returns \sQuote{neighbourhood} plot, in which colour of nodes correspond to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (using \code{correction_by})
+#'
+#' Note that for this plot, in untested gene-neighbourhood pairs, we set logFC to 0 and p-values to 1.
 #' @param x A \code{\linkS4class{Milo}} object.
 #' @param de_stat miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
+#' It does not have to be direct output of \code{\link{de_test_neighbourhoods}} i.e. it is allowed if \code{de_stat} has some additional assays/columns (e.g. calculated post hoc metrics on neighbourhoods/genes).
 #' @param genes Character vector, each element corresponds to a gene from the set.
-#' @param logFC_correction Boolean specifying whether to perform logFC correction. If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{correction_by}) < alpha.
-#' @param correction_by Character specifying specifying which column to use to decide on significance for logFC.
-#' Should be an in \code{assays(de_stat)} or in \code{colnames(de_stat)} (depends on \code{de_stat} format). Default \code{correction_by = "pval_corrected_across_nhoods"}.
+#' @param logFC_correction Boolean specifying whether to perform logFC correction.
+#' If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{significance_by}) < alpha.
+#' @param significance_by Character specifying specifying which column to use to decide on significance for logFC.
+#' Should be an in \code{assays(de_stat)} or in \code{colnames(de_stat)} (depends on \code{de_stat} format). Default \code{significance_by = "pval_corrected_across_nhoods"}.
 #' Expected to be in \code{c("pval", "pval_corrected_across_nhoods", "pval_corrected_across_genes")}.
 #' @param alpha A scalar (between 0 and 1) specifying the significance level used. Default \code{alpha = 0.1}.
 #' @param layout A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout. Default \code{layout = "UMAP"}.
-#' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
+#' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted.
 #' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
 #' If not NULL, should be a numeric vector, which values lie within \code{c(1:ncol(nhoods(x)))}.
 #' @param ... Arguments to pass to \code{plot_milo_by_single_metric} (e.g. size_range, node_stroke etc)).
@@ -317,7 +321,7 @@ plot_DE_single_gene = function(x, de_stat , gene , alpha = 0.1, layout = "UMAP" 
 #' p = plot_DE_gene_set(sce, de_stat , genes = c("1","2"))
 #'
 plot_DE_gene_set = function(x, de_stat , genes ,
-                            logFC_correction = TRUE , correction_by = "pval_corrected_across_nhoods", alpha = 0.1,
+                            logFC_correction = TRUE , significance_by = "pval_corrected_across_nhoods", alpha = 0.1,
                             layout = "UMAP" , subset_nhoods = NULL , ...){
   # checks
   if (mean(genes %in% rownames(x)) < 1){
@@ -353,11 +357,11 @@ plot_DE_gene_set = function(x, de_stat , genes ,
   assay(de_stat , "pval_corrected_across_nhoods")[idx_nans] = 1
   assay(de_stat , "pval_corrected_across_genes")[idx_nans] = 1
   assay(de_stat , "pval")[idx_nans] = 1
-  assay(de_stat , correction_by)[idx_nans] = 1
+  assay(de_stat , significance_by)[idx_nans] = 1
 
 
   if (logFC_correction){
-    assay_correction_by = assay(de_stat , correction_by)
+    assay_correction_by = assay(de_stat , significance_by)
     idx_sig = which(assay_correction_by < alpha)
     idx_not_sig = which(assay_correction_by >= alpha)
     assay_correction_by[idx_sig] = 1
@@ -374,7 +378,7 @@ plot_DE_gene_set = function(x, de_stat , genes ,
   # get stat - average logFC and fraction of genes for which this neighbourhood is significant
   nhood_stat = as.data.frame(colData(de_stat))
   nhood_stat$avg_logFC = colMeans(assay(de_stat , "logFC_corrected"))
-  nhood_stat$frac_DE_genes = colMeans(assay(de_stat , correction_by) < alpha)
+  nhood_stat$frac_DE_genes = colMeans(assay(de_stat , significance_by) < alpha)
 
   p = plot_milo_by_single_metric(x, nhood_stat, colour_by = "avg_logFC" , significance_by = NULL ,
                                  order_by = "frac_DE_genes" , order_direction = FALSE, size_by = "frac_DE_genes",
@@ -389,15 +393,18 @@ plot_DE_gene_set = function(x, de_stat , genes ,
 
 #' plot_beeswarm_single_gene
 #'
-#' For the selected gene, returns a beeswarm plot, in which the DE statistics for the gene is binned by provided cell groupping (i.e. cell types)
+#' For the selected gene, returns a beeswarm plot, in which the DE statistics for the gene is binned by provided cell grouping (e.g. cell types);
 #' @param de_stat miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
+#' It does not have to be direct output of \code{\link{de_test_neighbourhoods}} i.e. it is allowed if \code{de_stat} has some additional assays/columns (e.g. calculated post hoc metrics on neighbourhoods/genes).
 #' @param gene A character specifying the gene.
 #' @param nhoodGroup A character specifying which values to use for neighbourhood grouping. Should be an assay in \code{de_stat} (or in \code{colnames(de_stat)} if \code{class(de_stat) == "data.frame"}).
+#' @param levels NULL (default) or character vector specifying order for \code{nhoodGroup} values, in which they are to be plotted.
+#' If \code{levels = NULL}, default order will be supplied.
 #' @param alpha A numeric between 0 and 1 specifying the significance threshold. All neighbourhoods that are defined as not significant, will coloured in gray. Default \code{alpha = 0.1}.
 #' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted.
 #' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
 #' @param size A positive number specifying size of the dots. Default \code{size = 2}.
-#' @return Beeswarm plot, broke down by cell types; each point is a neighbourhood, colour - logFC for the selected gene
+#' @return Beeswarm plot, broke down by cell types; each point is a neighbourhood, colours and x-axis correspond to logFC (points are coloured if significant, based on \code{pval_corrected_across_nhoods}; otherwise in grey)
 #' @importFrom dplyr mutate %>% arrange
 #' @importFrom ggbeeswarm geom_quasirandom
 #' @import ggplot2
@@ -424,7 +431,7 @@ plot_DE_gene_set = function(x, de_stat , genes ,
 #' p = plot_beeswarm_single_gene(de_stat ,
 #' gene = "1" , nhoodGroup = "celltype")
 #'
-plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 , subset_nhoods = NULL , size = 2){
+plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , levels = NULL, alpha = 0.1 , subset_nhoods = NULL , size = 2){
 
   out = .check_de_stat_valid(de_stat , assay_names = c("logFC" , "pval" , "pval_corrected_across_genes" , "pval_corrected_across_nhoods"),
                              coldata_names = c("Nhood", nhoodGroup))
@@ -447,9 +454,15 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 ,
   }
 
   nhood_stat = de_stat
-  nhood_stat = nhood_stat[!is.na(nhood_stat$logFC) , ]
+  #nhood_stat = nhood_stat[!is.na(nhood_stat$logFC) , ]
   nhood_stat = nhood_stat[order(nhood_stat$Nhood) , ]
-  nhood_stat[, nhoodGroup] = as.factor(nhood_stat[, nhoodGroup])
+  if (is.null(levels)){
+    nhood_stat[, nhoodGroup] = as.factor(nhood_stat[, nhoodGroup])
+  }
+  else {
+    levels = levels[levels %in% unique(nhood_stat[, nhoodGroup])]
+    nhood_stat[, nhoodGroup] = factor(nhood_stat[, nhoodGroup] , levels = levels)
+  }
   nhood_stat = mutate(nhood_stat, group_by = nhood_stat[,nhoodGroup])
 
   if (!is.null(subset_nhoods)) {
@@ -478,18 +491,22 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 ,
 
 #' plot_beeswarm_gene_set
 #'
-#' For the selected genes, returns a beeswarm plot, in which the aggregated DE statistics is binned by provided cell groupping (i.e. cell types)
+#' For the selected genes, returns a beeswarm plot, in which the aggregated DE statistics is binned by provided cell grouping (e.g. enriched cell types)
+#'
+#' Note that for this plot, in untested gene-neighbourhood pairs, we set logFC to 0 and p-values to 1.
 #' @param de_stat miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
-#' @param genes A character vector specifying genes of interest.
+#' It does not have to be direct output of \code{\link{de_test_neighbourhoods}} i.e. it is allowed if \code{de_stat} has some additional assays/columns (e.g. calculated post hoc metrics on neighbourhoods/genes).
+#' @param genes A character vector specifying genes.
 #' @param nhoodGroup A character specifying which column to use for neighbourhood grouping. Should be an assay in \code{de_stat} (or in \code{colnames(de_stat)} if \code{class(de_stat) == "data.frame"}).
+#' @param levels NULL (default) or character vector specifying order for \code{nhoodGroup} values, in which they are to be plotted.
 #' @param logFC_correction Boolean specifying whether to perform logFC correction.
-#' If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{correction_by} < alpha).
-#' @param correction_by Character specifying which column to use to decide on the significance. Relevant only if \code{logFC_correction = TRUE}.
+#' If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{significance_by} < alpha).
+#' @param significance_by Character specifying which column to use to decide on the significance.
 #' @param alpha A numeric between 0 and 1 specifying the significance threshold. Default \code{alpha = 0.1}.
 #' @param subset_nhoods A vector (or NULL) specifying which neighbourhoods will be plotted.
 #' Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
 #' @param size A positive number specifying size of the dots. Default \code{size = 2}.
-#' @return Beeswarm plot, broke down by provided grouppings; each point is a neighbourhood, colour - average logFC across selected genes; x-axis - fraction of genes that are DE in the neighbourhood
+#' @return Beeswarm plot, broke down by provided groupings; each point is a neighbourhood, colour - average logFC across selected genes; x-axis - fraction of genes that are DE in the neighbourhood
 #' @importFrom dplyr mutate %>% arrange
 #' @importFrom ggbeeswarm geom_quasirandom
 #' @import ggplot2
@@ -517,8 +534,8 @@ plot_beeswarm_single_gene = function(de_stat , gene , nhoodGroup , alpha = 0.1 ,
 #' p = plot_beeswarm_gene_set(de_stat , genes = c("1","2") ,
 #' nhoodGroup = "celltype")
 #'
-plot_beeswarm_gene_set = function(de_stat , genes , nhoodGroup , logFC_correction = TRUE ,
-                                  correction_by = "pval_corrected_across_nhoods" , alpha = 0.1 , subset_nhoods = NULL,
+plot_beeswarm_gene_set = function(de_stat , genes , nhoodGroup , levels = NULL, logFC_correction = TRUE ,
+                                  significance_by = "pval_corrected_across_nhoods" , alpha = 0.1 , subset_nhoods = NULL,
                                   size = 2){
 
   out = .check_de_stat_valid(de_stat , assay_names = NULL, coldata_names = nhoodGroup)
@@ -544,10 +561,10 @@ plot_beeswarm_gene_set = function(de_stat , genes , nhoodGroup , logFC_correctio
   assay(de_stat , "pval_corrected_across_nhoods")[idx_nans] = 1
   assay(de_stat , "pval_corrected_across_genes")[idx_nans] = 1
   assay(de_stat , "pval")[idx_nans] = 1
-  assay(de_stat , correction_by)[idx_nans] = 1
+  assay(de_stat , significance_by)[idx_nans] = 1
 
   if (logFC_correction){
-    assay_correction_by = assay(de_stat , correction_by)
+    assay_correction_by = assay(de_stat , significance_by)
     idx_sig = which(assay_correction_by < alpha)
     idx_not_sig = which(assay_correction_by >= alpha)
     assay_correction_by[idx_sig] = 1
@@ -563,7 +580,15 @@ plot_beeswarm_gene_set = function(de_stat , genes , nhoodGroup , logFC_correctio
   nhood_stat = as.data.frame(colData(de_stat))
   nhood_stat = nhood_stat[order(nhood_stat$Nhood) , ]
   nhood_stat$avg_logFC = colMeans(assay(de_stat , "logFC_corrected"))
-  nhood_stat$frac_DE_genes = colMeans(assay(de_stat , "pval_corrected_across_nhoods") < alpha)
+  nhood_stat$frac_DE_genes = colMeans(assay(de_stat , significance_by) < alpha)
+
+  if (is.null(levels)){
+    nhood_stat[, nhoodGroup] = as.factor(nhood_stat[, nhoodGroup])
+  }
+  else {
+    levels = levels[levels %in% unique(nhood_stat[, nhoodGroup])]
+    nhood_stat[, nhoodGroup] = factor(nhood_stat[, nhoodGroup] , levels = levels)
+  }
   nhood_stat = mutate(nhood_stat, group_by = nhood_stat[,nhoodGroup])
 
   if (!is.null(subset_nhoods)) {

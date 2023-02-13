@@ -8,24 +8,28 @@ plot_beeswarm_gene_set(
   de_stat,
   genes,
   nhoodGroup,
+  levels = NULL,
   logFC_correction = TRUE,
-  correction_by = "pval_corrected_across_nhoods",
+  significance_by = "pval_corrected_across_nhoods",
   alpha = 0.1,
   subset_nhoods = NULL,
   size = 2
 )
 }
 \arguments{
-\item{de_stat}{miloDE stat (output of \code{\link{de_test_neighbourhoods}}).}
+\item{de_stat}{miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
+It does not have to be direct output of \code{\link{de_test_neighbourhoods}} i.e. it is allowed if \code{de_stat} has some additional assays/columns (e.g. calculated post hoc metrics on neighbourhoods/genes).}
 
-\item{genes}{A character vector specifying genes of interest.}
+\item{genes}{A character vector specifying genes.}
 
 \item{nhoodGroup}{A character specifying which column to use for neighbourhood grouping. Should be an assay in \code{de_stat} (or in \code{colnames(de_stat)} if \code{class(de_stat) == "data.frame"}).}
 
-\item{logFC_correction}{Boolean specifying whether to perform logFC correction.
-If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{correction_by} < alpha).}
+\item{levels}{NULL (default) or character vector specifying order for \code{nhoodGroup} values, in which they are to be plotted.}
 
-\item{correction_by}{Character specifying which column to use to decide on the significance. Relevant only if \code{logFC_correction = TRUE}.}
+\item{logFC_correction}{Boolean specifying whether to perform logFC correction.
+If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{significance_by} < alpha).}
+
+\item{significance_by}{Character specifying which column to use to decide on the significance.}
 
 \item{alpha}{A numeric between 0 and 1 specifying the significance threshold. Default \code{alpha = 0.1}.}
 
@@ -35,10 +39,13 @@ Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.}
 \item{size}{A positive number specifying size of the dots. Default \code{size = 2}.}
 }
 \value{
-Beeswarm plot, broke down by provided grouppings; each point is a neighbourhood, colour - average logFC across selected genes; x-axis - fraction of genes that are DE in the neighbourhood
+Beeswarm plot, broke down by provided groupings; each point is a neighbourhood, colour - average logFC across selected genes; x-axis - fraction of genes that are DE in the neighbourhood
 }
 \description{
-For the selected genes, returns a beeswarm plot, in which the aggregated DE statistics is binned by provided cell groupping (i.e. cell types)
+For the selected genes, returns a beeswarm plot, in which the aggregated DE statistics is binned by provided cell grouping (e.g. enriched cell types)
+}
+\details{
+Note that for this plot, in untested gene-neighbourhood pairs, we set logFC to 0 and p-values to 1.
 }
 \examples{
 

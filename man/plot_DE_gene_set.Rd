@@ -9,7 +9,7 @@ plot_DE_gene_set(
   de_stat,
   genes,
   logFC_correction = TRUE,
-  correction_by = "pval_corrected_across_nhoods",
+  significance_by = "pval_corrected_across_nhoods",
   alpha = 0.1,
   layout = "UMAP",
   subset_nhoods = NULL,
@@ -19,21 +19,23 @@ plot_DE_gene_set(
 \arguments{
 \item{x}{A \code{\linkS4class{Milo}} object.}
 
-\item{de_stat}{miloDE stat (output of \code{\link{de_test_neighbourhoods}}).}
+\item{de_stat}{miloDE stat (output of \code{\link{de_test_neighbourhoods}}).
+It does not have to be direct output of \code{\link{de_test_neighbourhoods}} i.e. it is allowed if \code{de_stat} has some additional assays/columns (e.g. calculated post hoc metrics on neighbourhoods/genes).}
 
 \item{genes}{Character vector, each element corresponds to a gene from the set.}
 
-\item{logFC_correction}{Boolean specifying whether to perform logFC correction. If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{correction_by}) < alpha.}
+\item{logFC_correction}{Boolean specifying whether to perform logFC correction.
+If TRUE (default), logFC will be set to 0 if corrected p-value (defined by \code{significance_by}) < alpha.}
 
-\item{correction_by}{Character specifying specifying which column to use to decide on significance for logFC.
-Should be an in \code{assays(de_stat)} or in \code{colnames(de_stat)} (depends on \code{de_stat} format). Default \code{correction_by = "pval_corrected_across_nhoods"}.
+\item{significance_by}{Character specifying specifying which column to use to decide on significance for logFC.
+Should be an in \code{assays(de_stat)} or in \code{colnames(de_stat)} (depends on \code{de_stat} format). Default \code{significance_by = "pval_corrected_across_nhoods"}.
 Expected to be in \code{c("pval", "pval_corrected_across_nhoods", "pval_corrected_across_genes")}.}
 
 \item{alpha}{A scalar (between 0 and 1) specifying the significance level used. Default \code{alpha = 0.1}.}
 
 \item{layout}{A character indicating the name of the \code{reducedDim} slot in the \code{\linkS4class{Milo}} object to use for layout. Default \code{layout = "UMAP"}.}
 
-\item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted. Default = NULL meaning that all neighbourhoods will be plotted.
+\item{subset_nhoods}{A vector (or NULL) specifying which neighbourhoods will be plotted.
 Default \code{subset_nhoods = NULL} meaning that no subsetting is performed.
 If not NULL, should be a numeric vector, which values lie within \code{c(1:ncol(nhoods(x)))}.}
 
@@ -44,6 +46,9 @@ If not NULL, should be a numeric vector, which values lie within \code{c(1:ncol(
 }
 \description{
 Returns \sQuote{neighbourhood} plot, in which colour of nodes correspond to average logFC across selected genes; size corresponds to how many genes show significant DE in the neighbourhood (using \code{correction_by})
+}
+\details{
+Note that for this plot, in untested gene-neighbourhood pairs, we set logFC to 0 and p-values to 1.
 }
 \examples{
 require(SingleCellExperiment)
