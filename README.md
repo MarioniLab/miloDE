@@ -89,7 +89,7 @@ de_stat = de_test_neighbourhoods(sce_mouseEmbryo , sample_id = "sample",
 
 Please check the vignette to grasp additional functions aiding interpretation and analysis of miloDE output.
 
-[Effect of Tal1 knock out on mouse development](https://rawcdn.githack.com/MarioniLab/miloDE_tutorials/ba0d569cfb17b3fef1da12518f50af79ce8307a1/miloDE__mouse_embryo.html). 
+[Effect of Tal1 knock out on mouse development](https://rawcdn.githack.com/MarioniLab/miloDE_tutorials/d0b7b8abe05f157df2c3be2668aa4dccbc5f08de/miloDE__mouse_embryo.html). 
 
 
 
