@@ -5,6 +5,8 @@ Framework for sensitive DE testing (using neighbourhoods).
 miloDE builds on an existing framework for DA testing called [Milo](https://pubmed.ncbi.nlm.nih.gov/34594043/). 
 It exploits the notion of overlapping neighborhoods of homogeneous cells, constructed from graph-representation of scRNA-seq data, and performs testing within each neighborhood. Multiple testing correction is performed either across neighborhoods or across genes. 
 
+Please see the [preprint](https://www.biorxiv.org/content/10.1101/2023.03.08.531744v1) for greater details.
+
 <p align="center">
   <img src="miloDE_cartoon.png" width="750">
 </p>
