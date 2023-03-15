@@ -52,7 +52,9 @@ Accordingly, AUCs of the classifiers represent how well we can separate 2 condit
 We suggest that neighbourhoods with AUC > 0.5 suggest a certain degree of separation between 2 conditions that can further be examined
 with DE testing (and, accordingly, neighbourhoods with AUC <= 0.5 can be safely discarded). You also can set your own AUC threshold if desired as well as use AUCs to rank neighbourhoods.
 
-\emph{Note that this function is only relevant for \dQuote{simple} models (e.g. not nested or no interactions.)}.
+\emph{Note that this function is only relevant for \dQuote{simple} models (e.g. not nested or no interactions.)
+Also, it is hard-coded that for all neighbourhoods, in which total number of cells is less than 4 in at least one condition,
+AUC will be set to NaN (classifiers for such low numbers will not be built)}.
 }
 \examples{
 require(SingleCellExperiment)

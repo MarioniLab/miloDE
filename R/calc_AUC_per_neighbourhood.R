@@ -26,7 +26,9 @@
 #' We suggest that neighbourhoods with AUC > 0.5 suggest a certain degree of separation between 2 conditions that can further be examined
 #' with DE testing (and, accordingly, neighbourhoods with AUC <= 0.5 can be safely discarded). You also can set your own AUC threshold if desired as well as use AUCs to rank neighbourhoods.
 #'
-#' \emph{Note that this function is only relevant for \dQuote{simple} models (e.g. not nested or no interactions.)}.
+#' \emph{Note that this function is only relevant for \dQuote{simple} models (e.g. not nested or no interactions.)
+#' Also, it is hard-coded that for all neighbourhoods, in which total number of cells is less than 4 in at least one condition,
+#' AUC will be set to NaN (classifiers for such low numbers will not be built)}.
 #'
 #' @return \code{data.frame} object, with AUC calculated for each neighbourhood
 #' @export
@@ -107,13 +109,13 @@ calc_AUC_per_neighbourhood <- function(x , genes = rownames(x) , sample_id = "sa
 
   if (is.null(BPPARAM)){
     auc_stat = lapply(colnames(nhoods_sce) , function(hood_id){
-      out = .get_auc_single_hood(x , nhoods_sce , hood_id , min_cells = 3 , min_n_cells_per_sample = min_n_cells_per_sample , n_threads = n_threads)
+      out = .get_auc_single_hood(x , nhoods_sce , hood_id , min_cells = 4 , min_n_cells_per_sample = min_n_cells_per_sample , n_threads = n_threads)
       return(out)
     })
   }
   else {
     auc_stat = bplapply(colnames(nhoods_sce) , function(hood_id){
-      out = .get_auc_single_hood(x , nhoods_sce , hood_id , min_cells = 3 , min_n_cells_per_sample = min_n_cells_per_sample , n_threads = 1)
+      out = .get_auc_single_hood(x , nhoods_sce , hood_id , min_cells = 4 , min_n_cells_per_sample = min_n_cells_per_sample , n_threads = 1)
       return(out)
     } , BPPARAM = BPPARAM)
   }
@@ -131,7 +133,7 @@ calc_AUC_per_neighbourhood <- function(x , genes = rownames(x) , sample_id = "sa
 #' @importFrom SingleCellExperiment logcounts
 #' @importFrom SummarizedExperiment colData
 #' @import Augur
-.get_auc_single_hood = function(x , nhoods_sce , hood_id , min_cells = 3 , min_n_cells_per_sample = 3 , n_threads = 2){
+.get_auc_single_hood = function(x , nhoods_sce , hood_id , min_cells = 4 , min_n_cells_per_sample = 3 , n_threads = 2){
   out = .check_argument_correct(min_cells, .check_positive_integer, "Check min_cells - should be positive integer")
   # select cells
   current.cells = which(nhoods_sce[,hood_id] == 1)
