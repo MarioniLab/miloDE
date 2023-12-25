@@ -178,7 +178,7 @@ plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , signi
     geom_edge_link0(aes(width = weight), edge_colour = "grey66", edge_alpha=0.2) +
     geom_node_point(aes(fill = colour_by, size = size), shape=21, stroke=node_stroke) +
     scale_size(range = size_range, name="Nhood size") +
-    scale_edge_width(range = c(0.2,3), name="overlap size") +
+    scale_edge_width(range = edge_width, name="overlap size") +
     theme_classic(base_size=14) +
     theme(axis.line = element_blank(), axis.text = element_blank(),
           axis.ticks = element_blank(), axis.title = element_blank()) +
