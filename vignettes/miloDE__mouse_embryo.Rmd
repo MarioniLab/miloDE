@@ -221,6 +221,17 @@ de_stat = de_test_neighbourhoods(sce_milo ,
 
 ## Get neighbourhood ranking by the extent of DE
 
+One explanatory question a user might have is an overall scan of which transcriptional regions show noteworthy signs of DE. To do so ona neighbourhood level, we provide the function `rank_neighbourhoods_by_DE_magnitude`. Within this function, we calculate two metrics:
+
+a) `n_DE_genes` - for each neighbourhood, we calculate how many genes are assigned as DE. Since we are doing it within each neighbourhood, we use `pval_corrected_across_genes` and we use default `pval.thresh=0.1` (can be changed). Note that there is no comparison between neighbourhoods here.
+
+
+b) `n_specific_DE_genes`. We also might be interested which neighbourhoods differ from others more so than we would expect. To assess this, we are interested in which neighbourhoods contain genes, that are DE 'specifically' in those neighbourhoods. To calculate this, for each gene we now use z-transformation of `pval_corrected_across_nhoods`, and we identify the neighbourhoods in which z-normalised p-values are lower than a threshold (default `z.thresh=-3`). This would tell us that the gene is signifciantly DE in the neighbourhood *compared to most other neighbourhoods*. We do so for each gene, and then for each neighbourhood we calculate how mane genes have z-normalised p-values are lower than a threshold.
+
+
+Note that for gene/neighbourhood combinations for which p-values are returned as NaNs (e.g. genes are not tested), for this function we set pvalues = 1. In other words, if a gene is only tested in few neighbourhoods to begin with, z-normalised p-value corrected across neighbourhoods is likely to be small for these neighbourhoods.
+
+
 ```{r rank-nhoods-by-DE-magnitude, fig.width=10 , fig.cap = "Neighbourhood plot, coloured by # of DE genes" , fig.height=5}
 
 stat_de_magnitude = rank_neighbourhoods_by_DE_magnitude(de_stat)
