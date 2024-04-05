@@ -28,6 +28,29 @@
   }
 }
 
+# sce-milo check wo/ calculation of the length of graph: that is used in plotting functions
+#' @importFrom miloR Milo nhoods graph graph<- nhoods<- nhoodIndex<- buildNhoodGraph
+#' @importFrom methods is
+.check_sce_milo_wo_graph = function(x){
+  if (!is(x , "Milo")){
+    stop("x should be a Milo object. Please run `assign_neighbourhoods` first.")
+    return(FALSE)
+  } else if (sum(sum(nhoods(x))) == 0){
+    stop("x should have calculated nhoods. Please run 'assign_neighbourhoods' first.")
+    return(FALSE)
+  } else if ( nrow(nhoods(x)) == 1 & ncol(nhoods(x)) == 1 ){
+    stop("x should contain non-trivial nhoods. Please run `assign_neighbourhoods` first.")
+    return(FALSE)
+  } else if (isEmpty(nhoodIndex(x))){
+    stop("x should have calculated nhoodIndex. Please run 'assign_neighbourhoods' first.")
+    return(FALSE)
+  } else {
+    return(TRUE)
+  }
+}
+
+
+
 # sce check: that is used in add_embedding
 #' @importFrom SingleCellExperiment reducedDimNames
 #' @importFrom SummarizedExperiment assays<- assays

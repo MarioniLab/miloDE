@@ -67,7 +67,7 @@ plot_milo_by_single_metric = function(x, nhood_stat, colour_by = "logFC" , signi
 
   # checks
   out = .check_argument_correct(x, .check_sce, "Check x - something is wrong (gene names unique? reducedDim.name is not present?)") &
-    .check_sce_milo(x) &
+    .check_sce_milo_wo_graph(x) &
     .check_argument_correct(order_direction, .check_boolean, "Check order_direction - should be either TRUE or FALSE") &
     .check_reducedDim_in_sce(x , layout) & .check_nhood_stat(nhood_stat , x)
 
