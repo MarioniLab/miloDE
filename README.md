@@ -94,5 +94,5 @@ Please check the vignette to grasp additional functions aiding interpretation an
 [Effect of Tal1 knock out on mouse development](https://rawcdn.githack.com/MarioniLab/miloDE_tutorials/3d3781237011695f802dc1c0f0193bea12a108de/miloDE__mouse_embryo.html). 
 
 
-Cite the code: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.12686748.svg)](https://zenodo.org/badge/latestdoi/12686748).
+Cite the code: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.12686748.svg)](https://zenodo.org/records/12686748).
 
