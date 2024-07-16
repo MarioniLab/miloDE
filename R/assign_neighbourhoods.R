@@ -65,7 +65,7 @@ assign_neighbourhoods = function(x , reducedDim_name , k = 25, prop = 0.2, order
   if (is.null(colnames(x))){
     colnames(x) = as.character(c(1:ncol(x)))
   }
-  if (is(x , "SingleCellExperiment")){
+  if (is(x , "SingleCellExperiment") && !is(x , "Milo")){
     x = Milo(x)
     # build 1st order to sample vertices
     k_init <- min(k , k_init)
