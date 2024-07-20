@@ -36,8 +36,8 @@ register(mcparam)
 
 ## Not an immediate functionality of miloDE, but we illustrate in our vignette how to adapt WGCNA 
 approach to discover DE patterns and co-regulated gene modules. 
-If you want to perform similar analysis, please install Seurat and scWGCNA:
-install.packages('Seurat')
+If you want to perform similar analysis, please install Seurat and scWGCNA (note that scWGCNA does not work with V5 Seurat so please ensure that your Seurat version is V4):
+install.packages('Seurat', version = "4.4.0")
 devtools::install_github("cferegrino/scWGCNA", ref="main")
 
 
