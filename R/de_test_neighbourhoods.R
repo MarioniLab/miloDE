@@ -30,6 +30,8 @@
 #' Only relevant if \code{plot_summary_stat = TRUE}.
 #' @param BPPARAM NULL or \code{\link{MulticoreParam}} object to use for parallelisation (see \code{README} for the usage). Default \code{BPPARAM = NULL} meaning no parallelisation.
 #' Note that if possible we recommend to parallel this in order to reduce computational time.
+#' @param correct_pvalues Logical, whether to apply multiple testing correction across neighbourhoods
+#'   Default is TRUE. When FALSE, the 'pval_corrected_across_nhoods' assay will contain NA values to maintain compatibility with downstream plotting functions.
 #' @param verbose Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.
 #' @details
 #' We employ edgeR testing (using \code{\link[edgeR]{glmQLFit}}) within each neighbourhood.
@@ -77,6 +79,7 @@ de_test_neighbourhoods = function(x ,
                                   plot_summary_stat = FALSE,
                                   layout = "UMAP",
                                   BPPARAM = NULL,
+                                  correct_pvalues = TRUE,
                                   verbose = TRUE){
 
 
@@ -247,28 +250,44 @@ de_test_neighbourhoods = function(x ,
     } else {
       de_stat_sce = de_stat_sce[idx , ]
 
-      if (verbose){
-        message("Performing p-value correction across neighbourhoods..")
-      }
-      ## calc corrected pvals
-      if (is.null(BPPARAM)){
-        pval_corrected = lapply(rownames(de_stat_sce) , function(gene){
-          pvals = assay(de_stat_sce , "pval")[gene , ]
-          out = spatial_pval_adjustment(nhoods_x = as.matrix(nhoods_x[,subset_nhoods]) , pvalues = pvals)
-          return(out)
-        })
+      if (correct_pvalues){
+        if (verbose){
+          message("Performing p-value correction across neighbourhoods..")
+        }
+        ## calc corrected pvals
+        if (is.null(BPPARAM)){
+          pval_corrected = lapply(rownames(de_stat_sce) , function(gene){
+            pvals = assay(de_stat_sce , "pval")[gene , ]
+            out = spatial_pval_adjustment(nhoods_x = as.matrix(nhoods_x[,subset_nhoods]) , pvalues = pvals)
+            return(out)
+          })
+        } else {
+          pval_corrected = bplapply(rownames(de_stat_sce) , function(gene){
+            pvals = assay(de_stat_sce , "pval")[gene , ]
+            out = spatial_pval_adjustment(nhoods_x = as.matrix(nhoods_x[,subset_nhoods]) , pvalues = pvals)
+            return(out)
+          }, BPPARAM = BPPARAM)
+        }
+        
+        ## add corrected to assay
+        assay_pval_corrected_across_nhoods = do.call(rbind , pval_corrected)
+        rownames(assay_pval_corrected_across_nhoods) = rownames(de_stat_sce)
+        colnames(assay_pval_corrected_across_nhoods) = colnames(de_stat_sce)
+
       } else {
-        pval_corrected = bplapply(rownames(de_stat_sce) , function(gene){
-          pvals = assay(de_stat_sce , "pval")[gene , ]
-          out = spatial_pval_adjustment(nhoods_x = as.matrix(nhoods_x[,subset_nhoods]) , pvalues = pvals)
-          return(out)
-        }, BPPARAM = BPPARAM)
+          # Return matrix of NAs with same dimensions for plotting compatibility
+          if (verbose){
+            message("Skipping p-value correction (correct_pvalues = FALSE)")
+          }
+          assay_pval_corrected_across_nhoods = matrix(
+            NA_real_, 
+            nrow = nrow(de_stat_sce), 
+            ncol = ncol(de_stat_sce)
+          )
+          rownames(assay_pval_corrected_across_nhoods) = rownames(de_stat_sce)
+          colnames(assay_pval_corrected_across_nhoods) = colnames(de_stat_sce)
       }
 
-      ## add corrected to assay
-      assay_pval_corrected_across_nhoods = do.call(rbind , pval_corrected)
-      rownames(assay_pval_corrected_across_nhoods) = rownames(de_stat_sce)
-      colnames(assay_pval_corrected_across_nhoods) = colnames(de_stat_sce)
       assay(de_stat_sce , "pval_corrected_across_nhoods") = assay_pval_corrected_across_nhoods
 
 

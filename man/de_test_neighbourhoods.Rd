@@ -17,6 +17,7 @@ de_test_neighbourhoods(
   plot_summary_stat = FALSE,
   layout = "UMAP",
   BPPARAM = NULL,
+  correct_pvalues = TRUE,
   verbose = TRUE
 )
 }
@@ -59,6 +60,9 @@ Only relevant if \code{plot_summary_stat = TRUE}.}
 
 \item{BPPARAM}{NULL or \code{\link{MulticoreParam}} object to use for parallelisation (see \code{README} for the usage). Default \code{BPPARAM = NULL} meaning no parallelisation.
 Note that if possible we recommend to parallel this in order to reduce computational time.}
+
+\item{correct_pvalues}{Logical, whether to apply multiple testing correction across neighbourhoods
+Default is TRUE. When FALSE, the 'pval_corrected_across_nhoods' assay will contain NA values to maintain compatibility with downstream plotting functions.}
 
 \item{verbose}{Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.}
 }
