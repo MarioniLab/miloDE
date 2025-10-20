@@ -290,5 +290,20 @@ test_that("Contrasts check -- has to be formula colnames of model matrix", {
 })
 
 
+# correct_pvalues argument
+test_that("correct_pvalues = FALSE returns NA for pval_corrected_across_nhoods", {
+  de_stat_no_corr = de_test_neighbourhoods(sce , design = ~tomato, covariates = c("tomato") ,
+                                            output_type = "data.frame", correct_pvalues = FALSE)
+  de_stat_with_corr = de_test_neighbourhoods(sce, design = ~tomato, covariates = c("tomato"), 
+                                              output_type = "data.frame", correct_pvalues = TRUE)
+  
+  expect_true(all(is.na(de_stat_no_corr$pval_corrected_across_nhoods)))
+  expect_identical(class(de_stat_no_corr), class(de_stat_with_corr))
+  expect_identical(class(de_stat_no_corr$pval_corrected_across_nhoods), class(de_stat_with_corr$pval_corrected_across_nhoods))
+  expect_identical(length(de_stat_no_corr$pval_corrected_across_nhoods), length(de_stat_with_corr$pval_corrected_across_nhoods))
+  expect_identical(colnames(de_stat_no_corr), colnames(de_stat_with_corr))
+})
+
+
 
 
