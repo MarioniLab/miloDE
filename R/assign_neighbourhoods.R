@@ -12,6 +12,7 @@
 #' @param k_init Positive integer, defines how many neighbours to use for identifying anchor cells (for this step we use 1st-order kNN). Default \code{k_init = 50}.
 #' @param d Positive integer, defines how many dimensions from \code{reducedDim(x)} to use. Default \code{d = 30}.
 #' @param verbose Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.
+#' @param ... Additional arguments you can pass in \code{\link[miloR]{buildGraph}} function (e.g. \code{BNPARAM} that allows for alternative (and potentially faster) NN-graph construction)
 #' @details
 #' This function assigns neighbourhoods to single-cell data. This includes assigning graph representation, selecting \sQuote{index} cells and, finally, for each index cell, assigning it along with its neighbourhoors to one neighbourhood.
 #'
@@ -42,7 +43,16 @@
 #' reducedDim(sce , "reduced_dim") =
 #' matrix(rnorm(n_col*n_latent), ncol=n_latent)
 #' out = assign_neighbourhoods(sce, reducedDim_name = "reduced_dim")
-assign_neighbourhoods = function(x , reducedDim_name , k = 25, prop = 0.2, order = 2, filtering = TRUE, k_init = 50, d = 30, verbose = TRUE){
+assign_neighbourhoods = function(x ,
+                                 reducedDim_name ,
+                                 k = 25,
+                                 prop = 0.2,
+                                 order = 2,
+                                 filtering = TRUE,
+                                 k_init = 50,
+                                 d = 30,
+                                 verbose = TRUE,
+                                 ...){
 
   #args = c(as.list(environment()))
   #out = .general_check_arguments(args) & .check_reducedDim_in_sce(sce , reducedDim_name)
@@ -69,13 +79,13 @@ assign_neighbourhoods = function(x , reducedDim_name , k = 25, prop = 0.2, order
     x = Milo(x)
     # build 1st order to sample vertices
     k_init <- min(k , k_init)
-    x <- suppressMessages(buildGraph(x, k = k_init, d = d, reduced.dim = reducedDim_name))
+    x <- suppressMessages(buildGraph(x, k = k_init, d = d, reduced.dim = reducedDim_name, ...))
   }
   else {
     message("SCE is Milo object. Checking if graph is already constructed.")
     if (length(miloR::graph(x)) == 0){
       message("Graph is not constructed yet. Building now.")
-      x <- suppressMessages(buildGraph(x, k = k_init, d = d, reduced.dim = reducedDim_name))
+      x <- suppressMessages(buildGraph(x, k = k_init, d = d, reduced.dim = reducedDim_name, ...))
     }
   }
   # find anchor cells
@@ -83,7 +93,7 @@ assign_neighbourhoods = function(x , reducedDim_name , k = 25, prop = 0.2, order
 
   # rebuild to the actual graph, with parameters specified by user
   if (!k == k_init){
-    x <- suppressMessages(buildGraph(x, k = k, d = d, reduced.dim = reducedDim_name))
+    x <- suppressMessages(buildGraph(x, k = k, d = d, reduced.dim = reducedDim_name, ...))
   }
   # if order == 2 -- reassign edges
   if (order == 2){

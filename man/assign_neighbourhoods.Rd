@@ -13,7 +13,8 @@ assign_neighbourhoods(
   filtering = TRUE,
   k_init = 50,
   d = 30,
-  verbose = TRUE
+  verbose = TRUE,
+  ...
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ assign_neighbourhoods(
 \item{d}{Positive integer, defines how many dimensions from \code{reducedDim(x)} to use. Default \code{d = 30}.}
 
 \item{verbose}{Boolean specifying whether to print intermediate output messages. Default \code{verbose = TRUE}.}
+
+\item{...}{Additional arguments you can pass in \code{\link[miloR]{buildGraph}} function (e.g. \code{BNPARAM} that allows for alternative (and potentially faster) NN-graph construction)}
 }
 \value{
 \code{\linkS4class{Milo}} object containing cell-neighbourhood matrix in \code{nhoods(out)} slot
